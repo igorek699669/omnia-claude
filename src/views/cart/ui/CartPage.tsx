@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice } from "@/shared/lib/format";
-import { Tag, SectionTitle, ArrowButton } from "@/shared/ui";
+import { Tag, SectionTitle, ArrowLink } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
+import { CHECKOUT_SELECTION_KEY } from "@/shared/lib/storage-keys";
 
 export function CartPage() {
   const { items, setQty, remove } = useCart();
@@ -174,13 +175,22 @@ export function CartPage() {
               <span className="text-lg">Итого</span>
               <span className="font-display text-2xl font-semibold">{formatPrice(subtotal)}</span>
             </div>
-            {/* TODO: чекаут — адрес/ПВЗ СДЭК, расчёт доставки, оплата ЮKassa (см. CLAUDE.md) */}
-            <div className={`mt-6 ${selected.size === 0 ? "pointer-events-none opacity-50" : ""}`}>
-              <ArrowButton disabled={selected.size === 0}>
+            <div className={`mt-6 flex justify-center ${selected.size === 0 ? "pointer-events-none opacity-50" : ""}`}>
+              <ArrowLink
+                href="/checkout"
+                className="lg:w-full lg:justify-center"
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem(CHECKOUT_SELECTION_KEY, JSON.stringify([...selected]));
+                  } catch {
+                    // ignore
+                  }
+                }}
+              >
                 Оформить заказ{selectedQty > 0 ? ` (${selectedQty})` : ""}
-              </ArrowButton>
+              </ArrowLink>
             </div>
-            <p className="mt-4 text-sm text-ink-600">
+            <p className="mt-4 text-center text-sm text-ink-600 lg:text-left">
               Стоимость доставки СДЭК рассчитается на следующем шаге, до оплаты.
             </p>
           </aside>

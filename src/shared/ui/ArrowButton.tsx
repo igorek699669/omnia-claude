@@ -24,15 +24,16 @@ function Arrow({ variant }: { variant: keyof typeof variants }) {
   );
 }
 
-type Props = { variant?: keyof typeof variants; children: ReactNode };
+type Props = { variant?: keyof typeof variants; className?: string; children: ReactNode };
 
 export function ArrowButton({
   variant = "primary",
+  className = "",
   children,
   ...rest
 }: Props & ComponentProps<"button">) {
   return (
-    <button className={`${base} ${variants[variant]}`} {...rest}>
+    <button className={`${base} ${variants[variant]} ${className}`} {...rest}>
       {children}
       <Arrow variant={variant} />
     </button>
@@ -41,11 +42,12 @@ export function ArrowButton({
 
 export function ArrowLink({
   variant = "primary",
+  className = "",
   children,
   ...rest
 }: Props & ComponentProps<typeof Link>) {
   return (
-    <Link className={`${base} ${variants[variant]}`} {...rest}>
+    <Link className={`${base} ${variants[variant]} ${className}`} {...rest}>
       {children}
       <Arrow variant={variant} />
     </Link>
