@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omnia — ханги ручной работы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream-50: #F6F4F1;
+    --cream-100: #EFECE6;
+    --cream-200: #E7E1D8;
+    --ink-900: #1C1410;
+    --ink-600: #6F6259;
+    --brand-500: #FF5900;
+    --brand-600: #E04E00;
+    --white: #FFFFFF;
+    --radius-card: 40px;
+    --radius-pill: 999px;
+    --font-display: "Jost", sans-serif;
+    --font-body: "Golos Text", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream-50);
+    color: var(--ink-900);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1440px; margin: 0 auto; padding: 0 48px; }
+  section { padding: 96px 0; }
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(32px, 3.4vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 48px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-600);
+    padding: 8px 16px; border-radius: var(--radius-pill);
+    border: 1px solid color-mix(in srgb, var(--ink-900) 12%, transparent);
+    background: var(--cream-100);
+    margin-bottom: 20px;
+  }
+  .tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-500); }
+
+  /* ---------- Header ---------- */
+  .header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--cream-50) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid color-mix(in srgb, var(--ink-900) 8%, transparent);
+  }
+  .header__inner { display: flex; align-items: center; gap: 40px; height: 80px; }
+  .logo {
+    font-family: var(--font-display); font-weight: 600; font-size: 26px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    text-decoration: none; color: var(--ink-900);
+  }
+  .logo b { color: var(--brand-500); font-weight: 600; }
+  .nav { display: flex; gap: 32px; margin-inline: auto; }
+  .nav a { text-decoration: none; color: var(--ink-600); font-size: 15px; font-weight: 500; transition: color .2s ease; }
+  .nav a:hover, .nav a:focus-visible { color: var(--ink-900); }
+  .header__actions { display: flex; align-items: center; gap: 20px; }
+  .header__phone { text-decoration: none; color: var(--ink-900); font-size: 15px; font-weight: 500; white-space: nowrap; }
+  .icon-btn {
+    display: grid; place-items: center; width: 42px; height: 42px;
+    border-radius: var(--radius-pill);
+    border: 1px solid color-mix(in srgb, var(--ink-900) 15%, transparent);
+    background: transparent; cursor: pointer; color: var(--ink-900);
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .icon-btn:hover, .icon-btn:focus-visible { border-color: var(--brand-500); background: var(--cream-100); }
+  .btn-login {
+    font-family: var(--font-body); font-size: 15px; font-weight: 500;
+    padding: 10px 22px; border-radius: var(--radius-pill);
+    background: var(--ink-900); color: var(--cream-50);
+    border: none; cursor: pointer; transition: background .2s ease;
+  }
+  .btn-login:hover, .btn-login:focus-visible { background: var(--brand-600); }
+
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-family: var(--font-body); font-size: 16px; font-weight: 500;
+    color: var(--white); background: var(--brand-500);
+    padding: 8px 8px 8px 28px; border: none; border-radius: var(--radius-pill);
+    cursor: pointer; transition: background .2s ease, transform .2s ease;
+  }
+  .btn-primary:hover, .btn-primary:focus-visible { background: var(--brand-600); transform: translateY(-1px); }
+  .btn-primary .btn__circle {
+    display: grid; place-items: center; width: 42px; height: 42px;
+    border-radius: 50%; background: color-mix(in srgb, var(--white) 22%, transparent);
+  }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--font-body); font-size: 16px; font-weight: 500;
+    color: var(--ink-900); background: transparent;
+    padding: 15px 8px; border: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--ink-900) 25%, transparent);
+    cursor: pointer; transition: border-color .2s ease, color .2s ease;
+  }
+  .btn-secondary:hover, .btn-secondary:focus-visible { color: var(--brand-600); border-color: var(--brand-500); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 48px 0 104px; }
+  .hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .hero__title {
+    font-family: var(--font-display); font-weight: 500;
+    font-size: clamp(44px, 5vw, 72px);
+    line-height: 1.04; letter-spacing: -0.015em;
+    margin-bottom: 24px; text-wrap: balance;
+  }
+  .hero__title em { font-style: normal; color: var(--brand-500); }
+  .hero__sub { font-size: 18px; color: var(--ink-600); max-width: 46ch; margin-bottom: 40px; }
+  .hero__cta { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-bottom: 56px; }
+  .hero__stats { display: flex; gap: 40px; border-top: 1px solid color-mix(in srgb, var(--ink-900) 10%, transparent); padding-top: 28px; }
+  .stat { max-width: 190px; }
+  .stat__value { font-family: var(--font-display); font-weight: 500; font-size: 34px; line-height: 1.1; }
+  .stat__label { font-size: 14px; color: var(--ink-600); margin-top: 4px; }
+  .hero__media { position: relative; }
+  .rings { position: absolute; inset: 0; margin: auto; width: 100%; aspect-ratio: 1; max-width: 640px; pointer-events: none; z-index: 0; }
+  .rings span {
+    position: absolute; inset: 0; margin: auto; border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--brand-500) 35%, transparent);
+    animation: breathe 6s ease-in-out infinite;
+  }
+  .rings span:nth-child(1) { width: 105%; height: 105%; }
+  .rings span:nth-child(2) { width: 118%; height: 118%; animation-delay: 1.2s; opacity: .6; }
+  .rings span:nth-child(3) { width: 132%; height: 132%; animation-delay: 2.4s; opacity: .35; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: .8; }
+    50% { transform: scale(1.035); opacity: .3; }
+  }
+  .hero__photo {
+    position: relative; z-index: 1; display: block;
+    width: 100%; aspect-ratio: 1; border-radius: 50%;
+    box-shadow: 0 40px 80px -32px color-mix(in srgb, var(--ink-900) 45%, transparent);
+  }
+  .hero__badge {
+    position: absolute; z-index: 2; right: 4%; bottom: 6%;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--white); border-radius: var(--radius-pill);
+    padding: 12px 22px 12px 14px;
+    box-shadow: 0 16px 40px -16px color-mix(in srgb, var(--ink-900) 35%, transparent);
+  }
+  .play {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    border-radius: 50%; background: var(--brand-500); color: var(--white);
+    border: none; cursor: pointer; transition: background .2s ease; flex: none;
+  }
+  .play:hover, .play:focus-visible { background: var(--brand-600); }
+  .hero__badge strong { display: block; font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .hero__badge small { font-size: 13px; color: var(--ink-600); }
+
+  /* ---------- Quote ---------- */
+  .quote { padding: 32px 0 96px; }
+  .quote p {
+    font-family: var(--font-display); font-weight: 400;
+    font-size: clamp(26px, 3vw, 42px); line-height: 1.25;
+    max-width: 22ch; margin: 0 auto; text-align: center; text-wrap: balance;
+  }
+  .quote em { font-style: normal; color: var(--brand-500); font-weight: 500; }
+
+  /* ---------- Products ---------- */
+  .products__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .card {
+    background: var(--white); border-radius: var(--radius-card);
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 32px 64px -32px color-mix(in srgb, var(--ink-900) 30%, transparent); }
+  .card__media { position: relative; aspect-ratio: 4 / 3; background: var(--cream-200); }
+  .card__media svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card__play {
+    position: absolute; left: 20px; bottom: 20px;
+    display: inline-flex; align-items: center; gap: 10px;
+    background: color-mix(in srgb, var(--ink-900) 55%, transparent);
+    color: var(--white); backdrop-filter: blur(6px);
+    border: none; border-radius: var(--radius-pill);
+    padding: 8px 18px 8px 10px; font-family: var(--font-body);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: background .2s ease;
+  }
+  .card__play:hover, .card__play:focus-visible { background: var(--brand-500); }
+  .card__play .dot { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: color-mix(in srgb, var(--white) 25%, transparent); }
+  .card__body { display: flex; flex-direction: column; gap: 10px; padding: 20px; flex: 1; }
+  .card__name { font-family: var(--font-display); font-weight: 500; font-size: 24px; line-height: 1.2; }
+  .card__spec { font-size: 14px; color: var(--ink-600); }
+  .card__price-row { display: flex; align-items: baseline; gap: 12px; margin-top: auto; padding-top: 8px; }
+  .card__price { font-family: var(--font-display); font-weight: 600; font-size: 28px; }
+  .card__note { font-size: 13px; color: var(--ink-600); }
+  .card__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 8px; }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 500;
+    color: var(--ink-900); background: transparent;
+    border: 1px solid color-mix(in srgb, var(--ink-900) 20%, transparent);
+    border-radius: var(--radius-pill); padding: 12px 24px;
+    cursor: pointer; transition: border-color .2s ease, color .2s ease;
+  }
+  .btn-outline:hover, .btn-outline:focus-visible { border-color: var(--brand-500); color: var(--brand-600); }
+  .btn-cart {
+    display: grid; place-items: center; width: 48px; height: 48px;
+    border-radius: 50%; background: var(--brand-500); color: var(--white);
+    border: none; cursor: pointer; transition: background .2s ease;
+  }
+  .btn-cart:hover, .btn-cart:focus-visible { background: var(--brand-600); }
+
+  /* ---------- Hero points ---------- */
+  .hero__points {
+    display: flex; flex-wrap: wrap; gap: 16px 28px;
+    margin-bottom: 36px;
+  }
+  .point-item { flex: 1 1 160px; min-width: 0; position: relative; padding-left: 16px; }
+  .point-item::before {
+    content: ""; position: absolute; left: 0; top: 6px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--brand-500);
+  }
+  .point-item strong { display: block; font-family: var(--font-display); font-weight: 500; font-size: 15px; margin-bottom: 2px; }
+  .point-item p { font-size: 13px; color: var(--ink-600); line-height: 1.4; overflow-wrap: anywhere; }
+  .dots { display: flex; gap: 8px; margin-top: 14px; }
+  .dots button {
+    width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+    background: color-mix(in srgb, var(--ink-900) 20%, transparent);
+    cursor: pointer; transition: background .2s ease, transform .2s ease;
+  }
+  .dots button.is-active { background: var(--brand-500); transform: scale(1.3); }
+
+  /* ---------- Card media slider ---------- */
+  .card__slide { position: absolute; inset: 0; opacity: 0; transition: opacity .4s ease; }
+  .card__slide.is-active { opacity: 1; }
+  .card__slide svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card__bigplay {
+    position: absolute; inset: 0; margin: auto; z-index: 2;
+    width: 56px; height: 56px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--white) 85%, transparent);
+    color: var(--brand-500); border: none; cursor: pointer;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .card__bigplay:hover, .card__bigplay:focus-visible { transform: scale(1.08); background: var(--white); }
+  .card__media .dots {
+    position: absolute; z-index: 3; left: 50%; transform: translateX(-50%);
+    bottom: 14px; margin: 0;
+  }
+  .card__media .dots button { background: color-mix(in srgb, var(--white) 55%, transparent); }
+  .card__media .dots button.is-active { background: var(--brand-500); transform: scale(1.3); }
+  .card__toprow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .card__chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    color: var(--ink-900); background: var(--cream-100);
+    border: none; border-radius: var(--radius-pill); padding: 8px 16px;
+    cursor: pointer; transition: background .2s ease, color .2s ease;
+  }
+  .card__chip:hover, .card__chip:focus-visible { background: var(--brand-500); color: var(--white); }
+  .card__social { display: flex; gap: 8px; }
+  .card__social a {
+    display: grid; place-items: center; width: 34px; height: 34px;
+    border-radius: 50%; color: var(--ink-600);
+    border: 1px solid color-mix(in srgb, var(--ink-900) 14%, transparent);
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .card__social a:hover, .card__social a:focus-visible { color: var(--brand-600); border-color: var(--brand-500); }
+  .card__tuning { font-size: 14px; font-weight: 500; }
+  .card__tuning span { color: var(--ink-600); font-weight: 400; }
+  .card__old { font-size: 16px; color: var(--ink-600); text-decoration: line-through; }
+  .card__meta { font-size: 13px; color: var(--ink-600); }
+  .card__more { flex: 1; justify-content: center; }
+
+  /* ---------- Footer socials ---------- */
+  .footer__label { font-size: 13px; color: color-mix(in srgb, var(--cream-50) 50%, transparent); }
+  .footer__phone-num { font-family: var(--font-display); font-size: 22px; }
+  .footer__social { display: flex; gap: 10px; margin-top: 12px; }
+  .footer__social a {
+    display: grid; place-items: center; width: 38px; height: 38px;
+    border-radius: 50%; color: var(--cream-50);
+    border: 1px solid color-mix(in srgb, var(--cream-50) 25%, transparent);
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .footer__social a:hover, .footer__social a:focus-visible { color: var(--brand-500); border-color: var(--brand-500); }
+
+  /* ---------- Sound picker ---------- */
+  .sound { background: var(--cream-100); border-radius: var(--radius-card); }
+  .sound .container { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .sound__controls { display: flex; flex-direction: column; gap: 24px; margin-top: 32px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    font-family: var(--font-body); font-size: 15px; font-weight: 500;
+    padding: 10px 20px; border-radius: var(--radius-pill);
+    border: 1px solid color-mix(in srgb, var(--ink-900) 18%, transparent);
+    background: transparent; color: var(--ink-900); cursor: pointer;
+    transition: all .2s ease;
+  }
+  .chip:hover { border-color: var(--brand-500); }
+  .chip.is-active { background: var(--ink-900); color: var(--cream-50); border-color: var(--ink-900); }
+  .field label { display: block; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-600); margin-bottom: 8px; }
+  .field select {
+    width: 100%; max-width: 360px; appearance: none;
+    font-family: var(--font-body); font-size: 16px; color: var(--ink-900);
+    padding: 14px 44px 14px 20px; border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--ink-900) 18%, transparent);
+    background: var(--white) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%231C1410" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>') no-repeat right 18px center;
+    cursor: pointer;
+  }
+  .sound__cta { margin-top: 8px; }
+  .sound__hint { font-size: 14px; color: var(--ink-600); margin-top: 12px; max-width: 40ch; }
+  .sound__scale { position: relative; aspect-ratio: 1; max-width: 560px; margin-inline: auto; width: 100%; }
+
+  /* ---------- Steel ---------- */
+  .steel__grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 48px; align-items: center; margin-top: 64px; }
+  .steel__col { display: flex; flex-direction: column; gap: 48px; }
+  .feature { max-width: 320px; }
+  .feature__title { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 500; font-size: 20px; margin-bottom: 8px; }
+  .feature__title::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--brand-500); }
+  .feature p { font-size: 15px; color: var(--ink-600); }
+  .steel__media { width: min(420px, 34vw); }
+  .steel__media svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 32px 48px color-mix(in srgb, var(--ink-900) 30%, transparent)); }
+  .steel__col--right .feature { margin-left: auto; text-align: right; }
+  .steel__col--right .feature__title { flex-direction: row-reverse; }
+
+  /* ---------- Firsthand ---------- */
+  .firsthand { background: var(--cream-100); border-radius: var(--radius-card); }
+  .firsthand__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .point {
+    background: var(--white); border-radius: 28px; padding: 32px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .point__title { font-family: var(--font-display); font-weight: 500; font-size: 21px; line-height: 1.25; }
+  .point p { font-size: 15px; color: var(--ink-600); }
+
+  /* ---------- Delivery ---------- */
+  .delivery__inner {
+    background: var(--ink-900); color: var(--cream-50);
+    border-radius: var(--radius-card); padding: 72px 64px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+  }
+  .delivery__inner .section-title { color: var(--cream-50); margin-bottom: 40px; }
+  .steps { display: flex; flex-direction: column; }
+  .step {
+    display: grid; grid-template-columns: auto 1fr; gap: 20px;
+    padding: 20px 0; text-align: left;
+    background: none; border: none; cursor: pointer;
+    font-family: var(--font-body); color: inherit;
+    border-bottom: 1px solid color-mix(in srgb, var(--cream-50) 14%, transparent);
+    transition: opacity .2s ease;
+  }
+  .step:not(.is-active) { opacity: .55; }
+  .step:hover, .step:focus-visible { opacity: 1; }
+  .step:last-child { border-bottom: none; }
+  .step__marker {
+    display: grid; place-items: center; width: 40px; height: 40px;
+    border-radius: 50%; border: 1px solid color-mix(in srgb, var(--cream-50) 30%, transparent);
+    font-family: var(--font-display); font-weight: 500; font-size: 15px;
+    transition: background .25s ease, border-color .25s ease;
+  }
+  .step.is-active .step__marker { background: var(--brand-500); border-color: var(--brand-500); }
+  .step strong { display: block; font-family: var(--font-display); font-weight: 500; font-size: 20px; margin-bottom: 4px; color: var(--cream-50); }
+  .step p { font-size: 14px; color: color-mix(in srgb, var(--cream-50) 65%, transparent); }
+  .step__img { display: none; }
+  .delivery__media { position: relative; border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 3; background: #191009; }
+  .delivery__img { position: absolute; inset: 0; opacity: 0; transition: opacity .45s ease; }
+  .delivery__img.is-active { opacity: 1; }
+  .delivery__inner .caption {
+    position: absolute; left: 20px; bottom: 20px; right: 20px; width: fit-content;
+    font-size: 13px; color: color-mix(in srgb, var(--cream-50) 80%, transparent);
+    background: color-mix(in srgb, var(--ink-900) 55%, transparent);
+    backdrop-filter: blur(6px); border-radius: var(--radius-pill); padding: 8px 16px;
+  }
+
+  /* ---------- CTA band ---------- */
+  .cta-band { padding: 0; }
+  .cta-band__inner {
+    background: var(--cream-200);
+    color: var(--ink-900); border-radius: var(--radius-card);
+    padding: 80px 64px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 28px;
+  }
+  .cta-band__sub { font-size: 17px; max-width: 52ch; color: var(--ink-600); }
+  .btn-inverse {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-family: var(--font-body); font-size: 16px; font-weight: 500;
+    color: var(--ink-900); background: var(--white);
+    padding: 8px 8px 8px 28px; border: none; border-radius: var(--radius-pill);
+    cursor: pointer; transition: transform .2s ease;
+  }
+  .btn-inverse:hover, .btn-inverse:focus-visible { transform: translateY(-2px); }
+  .btn-inverse .btn__circle { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--brand-500); color: var(--white); }
+
+  /* ---------- FAQ ---------- */
+  .faq__grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 64px; align-items: start; }
+  .faq__media { border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 4 / 5; background: radial-gradient(circle at 45% 30%, #d8c6b4 0%, #9b8672 45%, #57432f 100%); position: sticky; top: 112px; }
+  .faq details {
+    border-bottom: 1px solid color-mix(in srgb, var(--ink-900) 12%, transparent);
+  }
+  .faq summary {
+    list-style: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    font-family: var(--font-display); font-weight: 500; font-size: 21px;
+    padding: 24px 0;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: ""; flex: none; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--ink-900) 20%, transparent);
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%231C1410" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>') no-repeat center;
+    transition: transform .25s ease, background-color .2s ease;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { padding: 0 64px 24px 0; color: var(--ink-600); font-size: 15px; }
+
+  /* ---------- Footer ---------- */
+  .footer { background: var(--ink-900); color: var(--cream-50); border-radius: 40px 40px 0 0; margin-top: 48px; }
+  .footer__inner { padding: 72px 0 40px; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 48px; }
+  .footer .logo { color: var(--cream-50); }
+  .footer__about { font-size: 14px; color: color-mix(in srgb, var(--cream-50) 60%, transparent); max-width: 34ch; margin-top: 16px; }
+  .footer h4 { font-family: var(--font-display); font-weight: 500; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 20px; color: color-mix(in srgb, var(--cream-50) 70%, transparent); }
+  .footer ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .footer a { color: var(--cream-50); text-decoration: none; font-size: 15px; transition: color .2s ease; }
+  .footer a:hover, .footer a:focus-visible { color: var(--brand-500); }
+  .footer__bottom {
+    border-top: 1px solid color-mix(in srgb, var(--cream-50) 12%, transparent);
+    padding: 24px 0 40px; display: flex; justify-content: space-between; gap: 24px;
+    font-size: 13px; color: color-mix(in srgb, var(--cream-50) 50%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rings span { animation: none; }
+    .btn-primary:hover, .btn-inverse:hover, .card:hover { transform: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1100px) {
+    .container { padding: 0 32px; }
+    .nav { display: none; }
+    .hero__grid, .sound .container, .faq__grid { grid-template-columns: 1fr; }
+    .hero__media, .sound__scale { max-width: 520px; margin-inline: auto; }
+    .products__grid { grid-template-columns: 1fr 1fr; }
+    .steel__grid { grid-template-columns: 1fr; justify-items: center; gap: 40px; }
+    .steel__col--right .feature { margin-left: 0; text-align: left; }
+    .steel__col--right .feature__title { flex-direction: row; }
+    .steel__media { width: min(420px, 70vw); }
+    .delivery__inner { grid-template-columns: 1fr; padding: 48px 32px; }
+    .delivery__media { display: none; }
+    .step { cursor: default; }
+    .step:not(.is-active) { opacity: 1; }
+    .step__img {
+      display: block; position: relative;
+      aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden;
+      margin-top: 14px;
+    }
+    .step__img .caption { left: 14px; bottom: 14px; right: 14px; }
+    .faq__media { position: static; max-width: 520px; }
+  }
+  @media (max-width: 640px) {
+    .container { padding: 0 20px; }
+    section { padding: 64px 0; }
+    .header__phone { display: none; }
+    .hero { padding: 32px 0 64px; }
+    .hero__points { flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .point-item { flex: 0 0 auto; }
+    .products__grid, .firsthand__grid { grid-template-columns: 1fr; }
+    .section-head { flex-direction: column; align-items: flex-start; }
+    .cta-band__inner { padding: 56px 24px; }
+    .footer__inner { grid-template-columns: 1fr 1fr; }
+    .faq details p { padding-right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG-заглушка ханга: заменяется на фото при сборке проекта -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <radialGradient id="pan-body" cx="42%" cy="34%" r="75%">
+      <stop offset="0%" stop-color="#DCC9B6"/>
+      <stop offset="38%" stop-color="#A98F76"/>
+      <stop offset="72%" stop-color="#5E4936"/>
+      <stop offset="100%" stop-color="#2E2117"/>
+    </radialGradient>
+    <radialGradient id="pan-dimple" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#2E2117"/>
+      <stop offset="55%" stop-color="#6B543E"/>
+      <stop offset="100%" stop-color="#8F775F"/>
+    </radialGradient>
+    <g id="handpan">
+      <circle cx="100" cy="100" r="98" fill="url(#pan-body)"/>
+      <circle cx="100" cy="100" r="24" fill="url(#pan-dimple)"/>
+      <circle cx="100" cy="100" r="24" fill="none" stroke="#2E2117" stroke-opacity=".35"/>
+      <g fill="url(#pan-dimple)" stroke="#2E2117" stroke-opacity=".25">
+        <ellipse cx="100" cy="34"  rx="13" ry="10"/>
+        <ellipse cx="147" cy="53"  rx="13" ry="10" transform="rotate(45 147 53)"/>
+        <ellipse cx="166" cy="100" rx="10" ry="13"/>
+        <ellipse cx="147" cy="147" rx="13" ry="10" transform="rotate(-45 147 147)"/>
+        <ellipse cx="100" cy="166" rx="13" ry="10"/>
+        <ellipse cx="53"  cy="147" rx="13" ry="10" transform="rotate(45 53 147)"/>
+        <ellipse cx="34"  cy="100" rx="10" ry="13"/>
+        <ellipse cx="53"  cy="53"  rx="13" ry="10" transform="rotate(-45 53 53)"/>
+      </g>
+      <ellipse cx="76" cy="62" rx="46" ry="30" fill="#FFF" opacity=".10" transform="rotate(-28 76 62)"/>
+    </g>
+  </defs>
+</svg>
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="logo" href="#">Omn<b>i</b>a</a>
+    <nav class="nav" aria-label="Основная навигация">
+      <a href="#catalog">Каталог</a>
+      <a href="#sound">Подбор звука</a>
+      <a href="#craft">Мастерская</a>
+      <a href="#delivery">Доставка</a>
+      <a href="#faq">Вопросы</a>
+    </nav>
+    <div class="header__actions">
+      <a class="header__phone" href="tel:+79000000000">+7 900 000-00-00</a>
+      <button class="icon-btn" aria-label="Корзина">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </button>
+      <button class="btn-login">Войти</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. Hero -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div>
+        <div class="hero__points">
+          <div class="point-item">
+            <strong>Долговечность</strong>
+            <p>Звучание нот в 3 раза дольше, чем у аналогов</p>
+          </div>
+          <div class="point-item">
+            <strong>Нержавеющая сталь</strong>
+            <p>Не боится коррозии и не требует масел</p>
+          </div>
+          <div class="point-item">
+            <strong>Ручная настройка</strong>
+            <p>Держит строй даже при активной игре</p>
+          </div>
+        </div>
+        <h1 class="hero__title">Ханги, резонирующие с&nbsp;ритмом <em>вашей души</em></h1>
+        <p class="hero__sub">
+          Подбираем инструмент под ваш слух и практику — от первого
+          прослушивания до бережной доставки до двери. Каждый ханг
+          настроен вручную и звучит в три раза дольше аналогов.
+        </p>
+        <div class="hero__cta">
+          <button class="btn-primary">
+            Выбрать звук
+            <span class="btn__circle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </button>
+          <button class="btn-secondary">Каталог инструментов</button>
+        </div>
+      </div>
+      <div class="hero__media">
+        <div class="rings" aria-hidden="true"><span></span><span></span><span></span></div>
+        <svg class="hero__photo" viewBox="0 0 200 200" role="img" aria-label="Ханг ручной работы из нержавеющей стали"><use href="#handpan"/></svg>
+        <div class="hero__badge">
+          <button class="play" aria-label="Послушать звучание">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div><strong>Послушать звучание</strong><small>Танцующие волны · D Kurd</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Цитата -->
+  <section class="quote">
+    <div class="container">
+      <p>Ханг — не просто инструмент, а <em>проводник в мир тонких вибраций</em>, созданный для тех, кто слышит музыку между нот и чувствует её <em>каждой клеткой тела</em></p>
+    </div>
+  </section>
+
+  <!-- 3. Популярные инструменты -->
+  <section id="catalog">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="tag">В наличии</span>
+          <h2 class="section-title">Популярные инструменты</h2>
+        </div>
+        <button class="btn-secondary">Весь каталог</button>
+      </div>
+      <div class="products__grid">
+
+        <article class="card">
+          <div class="card__media" data-slider data-interval="6000">
+            <div data-slides>
+              <div class="card__slide is-active">
+                <svg viewBox="0 0 320 240" aria-label="Видео: игра на ханге Танцующие волны"><rect width="320" height="240" fill="#241A12"/><use href="#handpan" transform="translate(70 30) scale(0.9)"/></svg>
+                <button class="card__bigplay" aria-label="Смотреть видео"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+              </div>
+              <div class="card__slide">
+                <svg viewBox="0 0 320 240" aria-label="Фото ханга"><rect width="320" height="240" fill="#E7E1D8"/><use href="#handpan" transform="translate(60 20)"/></svg>
+              </div>
+              <div class="card__slide">
+                <svg viewBox="0 0 320 240" aria-label="Фото ханга крупным планом"><rect width="320" height="240" fill="#DDD5C9"/><use href="#handpan" transform="translate(10 -50) scale(1.5)"/></svg>
+              </div>
+            </div>
+            <div class="dots" data-dots>
+              <button class="is-active" aria-label="Видео"></button>
+              <button aria-label="Фото 1"></button>
+              <button aria-label="Фото 2"></button>
+            </div>
+          </div>
+          <div class="card__body">
+            <div class="card__toprow">
+              <button class="card__chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Поиграть на ханге</button>
+              <div class="card__social">
+                <a href="#" aria-label="Спросить в Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z"/></svg></a>
+                <a href="#" aria-label="Спросить в WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z"/></svg></a>
+              </div>
+            </div>
+            <h3 class="card__name">Танцующие волны</h3>
+            <p class="card__spec">Ритмичное, переливчатое звучание</p>
+            <p class="card__tuning"><span>Строй ·</span> D Kurd — D3/A3</p>
+            <div class="card__price-row"><span class="card__price">32 000 ₽</span><s class="card__old">36 000 ₽</s></div>
+            <p class="card__meta">9 нот · 2 кг 300 г · диаметр 53 см · нержавеющая сталь</p>
+            <div class="card__foot">
+              <button class="btn-outline card__more">Подробнее</button>
+              <button class="btn-cart" aria-label="Добавить в корзину"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media" data-slider data-interval="6000">
+            <div data-slides>
+              <div class="card__slide is-active">
+                <svg viewBox="0 0 320 240" aria-label="Видео: игра на ханге Утренний туман"><rect width="320" height="240" fill="#241A12"/><use href="#handpan" transform="translate(70 30) scale(0.9)"/></svg>
+                <button class="card__bigplay" aria-label="Смотреть видео"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+              </div>
+              <div class="card__slide">
+                <svg viewBox="0 0 320 240" aria-label="Фото ханга"><rect width="320" height="240" fill="#E7E1D8"/><use href="#handpan" transform="translate(60 20)"/></svg>
+              </div>
+              <div class="card__slide">
+                <svg viewBox="0 0 320 240" aria-label="Фото ханга крупным планом"><rect width="320" height="240" fill="#DDD5C9"/><use href="#handpan" transform="translate(10 -50) scale(1.5)"/></svg>
+              </div>
+            </div>
+            <div class="dots" data-dots>
+              <button class="is-active" aria-label="Видео"></button>
+              <button aria-label="Фото 1"></button>
+              <button aria-label="Фото 2"></button>
+            </div>
+          </div>
+          <div class="card__body">
+            <div class="card__toprow">
+              <button class="card__chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Поиграть на ханге</button>
+              <div class="card__social">
+                <a href="#" aria-label="Спросить в Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z"/></svg></a>
+                <a href="#" aria-label="Спросить в WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z"/></svg></a>
+              </div>
+            </div>
+            <h3 class="card__name">Утренний туман</h3>
+            <p class="card__spec">Глубокое, медитативное звучание</p>
+            <p class="card__tuning"><span>Строй ·</span> Celtic Minor — D3/A3</p>
+            <div class="card__price-row"><span class="card__price">32 000 ₽</span><s class="card__old">36 000 ₽</s></div>
+            <p class="card__meta">9 нот · 2 кг 300 г · диаметр 53 см · нержавеющая сталь</p>
+            <div class="card__foot">
+              <button class="btn-outline card__more">Подробнее</button>
+              <button class="btn-cart" aria-label="Добавить в корзину"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media" data-slider data-interval="6000">
+            <div data-slides>
+              <div class="card__slide is-active">
+                <svg viewBox="0 0 320 240" aria-label="Видео: игра на ханге Тёплое течение"><rect width="320" height="240" fill="#241A12"/><use href="#handpan" transform="translate(70 30) scale(0.9)"/></svg>
+                <button class="card__bigplay" aria-label="Смотреть видео"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+              </div>
+              <div class="card__slide">
+                <svg viewBox="0 0 320 240" aria-label="Фото ханга"><rect width="320" height="240" fill="#E7E1D8"/><use href="#handpan" transform="translate(60 20)"/></svg>
+              </div>
+              <div class="card__slide">
+                <svg viewBox="0 0 320 240" aria-label="Фото ханга крупным планом"><rect width="320" height="240" fill="#DDD5C9"/><use href="#handpan" transform="translate(10 -50) scale(1.5)"/></svg>
+              </div>
+            </div>
+            <div class="dots" data-dots>
+              <button class="is-active" aria-label="Видео"></button>
+              <button aria-label="Фото 1"></button>
+              <button aria-label="Фото 2"></button>
+            </div>
+          </div>
+          <div class="card__body">
+            <div class="card__toprow">
+              <button class="card__chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Поиграть на ханге</button>
+              <div class="card__social">
+                <a href="#" aria-label="Спросить в Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z"/></svg></a>
+                <a href="#" aria-label="Спросить в WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z"/></svg></a>
+              </div>
+            </div>
+            <h3 class="card__name">Тёплое течение</h3>
+            <p class="card__spec">Яркое, обертонное звучание</p>
+            <p class="card__tuning"><span>Строй ·</span> Hijaz — D3/A3</p>
+            <div class="card__price-row"><span class="card__price">32 000 ₽</span><s class="card__old">36 000 ₽</s></div>
+            <p class="card__meta">9 нот · 2 кг 300 г · диаметр 53 см · нержавеющая сталь</p>
+            <div class="card__foot">
+              <button class="btn-outline card__more">Подробнее</button>
+              <button class="btn-cart" aria-label="Добавить в корзину"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Подбор звука -->
+  <section id="sound" style="padding-inline: 0;">
+    <div class="sound" style="margin: 0 24px;">
+      <div class="container" style="padding-block: 96px;">
+        <div>
+          <span class="tag">Протестируйте звучание</span>
+          <h2 class="section-title">Выберите звук, который подходит именно вам</h2>
+          <div class="sound__controls">
+            <div class="field">
+              <label>Нота динга</label>
+              <div class="chips">
+                <button class="chip is-active">D3</button>
+                <button class="chip">C#3</button>
+                <button class="chip">E3</button>
+                <button class="chip">F3</button>
+                <button class="chip">G3</button>
+                <button class="chip">A3</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Строй</label>
+              <select>
+                <option>D Kurd — мягкий, медитативный</option>
+                <option>Celtic Minor — кельтский минор</option>
+                <option>Hijaz — восточный колорит</option>
+                <option>Amara — светлый, воздушный</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество нот</label>
+              <select>
+                <option>9 нот</option>
+                <option>10 нот</option>
+                <option>12 нот</option>
+                <option>14 нот</option>
+              </select>
+            </div>
+            <div class="sound__cta">
+              <button class="btn-primary">
+                Заказать этот звук
+                <span class="btn__circle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+              </button>
+              <p class="sound__hint">Нажмите на ноту на схеме, чтобы услышать её звучание. Соберём инструмент под выбранный строй.</p>
+            </div>
+          </div>
+        </div>
+        <div class="sound__scale">
+          <svg viewBox="0 0 200 200" role="img" aria-label="Схема расположения нот на ханге">
+            <use href="#handpan"/>
+            <g font-family="Jost, sans-serif" font-size="9" font-weight="500" fill="#FBF6F0" text-anchor="middle">
+              <text x="100" y="103">D3</text>
+              <text x="100" y="37">A3</text>
+              <text x="147" y="56">B3</text>
+              <text x="166" y="103">C4</text>
+              <text x="147" y="150">D4</text>
+              <text x="100" y="169">E4</text>
+              <text x="53" y="150">F4</text>
+              <text x="34" y="103">G4</text>
+              <text x="53" y="56">A4</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Нержавеющая сталь -->
+  <section id="craft">
+    <div class="container">
+      <div style="text-align:center">
+        <span class="tag">Надёжность</span>
+        <h2 class="section-title">Используем только нержавеющую сталь</h2>
+      </div>
+      <div class="steel__grid">
+        <div class="steel__col">
+          <div class="feature">
+            <h3 class="feature__title">Не подвержен коррозии</h3>
+            <p>Не требует обработки антикоррозийными маслами — переживёт репетиции у моря и игру под открытым небом.</p>
+          </div>
+          <div class="feature">
+            <h3 class="feature__title">В 3 раза дольше звучание</h3>
+            <p>По сравнению с нитрированными видами стали нота тянется дольше и затухает мягче.</p>
+          </div>
+        </div>
+        <div class="steel__media">
+          <svg viewBox="0 0 200 200" role="img" aria-label="Купол ханга из нержавеющей стали"><use href="#handpan"/></svg>
+        </div>
+        <div class="steel__col steel__col--right">
+          <div class="feature">
+            <h3 class="feature__title">Насыщенный обертонный звук</h3>
+            <p>Не дребезжит в сравнении с аналогами — при аккуратной игре обертона раскрываются полностью.</p>
+          </div>
+          <div class="feature">
+            <h3 class="feature__title">Не расстраивается при активной игре</h3>
+            <p>В 3 раза меньше жалоб на строй по сравнению с инструментами из обычной стали.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Инструменты из первых рук -->
+  <section style="padding-inline: 0;">
+    <div class="firsthand" style="margin: 0 24px;">
+      <div class="container" style="padding-block: 96px;">
+        <div class="section-head">
+          <div>
+            <span class="tag">Гарантия качества</span>
+            <h2 class="section-title">Инструменты из первых рук</h2>
+          </div>
+        </div>
+        <div class="firsthand__grid">
+          <div class="point">
+            <h3 class="point__title">Отвечаем за сохранность и качество</h3>
+            <p>Принимаем ответственность за инструмент до момента получения — проверим строй и состояние перед отправкой.</p>
+          </div>
+          <div class="point">
+            <h3 class="point__title">Индивидуальные заказы без переплаты</h3>
+            <p>Соберём инструмент под ваш строй и звукоряд без наценки за индивидуальность.</p>
+          </div>
+          <div class="point">
+            <h3 class="point__title">Цены без посредников</h3>
+            <p>Вы не оплачиваете цепочку перекупщиков — от мастерской это выгоднее и для вас, и для нас.</p>
+          </div>
+          <div class="point">
+            <h3 class="point__title">Мастерская, а не конвейер</h3>
+            <p>Делаем для людей: каждый инструмент проходит ручную настройку и отслушивается мастером.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Доставка -->
+  <section id="delivery">
+    <div class="container">
+      <div class="delivery__inner" data-delivery>
+        <div>
+          <h2 class="section-title">Как происходит доставка вашего инструмента</h2>
+          <div class="steps">
+            <button class="step is-active">
+              <span class="step__marker">01</span>
+              <span><strong>Бережно собираем</strong><p>Кладём инструмент в закрытый твёрдый кофр — он входит в стоимость.</p>
+                <span class="step__img" style="background: radial-gradient(circle at 40% 35%, #4a3a2c 0%, #2c211a 60%, #191009 100%);"><span class="caption">Инструмент укладывается в жёсткий кофр</span></span>
+              </span>
+            </button>
+            <button class="step">
+              <span class="step__marker">02</span>
+              <span><strong>Надёжно упаковываем</strong><p>Дополнительный слой защиты: плотный короб и амортизация по контуру.</p>
+                <span class="step__img" style="background: radial-gradient(circle at 55% 40%, #8a6f4d 0%, #5c4630 55%, #33241688 100%), #2c211a;"><span class="caption">Короб и амортизация по контуру</span></span>
+              </span>
+            </button>
+            <button class="step">
+              <span class="step__marker">03</span>
+              <span><strong>Отправляем удобным для вас способом</strong><p>СДЭК до двери или пункта выдачи. Трек-номер и статус — в личном кабинете.</p>
+                <span class="step__img" style="background: linear-gradient(160deg, #3a2d21 0%, #191009 70%), #191009;"><span class="caption">Передача в СДЭК: трек-номер — в личном кабинете</span></span>
+              </span>
+            </button>
+          </div>
+        </div>
+        <div class="delivery__media">
+          <div class="delivery__img is-active" style="background: radial-gradient(circle at 40% 35%, #4a3a2c 0%, #2c211a 60%, #191009 100%);">
+            <svg viewBox="0 0 200 200" style="position:absolute; inset:12%; width:76%; height:76%;"><use href="#handpan"/></svg>
+            <span class="caption">Инструмент укладывается в жёсткий кофр</span>
+          </div>
+          <div class="delivery__img" style="background: radial-gradient(circle at 55% 40%, #8a6f4d 0%, #5c4630 55%, #33241688 100%), #2c211a;">
+            <span class="caption">Короб и амортизация по контуру</span>
+          </div>
+          <div class="delivery__img" style="background: linear-gradient(160deg, #3a2d21 0%, #191009 70%), #191009;">
+            <span class="caption">Передача в СДЭК: трек-номер — в личном кабинете</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Остались вопросы -->
+  <section class="cta-band">
+    <div class="container">
+      <div class="cta-band__inner">
+        <h2 class="section-title">Остались вопросы?</h2>
+        <p class="cta-band__sub">Поможем выбрать строй, расскажем про уход и подберём инструмент под вашу практику — без спешки и навязывания.</p>
+        <button class="btn-primary">
+          Задать вопрос
+          <span class="btn__circle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. FAQ -->
+  <section id="faq">
+    <div class="container faq__grid">
+      <div class="faq__media" role="img" aria-label="Игра на ханге в мастерской"></div>
+      <div class="faq">
+        <span class="tag">FAQ</span>
+        <h2 class="section-title" style="margin-bottom: 24px;">Часто задаваемые вопросы</h2>
+        <details open>
+          <summary>Какой срок службы инструмента?</summary>
+          <p>При аккуратном обращении ханг из нержавеющей стали служит десятилетиями. Мы даём гарантию на строй и покрытие — если что-то пойдёт не так, перенастроим.</p>
+        </details>
+        <details>
+          <summary>Самые уязвимые места у ханга?</summary>
+          <p>Купол динга и края тоновых полей. Не ставьте инструмент на ребро без чехла и не играйте палочками — только руками.</p>
+        </details>
+        <details>
+          <summary>Как ухаживать за хангом?</summary>
+          <p>Протирайте микрофиброй после игры и храните в кофре. Нержавеющая сталь не требует масла — достаточно беречь от ударов.</p>
+        </details>
+        <details>
+          <summary>Можно ли играть в холодную или жаркую погоду?</summary>
+          <p>Можно. Резкие перепады температуры кратковременно влияют на высоту нот, но строй возвращается при комнатной температуре.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 10. Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__inner">
+      <div>
+        <a class="logo" href="#">Omn<b>i</b>a</a>
+        <p class="footer__about">Мастерская хангов из нержавеющей стали. Ручная настройка, честные цены, доставка по всей России.</p>
+      </div>
+      <div>
+        <h4>Магазин</h4>
+        <ul>
+          <li><a href="#catalog">Каталог</a></li>
+          <li><a href="#sound">Подбор звука</a></li>
+          <li><a href="#delivery">Доставка и оплата</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Покупателям</h4>
+        <ul>
+          <li><a href="#">Личный кабинет</a></li>
+          <li><a href="#faq">Вопросы и ответы</a></li>
+          <li><a href="#">Политика конфиденциальности</a></li>
+          <li><a href="#">Публичная оферта</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Связаться</h4>
+        <ul>
+          <li>
+            <span class="footer__label">Номер телефона</span><br>
+            <a class="footer__phone-num" href="tel:+79000000000">+7 (900) 000-00-00</a>
+          </li>
+          <li><a href="mailto:hello@omnia.ru">hello@omnia.ru</a></li>
+          <li><a href="#">Контакты</a></li>
+        </ul>
+        <p class="footer__label" style="margin-top: 20px;">Мы на связи в соцсетях</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Telegram"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z"/></svg></a>
+          <a href="#" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z"/></svg></a>
+          <a href="#" aria-label="ВКонтакте"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M13.2 17.5C7.6 17.5 4.3 13.6 4.2 7h2.8c.1 4.8 2.3 6.9 4 7.3V7h2.7v4.2c1.7-.2 3.4-2.1 4-4.2h2.7c-.5 2.6-2.3 4.5-3.6 5.3 1.3.6 3.4 2.3 4.2 5.2h-3c-.6-1.9-2.1-3.4-4.3-3.6v3.6h-.5z"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Omnia. Все права защищены.</span>
+      <span>Сделано в мастерской</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll('[data-slider]').forEach(function (root) {
+    var slides = root.querySelector('[data-slides]').children;
+    var dots = root.querySelectorAll('[data-dots] button');
+    var interval = parseInt(root.dataset.interval, 10) || 5000;
+    var current = 0;
+    var timer = null;
+
+    function go(next) {
+      slides[current].classList.remove('is-active');
+      dots[current].classList.remove('is-active');
+      current = (next + slides.length) % slides.length;
+      slides[current].classList.add('is-active');
+      dots[current].classList.add('is-active');
+    }
+    function restart() {
+      if (reduced) return;
+      clearInterval(timer);
+      timer = setInterval(function () { go(current + 1); }, interval);
+    }
+    dots.forEach(function (dot, n) {
+      dot.addEventListener('click', function () { go(n); restart(); });
+    });
+    root.addEventListener('mouseenter', function () { clearInterval(timer); });
+    root.addEventListener('mouseleave', restart);
+    restart();
+  });
+  // Доставка: шаги переключают картинку (только десктоп — на мобиле картинки статичны в каждом шаге)
+  if (window.matchMedia('(min-width: 1101px)').matches)
+  document.querySelectorAll('[data-delivery]').forEach(function (root) {
+    var steps = root.querySelectorAll('.step');
+    var imgs = root.querySelectorAll('.delivery__img');
+    var current = 0;
+    var timer = null;
+
+    function go(next) {
+      steps[current].classList.remove('is-active');
+      imgs[current].classList.remove('is-active');
+      current = (next + steps.length) % steps.length;
+      steps[current].classList.add('is-active');
+      imgs[current].classList.add('is-active');
+    }
+    function restart() {
+      if (reduced) return;
+      clearInterval(timer);
+      timer = setInterval(function () { go(current + 1); }, 5000);
+    }
+    steps.forEach(function (step, n) {
+      step.addEventListener('click', function () { go(n); restart(); });
+    });
+    root.addEventListener('mouseenter', function () { clearInterval(timer); });
+    root.addEventListener('mouseleave', restart);
+    restart();
+  });
+})();
+</script>
+</body>
+</html>
