@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice } from "@/shared/lib/format";
 import { CHECKOUT_SELECTION_KEY } from "@/shared/lib/storage-keys";
-import { SectionTitle, ArrowButton } from "@/shared/ui";
+import { SectionTitle, ArrowButton, Checkbox } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 import { Backdrop } from "./components/Backdrop";
 import { LegalLinks } from "./components/LegalLinks";
@@ -203,12 +203,7 @@ export function CheckoutPage() {
             </button>
 
             <label className="mt-5 flex cursor-pointer items-start gap-3 text-[15px]">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 size-4.5 shrink-0 cursor-pointer accent-brand"
-              />
+              <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-0.5" />
               Я согласен с политикой конфиденциальности
             </label>
 

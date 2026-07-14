@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice } from "@/shared/lib/format";
-import { Tag, SectionTitle, ArrowLink } from "@/shared/ui";
+import { Tag, SectionTitle, ArrowLink, Checkbox } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 import { CHECKOUT_SELECTION_KEY } from "@/shared/lib/storage-keys";
 
@@ -12,7 +12,6 @@ export function CartPage() {
   const { items, setQty, remove } = useCart();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const seenIds = useRef<Set<string>>(new Set());
-  const selectAllRef = useRef<HTMLInputElement>(null);
 
   // Новые товары (в т.ч. подгруженные из localStorage при гидратации) выбраны по умолчанию.
   useEffect(() => {
@@ -25,12 +24,6 @@ export function CartPage() {
       return next;
     });
   }, [items]);
-
-  useEffect(() => {
-    if (selectAllRef.current) {
-      selectAllRef.current.indeterminate = selected.size > 0 && selected.size < items.length;
-    }
-  }, [selected, items.length]);
 
   function toggleOne(productId: string) {
     setSelected((prev) => {
@@ -85,12 +78,9 @@ export function CartPage() {
           <div>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] bg-white px-6 py-4">
               <label className="flex cursor-pointer items-center gap-3 text-[15px] font-medium">
-                <input
-                  ref={selectAllRef}
-                  type="checkbox"
-                  checked={selected.size > 0 && selected.size === items.length}
-                  onChange={toggleAll}
-                  className="size-5 cursor-pointer accent-brand"
+                <Checkbox
+                  checked={selected.size === 0 ? false : selected.size === items.length ? true : "indeterminate"}
+                  onCheckedChange={toggleAll}
                 />
                 Выбрать все ({items.length})
               </label>
@@ -107,12 +97,10 @@ export function CartPage() {
             <ul className="flex flex-col gap-4">
               {items.map((item) => (
                 <li key={item.productId} className="flex flex-wrap items-center gap-4 rounded-[28px] bg-white p-6">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selected.has(item.productId)}
-                    onChange={() => toggleOne(item.productId)}
+                    onCheckedChange={() => toggleOne(item.productId)}
                     aria-label={`Выбрать «${item.name}»`}
-                    className="size-5 shrink-0 cursor-pointer accent-brand"
                   />
                   <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-paper-200">
                     <HandpanArt className="h-3/4 w-3/4" />

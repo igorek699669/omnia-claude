@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SectionTitle } from "@/shared/ui";
+import { SectionTitle, Tabs, TabsList, TabsTrigger } from "@/shared/ui";
 import { formatPrice } from "@/shared/lib/format";
 import { Backdrop } from "./Backdrop";
 import { LegalLinks } from "./LegalLinks";
@@ -62,21 +62,16 @@ export function DeliveryPicker({
 
         <SectionTitle className="text-[28px]">Оформление заказа</SectionTitle>
 
-        <div className="mt-6 flex gap-2 rounded-full bg-paper-100 p-1.5">
-          {METHODS.map((m) => (
-            <button
-              key={m.key}
-              type="button"
-              onClick={() => setMethod(m.key)}
-              className={`flex-1 cursor-pointer rounded-full px-4 py-2.5 text-sm font-medium transition-colors ${
-                method === m.key ? "bg-brand text-white" : "text-ink-600 hover:text-ink-900"
-              }`}
-            >
-              {m.label}
-              {method === m.key && m.cost != null ? ` ${formatPrice(m.cost)}` : ""}
-            </button>
-          ))}
-        </div>
+        <Tabs value={method} onValueChange={(v) => setMethod(v as (typeof METHODS)[number]["key"])} className="mt-6">
+          <TabsList>
+            {METHODS.map((m) => (
+              <TabsTrigger key={m.key} value={m.key}>
+                {m.label}
+                {method === m.key && m.cost != null ? ` ${formatPrice(m.cost)}` : ""}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         <div className="mt-5 flex items-center gap-3 rounded-input border border-ink-900/18 bg-white px-5 py-3.5">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink-600" aria-hidden>

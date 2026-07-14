@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Tag, SectionTitle, ArrowButton } from "@/shared/ui";
+import {
+  Tag,
+  SectionTitle,
+  ArrowButton,
+  RadioGroup,
+  RadioChip,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 
 const dings = ["D3", "C#3", "E3", "F3", "G3", "A3"];
@@ -23,25 +33,20 @@ export function SoundPicker() {
                 <label className="mb-2 block text-[13px] font-semibold uppercase tracking-wider text-ink-600">
                   Нота динга
                 </label>
-                <div className="flex flex-wrap gap-2.5">
+                <RadioGroup value={ding} onValueChange={setDing} className="flex flex-wrap gap-2.5">
                   {dings.map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setDing(d)}
-                      className={`cursor-pointer rounded-full border px-5 py-2.5 text-[15px] font-medium transition-colors ${
-                        d === ding
-                          ? "border-ink-900 bg-ink-900 text-paper-50"
-                          : "border-ink-900/18 hover:border-brand"
-                      }`}
-                    >
+                    <RadioChip key={d} value={d}>
                       {d}
-                    </button>
+                    </RadioChip>
                   ))}
-                </div>
+                </RadioGroup>
               </div>
 
-              <Select label="Строй" options={["D Kurd — мягкий, медитативный", "Celtic Minor — кельтский минор", "Hijaz — восточный колорит", "Amara — светлый, воздушный"]} />
-              <Select label="Количество нот" options={["9 нот", "10 нот", "12 нот", "14 нот"]} />
+              <FieldSelect
+                label="Строй"
+                options={["D Kurd — мягкий, медитативный", "Celtic Minor — кельтский минор", "Hijaz — восточный колорит", "Amara — светлый, воздушный"]}
+              />
+              <FieldSelect label="Количество нот" options={["9 нот", "10 нот", "12 нот", "14 нот"]} />
 
               <div>
                 <ArrowButton>Заказать этот звук</ArrowButton>
@@ -74,17 +79,22 @@ export function SoundPicker() {
   );
 }
 
-function Select({ label, options }: { label: string; options: string[] }) {
+function FieldSelect({ label, options }: { label: string; options: string[] }) {
   return (
     <div>
       <label className="mb-2 block text-[13px] font-semibold uppercase tracking-wider text-ink-600">
         {label}
       </label>
-      <select className="w-full max-w-[360px] cursor-pointer appearance-none rounded-input border border-ink-900/18 bg-white px-5 py-3.5 text-base">
-        {options.map((o) => (
-          <option key={o}>{o}</option>
-        ))}
-      </select>
+      <Select defaultValue={options[0]}>
+        <SelectTrigger />
+        <SelectContent>
+          {options.map((o) => (
+            <SelectItem key={o} value={o}>
+              {o}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

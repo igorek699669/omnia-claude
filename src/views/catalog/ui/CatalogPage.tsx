@@ -15,7 +15,7 @@ export function CatalogPage() {
       {/* TODO: фильтры (строй, нота динга, цена) через searchParams — см. CLAUDE.md */}
       <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} cartAction={<AddToCartButton product={p} />} />
+          <ProductCard key={p.id} product={p} cartAction={<AddToCartButton key={p.id} product={p} />} />
         ))}
       </div>
     </section>

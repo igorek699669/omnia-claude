@@ -9,6 +9,7 @@
 - **Zustand** — только корзина (`src/features/cart/model/store.ts`, persist в localStorage). Не добавлять глобальные сторы без необходимости.
 - **React Query — НЕ используется.** Данные тянутся в Server Components. Добавлять только если появится живая клиентская логика (реалтайм-наличие, сложные фильтры).
 - **React Hook Form + Zod** — формы (зависимости уже в package.json).
+- **Radix UI** — headless-примитивы для интерактивных контролов, ради клавиатурной доступности (Tab/стрелки/Escape). Обёрнуты в `src/shared/ui`: `Checkbox`, `RadioGroup`/`RadioChip`, `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent`, `Accordion`/`AccordionItem`/`AccordionTrigger`/`AccordionContent`, `Select`/`SelectTrigger`/`SelectContent`/`SelectItem`, `Dialog`/`DialogTrigger`/`DialogTitle`/`DialogClose`/`DialogContent`. Использовать их вместо самодельных чекбоксов/табов/аккордеонов/дропдаунов везде, где нужна семантика реального интерактивного контрола (не для нативных `<input>`/`<select>`, у которых уже отличная клавиатурная поддержка "из коробки", — там Radix не даёт выигрыша).
 - Планируются (см. Roadmap): **Payload CMS 3.x + PostgreSQL**, **Better Auth** (email OTP), **ЮKassa**, **СДЭК API**, **next-intl**, **Motion**.
 
 ## Архитектура: Feature-Sliced Design

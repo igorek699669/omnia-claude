@@ -22,7 +22,7 @@ export function PopularProducts() {
       </div>
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} cartAction={<AddToCartButton product={p} />} />
+          <ProductCard key={p.id} product={p} cartAction={<AddToCartButton key={p.id} product={p} />} />
         ))}
       </div>
     </section>

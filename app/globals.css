@@ -29,6 +29,37 @@ body {
   50% { transform: scale(1.035); opacity: 0.3; }
 }
 .ring-breathe { animation: breathe 6s ease-in-out infinite; }
+
+/* Radix Accordion (FAQ) */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+.animate-accordion-down { animation: accordion-down 0.25s ease-out; }
+.animate-accordion-up { animation: accordion-up 0.2s ease-out; }
+
+/* Radix Dialog (мобильное меню) */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes panel-slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-overlay-fade-in { animation: overlay-fade-in 0.2s ease-out; }
+.animate-panel-slide-in { animation: panel-slide-in 0.25s ease-out; }
+
 @media (prefers-reduced-motion: reduce) {
-  .ring-breathe { animation: none; }
+  .ring-breathe,
+  .animate-accordion-down,
+  .animate-accordion-up,
+  .animate-overlay-fade-in,
+  .animate-panel-slide-in {
+    animation: none;
+  }
 }
