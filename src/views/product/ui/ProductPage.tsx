@@ -3,7 +3,7 @@ import { getProductBySlug } from "@/entities/product";
 import { formatPrice } from "@/shared/lib/format";
 import { Tag } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
-import { AddToCartSection } from "./AddToCartSection";
+import { AddToCartSection } from "./components/AddToCartSection";
 
 export function ProductPage({ slug }: { slug: string }) {
   const product = getProductBySlug(slug);

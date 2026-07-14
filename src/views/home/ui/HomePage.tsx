@@ -1,12 +1,12 @@
-import { Hero } from "./Hero";
-import { Quote } from "./Quote";
-import { PopularProducts } from "./PopularProducts";
-import { SoundPicker } from "./SoundPicker";
-import { Steel } from "./Steel";
-import { Firsthand } from "./Firsthand";
-import { DeliverySteps } from "./DeliverySteps";
-import { CtaBand } from "./CtaBand";
-import { Faq } from "./Faq";
+import { Hero } from "./components/Hero";
+import { Quote } from "./components/Quote";
+import { PopularProducts } from "./components/PopularProducts";
+import { SoundPicker } from "./components/SoundPicker";
+import { Steel } from "./components/Steel";
+import { Firsthand } from "./components/Firsthand";
+import { DeliverySteps } from "./components/DeliverySteps";
+import { CtaBand } from "./components/CtaBand";
+import { Faq } from "./components/Faq";
 
 export function HomePage() {
   return (

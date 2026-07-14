@@ -7,9 +7,9 @@ import { formatPrice } from "@/shared/lib/format";
 import { CHECKOUT_SELECTION_KEY } from "@/shared/lib/storage-keys";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
-import { Backdrop } from "./Backdrop";
-import { LegalLinks } from "./LegalLinks";
-import { DeliveryPicker, type Delivery } from "./DeliveryPicker";
+import { Backdrop } from "./components/Backdrop";
+import { LegalLinks } from "./components/LegalLinks";
+import { DeliveryPicker, type Delivery } from "./components/DeliveryPicker";
 
 type Step = "form" | "code" | "done";
 
