@@ -12,5 +12,21 @@ services:
     volumes:
       - omnia-db-data:/var/lib/postgresql/data
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: omnia-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env.local
+    environment:
+      # Внутри сети compose база доступна как "db:5432", а не "localhost:5433"
+      DATABASE_URL: postgres://postgres:postgres@db:5432/omnia
+    ports:
+      - "3000:3000"
+
 volumes:
   omnia-db-data:
