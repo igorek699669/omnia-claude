@@ -10,7 +10,8 @@
 - **React Query — НЕ используется.** Данные тянутся в Server Components. Добавлять только если появится живая клиентская логика (реалтайм-наличие, сложные фильтры).
 - **React Hook Form + Zod** — формы (зависимости уже в package.json).
 - **Radix UI** — headless-примитивы для интерактивных контролов, ради клавиатурной доступности (Tab/стрелки/Escape). Обёрнуты в `src/shared/ui`: `Checkbox`, `RadioGroup`/`RadioChip`, `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent`, `Accordion`/`AccordionItem`/`AccordionTrigger`/`AccordionContent`, `Select`/`SelectTrigger`/`SelectContent`/`SelectItem`, `Dialog`/`DialogTrigger`/`DialogTitle`/`DialogClose`/`DialogContent`. Использовать их вместо самодельных чекбоксов/табов/аккордеонов/дропдаунов везде, где нужна семантика реального интерактивного контрола (не для нативных `<input>`/`<select>`, у которых уже отличная клавиатурная поддержка "из коробки", — там Radix не даёт выигрыша).
-- Планируются (см. Roadmap): **Payload CMS 3.x + PostgreSQL**, **Better Auth** (email OTP), **ЮKassa**, **СДЭК API**, **next-intl**, **Motion**.
+- **Better Auth, email OTP** — подключено раньше остального Roadmap (см. ниже), опережая порядок. Конфиг сервера — `auth.ts` в корне (бэкенд, не FSD, как и будущий `payload/`), клиент — `src/shared/lib/auth-client.ts` (`authClient`, `useSession`, `signOut`). Код отправляется через SMTP (`nodemailer`, настройки в `.env.local`). Своя таблица пользователей в Postgres — при появлении Payload админы останутся в его собственной auth, не смешивать.
+- Планируются (см. Roadmap): **Payload CMS 3.x + PostgreSQL** (сейчас Postgres используется только под Better Auth, без Payload), **ЮKassa**, **СДЭК API**, **next-intl**, **Motion**.
 
 ## Архитектура: Feature-Sliced Design
 
@@ -56,13 +57,12 @@ Figma MCP на Starter-плане быстро упирается в лимит 
 - Градиентные фоны в DeliverySteps и Faq — заменить на фото процесса упаковки и мастерской.
 - `entities/product/api/mock.ts` — мок-каталог. Заменить на Payload Local API.
 - Телефон +7 900 000-00-00, email, ссылки соцсетей — плейсхолдеры.
-- Заказы в ProfilePage — моки.
-- AuthPage — UI-флоу без реальной сессии (шаги email → код → успех уже соответствуют макету Figma).
+- Заказы в ProfilePage — моки (пока нет `orders` в Payload).
 
 ## Roadmap (порядок согласован)
 
 1. **Payload CMS 3.x + Postgres** — встроить в это же Next-приложение (`payload/` в корне). Коллекции: `products` (name, slug, soundCharacter, scale, scaleNotes, price, oldPrice, notesCount, weightGrams, diameterCm, material, inStock, media[], video), `orders`, `categories`, `media`. У полей контента включать `localized: true` (задел под i18n). Заменить mock.ts на Local API (без HTTP).
-2. **Better Auth, email OTP** — плагин `emailOTP`. ВАЖНО: покупатели живут в Better Auth (своя таблица в том же Postgres), админы — в родной auth Payload. `orders.customerId` ссылается на Better Auth user. Телефонный вход (SMS/Flash Call) — отложен: в РФ SMS платные, добавить позже плагином `phoneNumber`.
+2. **Better Auth, email OTP** — ✅ подключено (`auth.ts`, плагин `emailOTP`, SMTP через `nodemailer`). Когда появится Payload (шаг 1), `orders.customerId` будет ссылаться на Better Auth user; админы — в родной auth Payload, не смешивать. Телефонный вход (SMS/Flash Call) — отложен: в РФ SMS платные, добавить позже плагином `phoneNumber`.
 3. **ЮKassa** — Server Action создаёт заказ (pending) → создание платежа → redirect → вебхук `payment.succeeded` в `app/api/webhooks/yookassa` (проверка подписи, идемпотентность, сумма проверяется на сервере).
 4. **СДЭК API v2** — калькулятор тарифа на чекауте (вес/габариты из product), виджет выбора ПВЗ; после оплаты — регистрация отправления (hook `afterChange` в Payload), трек-номер в заказ; вебхуки статусов + fallback-поллинг. Профиль показывает статус и трек.
 5. **next-intl** — роутинг `/ru` `/en`, запуск только с ru. Строки выносить в словари сразу.
@@ -73,9 +73,13 @@ Figma MCP на Starter-плане быстро упирается в лимит 
 
 ```bash
 npm install        # первый запуск
+cp .env.example .env.local   # заполнить DATABASE_URL и SMTP_* — см. описания в файле
+npm run auth:migrate  # один раз после того, как DATABASE_URL указывает на реальный Postgres — создаёт таблицы Better Auth
 npm run dev        # http://localhost:3000
 npm run build      # проверка типов + сборка
 ```
+
+Без `DATABASE_URL`/SMTP-переменных в `.env.local` сайт работает, но `/auth` не сможет отправить код (Better Auth падает на подключении к БД). `BETTER_AUTH_SECRET` уже сгенерирован в `.env.local` — трогать не нужно, только `DATABASE_URL` и `SMTP_*`.
 
 ## Конвенции
 

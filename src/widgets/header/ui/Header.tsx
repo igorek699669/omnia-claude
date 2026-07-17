@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/shared/ui";
+import { useSession, signOut } from "@/shared/lib/auth-client";
 
 const nav = [
   { href: "/catalog", label: "Каталог" },
@@ -16,6 +17,7 @@ export function Header() {
   const items = useCart((s) => s.items);
   const count = cartCount(items);
   const [open, setOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -53,12 +55,29 @@ export function Header() {
                 </span>
               )}
             </Link>
-            <Link
-              href="/auth"
-              className="rounded-full bg-ink-900 px-5.5 py-2.5 text-[15px] font-medium text-paper-50 transition-colors hover:bg-brand-dark"
-            >
-              Войти
-            </Link>
+            {session ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className="hidden text-[15px] font-medium hover:text-brand-dark sm:block"
+                >
+                  {session.user.email}
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="cursor-pointer rounded-full bg-ink-900 px-5.5 py-2.5 text-[15px] font-medium text-paper-50 transition-colors hover:bg-brand-dark"
+                >
+                  Выйти
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/auth"
+                className="rounded-full bg-ink-900 px-5.5 py-2.5 text-[15px] font-medium text-paper-50 transition-colors hover:bg-brand-dark"
+              >
+                Войти
+              </Link>
+            )}
             <button
               aria-label={open ? "Закрыть меню" : "Меню"}
               onClick={() => setOpen((v) => !v)}
@@ -98,6 +117,28 @@ export function Header() {
                 </Link>
               </li>
             ))}
+            <li className="mt-3 border-t border-ink-900/10 pt-5">
+              {session ? (
+                <div className="flex flex-col gap-4">
+                  <Link href="/profile" onClick={() => setOpen(false)} className="block text-lg font-medium">
+                    {session.user.email}
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setOpen(false);
+                    }}
+                    className="cursor-pointer text-left text-lg font-medium text-ink-600"
+                  >
+                    Выйти
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth" onClick={() => setOpen(false)} className="block text-lg font-medium">
+                  Войти
+                </Link>
+              )}
+            </li>
           </ul>
         </nav>
       </DialogContent>

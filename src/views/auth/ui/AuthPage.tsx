@@ -1,38 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
+import { authClient, useSession } from "@/shared/lib/auth-client";
 
 type Step = "email" | "code" | "done";
 
-/**
- * UI-флоу авторизации по коду из письма (по макету Figma: Авторизация -> Ввод кода).
- * TODO: подключить Better Auth (emailOTP plugin) — см. CLAUDE.md -> Roadmap.
- */
+const ERROR_MESSAGES: Record<string, string> = {
+  INVALID_OTP: "Неверный код — проверьте и попробуйте ещё раз",
+  OTP_EXPIRED: "Код истёк — запросите новый",
+  TOO_MANY_ATTEMPTS: "Слишком много попыток — запросите новый код",
+};
+
 export function AuthPage() {
+  const router = useRouter();
+  const { data: session } = useSession();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  function submitEmail(e: React.FormEvent) {
+  useEffect(() => {
+    if (session) router.replace("/profile");
+  }, [session, router]);
+
+  async function submitEmail(e: React.FormEvent) {
     e.preventDefault();
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       setError("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз");
       return;
     }
     setError(null);
-    setStep("code"); // TODO: await authClient.emailOtp.sendVerificationOtp({ email })
+    setPending(true);
+    const { error: sendError } = await authClient.emailOtp.sendVerificationOtp({
+      email,
+      type: "sign-in",
+    });
+    setPending(false);
+    if (sendError) {
+      setError(ERROR_MESSAGES[sendError.code ?? ""] ?? "Не получилось отправить код — попробуйте ещё раз");
+      return;
+    }
+    setStep("code");
   }
 
-  function submitCode(e: React.FormEvent) {
+  async function submitCode(e: React.FormEvent) {
     e.preventDefault();
     if (code.trim().length !== 6) {
       setError("Код состоит из 6 цифр");
       return;
     }
     setError(null);
-    setStep("done"); // TODO: await authClient.signIn.emailOtp({ email, otp: code })
+    setPending(true);
+    const { error: signInError } = await authClient.signIn.emailOtp({ email, otp: code });
+    setPending(false);
+    if (signInError) {
+      setError(ERROR_MESSAGES[signInError.code ?? ""] ?? "Не получилось войти — попробуйте ещё раз");
+      return;
+    }
+    setStep("done");
   }
 
   return (
@@ -54,7 +82,9 @@ export function AuthPage() {
           />
           {error && <p className="mt-3 text-sm text-brand-dark">{error}</p>}
           <div className="mt-6">
-            <ArrowButton type="submit">Получить код</ArrowButton>
+            <ArrowButton type="submit" disabled={pending}>
+              {pending ? "Отправляем…" : "Получить код"}
+            </ArrowButton>
           </div>
         </form>
       )}
@@ -78,10 +108,16 @@ export function AuthPage() {
           />
           {error && <p className="mt-3 text-sm text-brand-dark">{error}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-5">
-            <ArrowButton type="submit">Войти</ArrowButton>
+            <ArrowButton type="submit" disabled={pending}>
+              {pending ? "Проверяем…" : "Войти"}
+            </ArrowButton>
             <button
               type="button"
-              onClick={() => setStep("email")}
+              onClick={() => {
+                setStep("email");
+                setError(null);
+                setCode("");
+              }}
               className="cursor-pointer border-b border-ink-900/25 py-2 text-[15px] font-medium text-ink-600 transition-colors hover:border-brand hover:text-ink-900"
             >
               Изменить почту
@@ -98,9 +134,7 @@ export function AuthPage() {
             </svg>
           </div>
           <SectionTitle className="mt-6">Вы вошли</SectionTitle>
-          <p className="mt-3 text-ink-600">
-            Это заглушка UI-флоу — реальная сессия появится после подключения Better Auth.
-          </p>
+          <p className="mt-3 text-ink-600">Переходим в личный кабинет…</p>
         </div>
       )}
     </section>

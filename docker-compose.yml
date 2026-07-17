@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    container_name: omnia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: omnia
+    ports:
+      - "5433:5432"
+    volumes:
+      - omnia-db-data:/var/lib/postgresql/data
+
+volumes:
+  omnia-db-data:
