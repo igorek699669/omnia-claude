@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
-import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/shared/ui";
+import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent } from "@/shared/ui";
 import { useSession, signOut } from "@/shared/lib/auth-client";
 
 const nav = [
@@ -56,20 +56,30 @@ export function Header() {
               )}
             </Link>
             {session ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/profile"
-                  className="hidden text-[15px] font-medium hover:text-brand-dark sm:block"
-                >
-                  {session.user.email}
-                </Link>
-                <button
-                  onClick={() => signOut()}
-                  className="cursor-pointer rounded-full bg-ink-900 px-5.5 py-2.5 text-[15px] font-medium text-paper-50 transition-colors hover:bg-brand-dark"
-                >
-                  Выйти
-                </button>
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    aria-label="Аккаунт"
+                    className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15 transition-colors hover:border-brand hover:bg-paper-100"
+                  >
+                    <UserIcon />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <Link
+                    href="/profile"
+                    className="block rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-paper-100"
+                  >
+                    Личный кабинет
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="block w-full cursor-pointer rounded-xl px-4 py-3 text-left text-[15px] font-medium text-ink-600 transition-colors hover:bg-paper-100"
+                  >
+                    Выйти
+                  </button>
+                </PopoverContent>
+              </Popover>
             ) : (
               <Link
                 href="/auth"
@@ -143,5 +153,14 @@ export function Header() {
         </nav>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+    </svg>
   );
 }

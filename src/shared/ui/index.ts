@@ -7,3 +7,4 @@ export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./Accordion";
 export { Select, SelectTrigger, SelectContent, SelectItem } from "./Select";
 export { Dialog, DialogTrigger, DialogTitle, DialogClose, DialogContent } from "./Dialog";
+export { Popover, PopoverTrigger, PopoverContent } from "./Popover";
