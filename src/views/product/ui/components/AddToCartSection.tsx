@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useCart } from "@/features/cart";
 import { ArrowButton } from "@/shared/ui";
 import type { Product } from "@/entities/product";
@@ -19,7 +20,14 @@ export function AddToCartSection({ product }: { product: Product }) {
           В корзине — оформить заказ
         </Link>
       ) : (
-        <ArrowButton onClick={() => add(product)}>Добавить в корзину</ArrowButton>
+        <ArrowButton
+          onClick={() => {
+            add(product);
+            toast.success(`«${product.name}» добавлен в корзину`);
+          }}
+        >
+          Добавить в корзину
+        </ArrowButton>
       )}
       <a href="#" className="border-b border-ink-900/25 py-2 text-base font-medium transition-colors hover:border-brand hover:text-brand-dark">
         Спросить в Telegram

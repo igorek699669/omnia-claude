@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
 import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent } from "@/shared/ui";
 import { useSession, signOut } from "@/shared/lib/auth-client";
@@ -18,6 +19,15 @@ export function Header() {
   const count = cartCount(items);
   const [open, setOpen] = useState(false);
   const { data: session } = useSession();
+
+  async function handleSignOut() {
+    const { error } = await signOut();
+    if (error) {
+      toast.error("Не получилось выйти — попробуйте ещё раз");
+      return;
+    }
+    toast.success("Вы вышли");
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -73,7 +83,7 @@ export function Header() {
                     Личный кабинет
                   </Link>
                   <button
-                    onClick={() => signOut()}
+                    onClick={handleSignOut}
                     className="block w-full cursor-pointer rounded-xl px-4 py-3 text-left text-[15px] font-medium text-ink-600 transition-colors hover:bg-paper-100"
                   >
                     Выйти
@@ -135,7 +145,7 @@ export function Header() {
                   </Link>
                   <button
                     onClick={() => {
-                      signOut();
+                      handleSignOut();
                       setOpen(false);
                     }}
                     className="cursor-pointer text-left text-lg font-medium text-ink-600"

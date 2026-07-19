@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm, Controller, type UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice } from "@/shared/lib/format";
@@ -76,6 +77,7 @@ export function CheckoutPage() {
   function submitEmailCode() {
     setEmailConfirmed(true);
     setStep("form"); // TODO: await authClient.signIn.emailOtp({ email, otp: emailCodeForm.getValues("code") })
+    toast.success("Почта подтверждена");
   }
 
   function submitOrder() {

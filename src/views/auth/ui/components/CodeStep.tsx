@@ -3,6 +3,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
 import { authClient } from "@/shared/lib/auth-client";
@@ -32,12 +33,14 @@ export function CodeStep({
       const { error } = await authClient.signIn.emailOtp({ email, otp });
       if (error) throw error;
     },
-    onSuccess: onVerified,
+    onSuccess: () => {
+      toast.success("Вы вошли");
+      onVerified();
+    },
+    onError: (error) => {
+      toast.error(errorMessage(error, "Не получилось войти — попробуйте ещё раз"));
+    },
   });
-
-  const error =
-    form.formState.errors.code?.message ??
-    (verifyOtp.error ? errorMessage(verifyOtp.error, "Не получилось войти — попробуйте ещё раз") : null);
 
   return (
     <form onSubmit={form.handleSubmit((values) => verifyOtp.mutate(values.code))} noValidate>
@@ -62,7 +65,9 @@ export function CodeStep({
           />
         )}
       />
-      {error && <p className="mt-3 text-sm text-brand-dark">{error}</p>}
+      {form.formState.errors.code && (
+        <p className="mt-3 text-sm text-brand-dark">{form.formState.errors.code.message}</p>
+      )}
       <div className="mt-6 flex flex-wrap items-center gap-5">
         <ArrowButton type="submit" disabled={verifyOtp.isPending}>
           {verifyOtp.isPending ? "Проверяем…" : "Войти"}

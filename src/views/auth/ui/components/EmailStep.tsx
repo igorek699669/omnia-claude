@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
 import { authClient } from "@/shared/lib/auth-client";
@@ -25,12 +26,14 @@ export function EmailStep({ onSent }: { onSent: (email: string) => void }) {
       if (error) throw error;
       return email;
     },
-    onSuccess: onSent,
+    onSuccess: (email) => {
+      toast.success(`Код отправлен на ${email}`);
+      onSent(email);
+    },
+    onError: (error) => {
+      toast.error(errorMessage(error, "Не получилось отправить код — попробуйте ещё раз"));
+    },
   });
-
-  const error =
-    form.formState.errors.email?.message ??
-    (sendOtp.error ? errorMessage(sendOtp.error, "Не получилось отправить код — попробуйте ещё раз") : null);
 
   return (
     <form onSubmit={form.handleSubmit((values) => sendOtp.mutate(values.email))} noValidate>
@@ -45,7 +48,9 @@ export function EmailStep({ onSent }: { onSent: (email: string) => void }) {
         className="mt-8 w-full rounded-input border border-ink-900/18 bg-white px-5 py-4 text-lg outline-none transition-colors focus:border-brand"
         {...form.register("email")}
       />
-      {error && <p className="mt-3 text-sm text-brand-dark">{error}</p>}
+      {form.formState.errors.email && (
+        <p className="mt-3 text-sm text-brand-dark">{form.formState.errors.email.message}</p>
+      )}
       <div className="mt-6">
         <ArrowButton type="submit" disabled={sendOtp.isPending}>
           {sendOtp.isPending ? "Отправляем…" : "Получить код"}
