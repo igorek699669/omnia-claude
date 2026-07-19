@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16
+    container_name: omnia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-omnia}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - omnia-db-data:/var/lib/postgresql/data
+
+  app:
+    image: ghcr.io/igorek699669/omnia-claude:latest
+    container_name: omnia-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env.local
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
+    ports:
+      - "3000:3000"
+
+  # Отдельный тег из стадии "builder" — там есть devDependencies и CLI Better Auth,
+  # которых нет в финальном рантайм-образе ("latest").
+  # Запуск: docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
+  migrate:
+    image: ghcr.io/igorek699669/omnia-claude:migrate
+    container_name: omnia-migrate
+    depends_on:
+      - db
+    env_file:
+      - .env.local
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
+    entrypoint: ["npx", "better-auth", "migrate", "-y"]
+    profiles: ["tools"]
+
+volumes:
+  omnia-db-data:
