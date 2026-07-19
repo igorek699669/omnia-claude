@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Jost, Golos_Text } from "next/font/google";
 import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
+import { QueryProvider } from "@/shared/lib/query-provider";
 import "./globals.css";
 
 const jost = Jost({
@@ -26,9 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${jost.variable} ${golos.variable}`}>
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <QueryProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
   );
