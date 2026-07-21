@@ -24,8 +24,10 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
     ports:
       - "3000:3000"
+    volumes:
+      - omnia-media-data:/app/media
 
-  # Отдельный тег из стадии "builder" — там есть devDependencies и CLI Better Auth,
+  # Отдельный тег из стадии "builder" — там есть devDependencies и CLI Better Auth/Payload,
   # которых нет в финальном рантайм-образе ("latest").
   # Запуск: docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
   migrate:
@@ -37,8 +39,9 @@ services:
       - .env.local
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
-    entrypoint: ["npx", "better-auth", "migrate", "-y"]
+    entrypoint: ["sh", "docker/migrate.sh"]
     profiles: ["tools"]
 
 volumes:
   omnia-db-data:
+  omnia-media-data:

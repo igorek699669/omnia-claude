@@ -3,8 +3,8 @@ import { getProducts, ProductCard } from "@/entities/product";
 import { AddToCartButton } from "@/features/cart";
 import { Tag, SectionTitle } from "@/shared/ui";
 
-export function PopularProducts() {
-  const products = getProducts();
+export async function PopularProducts() {
+  const products = await getProducts();
 
   return (
     <section id="catalog" className="mx-auto max-w-[1440px] scroll-mt-24 px-5 py-24 md:px-12">

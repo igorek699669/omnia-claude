@@ -5,8 +5,8 @@ import { Tag } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 import { AddToCartSection } from "./components/AddToCartSection";
 
-export function ProductPage({ slug }: { slug: string }) {
-  const product = getProductBySlug(slug);
+export async function ProductPage({ slug }: { slug: string }) {
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   return (

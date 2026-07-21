@@ -50,7 +50,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM
           script: |
             set -e
             mkdir -p /opt/omnia
@@ -71,6 +71,7 @@ jobs:
             cat > .env.local <<EOF
             BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
             BETTER_AUTH_URL=${BETTER_AUTH_URL}
+            PAYLOAD_SECRET=${PAYLOAD_SECRET}
             SMTP_HOST=${SMTP_HOST}
             SMTP_PORT=${SMTP_PORT}
             SMTP_SECURE=${SMTP_SECURE}
@@ -90,6 +91,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_SECURE: ${{ secrets.SMTP_SECURE }}

@@ -1,8 +1,13 @@
-import type { Product } from "../model/types";
+import { getPayload } from "payload";
+import config from "./payload.config";
 
-export const products: Product[] = [
+/**
+ * Одноразовый перенос трёх исходных мок-товаров (см. историю src/entities/product/api/mock.ts)
+ * в реальную БД, чтобы каталог не опустел после перехода на Payload Local API.
+ * Запуск: npm run payload:seed
+ */
+const products = [
   {
-    id: "1",
     slug: "dancing-waves",
     name: "Танцующие волны",
     soundCharacter: "Ритмичное, переливчатое звучание",
@@ -17,7 +22,6 @@ export const products: Product[] = [
     inStock: true,
   },
   {
-    id: "2",
     slug: "morning-mist",
     name: "Утренний туман",
     soundCharacter: "Глубокое, медитативное звучание",
@@ -32,7 +36,6 @@ export const products: Product[] = [
     inStock: true,
   },
   {
-    id: "3",
     slug: "warm-current",
     name: "Тёплое течение",
     soundCharacter: "Яркое, обертонное звучание",
@@ -48,10 +51,29 @@ export const products: Product[] = [
   },
 ];
 
-export function getProducts(): Product[] {
-  return products;
+async function seed() {
+  const payload = await getPayload({ config });
+
+  for (const product of products) {
+    const existing = await payload.find({
+      collection: "products",
+      where: { slug: { equals: product.slug } },
+      limit: 1,
+    });
+
+    if (existing.docs.length > 0) {
+      console.log(`Пропущено (уже есть): ${product.slug}`);
+      continue;
+    }
+
+    await payload.create({ collection: "products", data: product });
+    console.log(`Создано: ${product.slug}`);
+  }
+
+  process.exit(0);
 }
 
-export function getProductBySlug(slug: string): Product | undefined {
-  return products.find((p) => p.slug === slug);
-}
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

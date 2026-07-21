@@ -2,8 +2,8 @@ import { getProducts, ProductCard } from "@/entities/product";
 import { AddToCartButton } from "@/features/cart";
 import { Tag, SectionTitle } from "@/shared/ui";
 
-export function CatalogPage() {
-  const products = getProducts();
+export async function CatalogPage() {
+  const products = await getProducts();
 
   return (
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
