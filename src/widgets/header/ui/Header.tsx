@@ -32,7 +32,7 @@ export function Header() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <header className="sticky top-0 z-50 border-b border-ink-900/8 bg-paper-50/88 backdrop-blur-md">
-        <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-10 px-5 md:px-12">
+        <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-3 px-5 md:px-12 justify-between ">
           <Link href="/" className="font-display text-[26px] font-semibold uppercase tracking-[0.16em]">
             Omn<b className="font-semibold text-brand">i</b>a
           </Link>
