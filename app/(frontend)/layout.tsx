@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${jost.variable} ${golos.variable}`}>
-      <body>
+      <body className="overflow-x-hidden">
         <QueryProvider>
           <Header />
           <main>{children}</main>

@@ -10,7 +10,7 @@ const points = [
 
 export function Hero() {
   return (
-    <section className="mx-auto max-w-[1440px] overflow-hidden px-5 pb-16 pt-8 md:px-12 md:pb-26">
+    <section className="mx-auto max-w-[1440px] px-5 pb-16 pt-8 md:px-12 md:pb-26">
       <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
         <div>
           <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-7 sm:gap-y-4">
