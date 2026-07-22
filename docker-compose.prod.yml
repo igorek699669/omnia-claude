@@ -22,10 +22,22 @@ services:
       - .env.local
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
-    ports:
-      - "3000:3000"
     volumes:
       - omnia-media-data:/app/media
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: omnia-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - omnia-caddy-data:/data
+      - omnia-caddy-config:/config
 
   # Отдельный тег из стадии "builder" — там есть devDependencies и CLI Better Auth/Payload,
   # которых нет в финальном рантайм-образе ("latest").
@@ -45,3 +57,5 @@ services:
 volumes:
   omnia-db-data:
   omnia-media-data:
+  omnia-caddy-data:
+  omnia-caddy-config:
