@@ -23,13 +23,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Фирменный элемент: резонансные кольца вокруг инструмента */
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.035); opacity: 0.3; }
-}
-.ring-breathe { animation: breathe 6s ease-in-out infinite; }
-
 /* Radix Accordion (FAQ) */
 @keyframes accordion-down {
   from { height: 0; }
@@ -55,7 +48,6 @@ body {
 .animate-panel-slide-in { animation: panel-slide-in 0.25s ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ring-breathe,
   .animate-accordion-down,
   .animate-accordion-up,
   .animate-overlay-fade-in,

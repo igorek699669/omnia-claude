@@ -43,11 +43,6 @@ export function Hero() {
         </div>
 
         <div className="relative mx-auto w-full max-w-[560px] lg:max-w-none">
-          <div aria-hidden className="pointer-events-none absolute inset-0 m-auto aspect-square w-full max-w-[640px]">
-            <span className="ring-breathe absolute inset-0 m-auto h-[105%] w-[105%] rounded-full border border-brand/35" />
-            <span className="ring-breathe absolute inset-0 m-auto h-[118%] w-[118%] rounded-full border border-brand/35 opacity-60 [animation-delay:1.2s]" />
-            <span className="ring-breathe absolute inset-0 m-auto h-[132%] w-[132%] rounded-full border border-brand/35 opacity-35 [animation-delay:2.4s]" />
-          </div>
           <HandpanArt className="relative z-10 aspect-square w-full rounded-full shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]" />
           <div className="absolute bottom-[6%] right-[4%] z-20 flex items-center gap-3 rounded-full bg-white py-3 pl-3.5 pr-5.5 shadow-[0_16px_40px_-16px_rgba(28,20,16,0.35)]">
             <button
