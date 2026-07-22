@@ -81,7 +81,9 @@ jobs:
             EOF
 
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-            docker compose -f docker-compose.prod.yml pull
+            # --profile tools обязателен и здесь: без него pull пропускает сервис migrate
+            # (у него profiles: ["tools"]), и запускается старый закешированный образ.
+            docker compose -f docker-compose.prod.yml --profile tools pull
             docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
