@@ -17,6 +17,7 @@ interface CartState {
   items: CartItem[];
   add: (product: Product) => void;
   remove: (productId: string) => void;
+  removeMany: (productIds: string[]) => void;
   setQty: (productId: string, qty: number) => void;
   clear: () => void;
 }
@@ -51,6 +52,8 @@ export const useCart = create<CartState>()(
         }),
       remove: (productId) =>
         set((state) => ({ items: state.items.filter((i) => i.productId !== productId) })),
+      removeMany: (productIds) =>
+        set((state) => ({ items: state.items.filter((i) => !productIds.includes(i.productId)) })),
       setQty: (productId, qty) =>
         set((state) => ({
           items:

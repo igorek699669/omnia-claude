@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { SectionTitle, Tabs, TabsList, TabsTrigger } from "@/shared/ui";
-import { formatPrice } from "@/shared/lib/format";
+import { formatPrice } from "@/shared/lib";
 import { Backdrop } from "./Backdrop";
 import { LegalLinks } from "./LegalLinks";
 

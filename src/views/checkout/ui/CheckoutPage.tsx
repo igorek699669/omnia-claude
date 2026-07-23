@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm, Controller, type UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
-import { formatPrice } from "@/shared/lib/format";
-import { CHECKOUT_SELECTION_KEY } from "@/shared/lib/storage-keys";
+import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
+import { formatPrice, CHECKOUT_SELECTION_KEY, useSession } from "@/shared/lib";
 import { SectionTitle, ArrowButton, Checkbox } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 import { Backdrop } from "./components/Backdrop";
 import { LegalLinks } from "./components/LegalLinks";
 import { DeliveryPicker, type Delivery } from "./components/DeliveryPicker";
-
-type Step = "form" | "code" | "done";
+import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
 
 const orderSchema = z.object({
   lastName: z.string().min(1, "Введите фамилию"),
@@ -28,14 +28,9 @@ const orderSchema = z.object({
 });
 type OrderValues = z.infer<typeof orderSchema>;
 
-const emailCodeSchema = z.object({
-  code: z.string().length(4, "Код состоит из 4 цифр"),
-});
-type EmailCodeValues = z.infer<typeof emailCodeSchema>;
-
 export function CheckoutPage() {
-  const { items, clear } = useCart();
-  const [step, setStep] = useState<Step>("form");
+  const { items } = useCart();
+  const { data: session } = useSession();
   const [showDelivery, setShowDelivery] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
@@ -54,37 +49,52 @@ export function CheckoutPage() {
     resolver: zodResolver(orderSchema),
     defaultValues: { lastName: "", firstName: "", email: "", phone: "", agreed: false },
   });
-  const emailCodeForm = useForm<EmailCodeValues>({
-    resolver: zodResolver(emailCodeSchema),
-    defaultValues: { code: "" },
-  });
 
   const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [delivery, setDelivery] = useState<Delivery | null>(null);
+
+  // Если пользователь уже вошёл (Better Auth сессия) — почта берётся из аккаунта
+  // и считается подтверждённой сразу, без повторного OTP.
+  useEffect(() => {
+    if (session?.user?.email) {
+      orderForm.setValue("email", session.user.email);
+      setEmailConfirmed(true);
+    }
+  }, [session, orderForm]);
 
   const agreed = orderForm.watch("agreed");
   const email = orderForm.watch("email");
   const subtotal = cartTotal(orderItems);
   const total = subtotal + (delivery?.cost ?? 0);
-  const canSubmit = agreed && orderItems.length > 0;
+  const canSubmit = agreed && emailConfirmed && orderItems.length > 0 && delivery !== null;
 
-  async function requestEmailCode() {
-    const valid = await orderForm.trigger("email");
-    if (!valid) return;
-    setStep("code"); // TODO: await authClient.emailOtp.sendVerificationOtp({ email }) — см. CLAUDE.md
-  }
+  const submitOrder = useMutation({
+    mutationFn: async (input: CheckoutInput) => {
+      const result = await createOrderPayment(input);
+      if ("error" in result) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: (result) => {
+      window.location.href = result.confirmationUrl;
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Не удалось оформить заказ. Попробуйте ещё раз.");
+    },
+  });
 
-  function submitEmailCode() {
-    setEmailConfirmed(true);
-    setStep("form"); // TODO: await authClient.signIn.emailOtp({ email, otp: emailCodeForm.getValues("code") })
-    toast.success("Почта подтверждена");
-  }
-
-  function submitOrder() {
-    if (orderItems.length === 0) return;
-    // TODO: создание заказа (pending) → создание платежа ЮKassa → redirect — см. CLAUDE.md Roadmap
-    clear();
-    setStep("done");
+  function handleOrderSubmit() {
+    if (orderItems.length === 0 || !delivery || !emailConfirmed) return;
+    const values = orderForm.getValues();
+    submitOrder.mutate({
+      items: orderItems.map((item) => ({ productId: item.productId, qty: item.qty })),
+      customer: {
+        lastName: values.lastName,
+        firstName: values.firstName,
+        email: values.email,
+        phone: values.phone,
+      },
+      delivery: { label: delivery.label, cost: delivery.cost },
+    });
   }
 
   if (showDelivery) {
@@ -104,65 +114,7 @@ export function CheckoutPage() {
       <Backdrop />
 
       <div className="relative w-full max-w-[620px] rounded-card bg-paper-50/95 p-8 shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] backdrop-blur-sm md:p-10">
-        {step === "code" ? (
-          <form onSubmit={emailCodeForm.handleSubmit(submitEmailCode)} noValidate className="text-center">
-            <SectionTitle className="text-[32px]">Введите код подтверждения</SectionTitle>
-            <p className="mt-3 text-ink-600">
-              Мы отправили четырёхзначный код на почту <b className="text-ink-900">{email}</b>{" "}
-              <button
-                type="button"
-                onClick={() => setStep("form")}
-                className="cursor-pointer text-brand-dark underline underline-offset-2"
-              >
-                Изменить
-              </button>
-            </p>
-            <Controller
-              control={emailCodeForm.control}
-              name="code"
-              render={({ field }) => (
-                <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={4}
-                  autoFocus
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Введите код"
-                  className="mx-auto mt-8 block w-full max-w-[280px] rounded-input border border-ink-900/18 bg-white px-5 py-4 text-center font-display text-2xl tracking-[0.4em] outline-none transition-colors focus:border-brand"
-                />
-              )}
-            />
-            {emailCodeForm.formState.errors.code && (
-              <p className="mt-3 text-sm text-brand-dark">{emailCodeForm.formState.errors.code.message}</p>
-            )}
-            <button
-              type="submit"
-              className="mt-6 w-full max-w-[280px] cursor-pointer rounded-full bg-brand px-7 py-4 font-medium text-white transition-colors hover:bg-brand-dark"
-            >
-              Подтвердить
-            </button>
-          </form>
-        ) : step === "done" ? (
-          <div className="text-center">
-            <div className="mx-auto grid size-16 place-items-center rounded-full bg-brand text-white">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </div>
-            <SectionTitle className="mt-6 text-[32px]">Заказ оформлен</SectionTitle>
-            <p className="mt-3 text-ink-600">
-              Спасибо! Мы свяжемся с вами для подтверждения. Статус и трек-номер появятся в личном
-              кабинете.
-            </p>
-            <Link
-              href="/profile"
-              className="mt-6 inline-block border-b border-ink-900/25 py-2 text-base font-medium transition-colors hover:border-brand hover:text-brand-dark"
-            >
-              Перейти в личный кабинет
-            </Link>
-          </div>
-        ) : orderItems.length === 0 ? (
+        {orderItems.length === 0 ? (
           <div>
             <SectionTitle className="text-[32px]">Оформление заказа</SectionTitle>
             <p className="mt-4 text-ink-600">В корзине пока пусто.</p>
@@ -174,7 +126,7 @@ export function CheckoutPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={orderForm.handleSubmit(submitOrder)} noValidate>
+          <form onSubmit={orderForm.handleSubmit(handleOrderSubmit)} noValidate>
             <SectionTitle className="text-[32px]">Оформление заказа</SectionTitle>
 
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -192,14 +144,19 @@ export function CheckoutPage() {
                     className="w-full min-w-0 flex-1 rounded-input border border-ink-900/18 bg-white px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-brand disabled:bg-paper-100 disabled:text-ink-600"
                     {...orderForm.register("email")}
                   />
-                  {!emailConfirmed && (
-                    <button
-                      type="button"
-                      onClick={requestEmailCode}
-                      className="shrink-0 cursor-pointer rounded-full bg-paper-100 px-3.5 py-2 text-sm font-medium transition-colors hover:bg-brand hover:text-white"
-                    >
-                      Подтвердить
-                    </button>
+                  {emailConfirmed ? (
+                    <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-dark">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      Подтверждена
+                    </span>
+                  ) : (
+                    <EmailConfirmDialog
+                      email={email}
+                      validate={() => orderForm.trigger("email")}
+                      onConfirmed={() => setEmailConfirmed(true)}
+                    />
                   )}
                 </div>
                 {orderForm.formState.errors.email && (
@@ -271,8 +228,8 @@ export function CheckoutPage() {
                 </p>
               </div>
               <div className={!canSubmit ? "pointer-events-none opacity-50" : ""}>
-                <ArrowButton type="submit" disabled={!canSubmit}>
-                  Оформить заказ
+                <ArrowButton type="submit" disabled={!canSubmit || submitOrder.isPending}>
+                  {submitOrder.isPending ? "Переходим к оплате…" : "Оформить заказ"}
                 </ArrowButton>
               </div>
             </div>

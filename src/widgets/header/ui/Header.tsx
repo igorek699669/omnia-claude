@@ -5,7 +5,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
 import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent } from "@/shared/ui";
-import { useSession, signOut } from "@/shared/lib/auth-client";
+import { useSession, signOut } from "@/shared/lib";
 
 const nav = [
   { href: "/catalog", label: "Каталог" },

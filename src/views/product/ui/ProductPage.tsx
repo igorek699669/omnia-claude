@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/entities/product";
-import { formatPrice } from "@/shared/lib/format";
+import { formatPrice } from "@/shared/lib";
 import { Tag } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 import { AddToCartSection } from "./components/AddToCartSection";

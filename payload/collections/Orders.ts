@@ -1,26 +1,62 @@
 import type { CollectionConfig } from "payload";
 
 /**
- * Скелет по шагу 1 Roadmap — к чекауту не подключён (ЮKassa — шаг 3).
- * customerId — id пользователя Better Auth (текст, не relationship: авторизации не смешиваются).
+ * Подключено к чекауту через src/features/checkout (ЮKassa, шаг 3 Roadmap).
+ * customerId — id пользователя Better Auth (текст, не relationship: авторизации не смешиваются),
+ * заполняется только если у покупателя уже была сессия на момент оформления — вход в чекауте
+ * не требуется (guest checkout), контакты дублируются прямо в заказе.
  */
 export const Orders: CollectionConfig = {
   slug: "orders",
   admin: {
     useAsTitle: "id",
-    defaultColumns: ["customerId", "total", "status", "createdAt"],
+    defaultColumns: ["customerName", "total", "status", "createdAt"],
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),
-    create: ({ req: { user } }) => Boolean(user),
+    // Заказы создаёт только src/features/checkout через Local API (там overrideAccess
+    // игнорирует это правило) — вручную завести заказ из админки/REST нельзя.
+    create: () => false,
     update: ({ req: { user } }) => Boolean(user),
-    delete: ({ req: { user } }) => Boolean(user),
+    // Финансовые записи не удаляются — отменённый заказ помечается статусом "cancelled".
+    delete: () => false,
   },
   fields: [
     {
       name: "customerId",
       type: "text",
+    },
+    {
+      name: "customerName",
+      type: "text",
       required: true,
+    },
+    {
+      name: "customerEmail",
+      type: "text",
+      required: true,
+    },
+    {
+      name: "customerPhone",
+      type: "text",
+      required: true,
+    },
+    {
+      name: "delivery",
+      type: "group",
+      fields: [
+        {
+          name: "label",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "cost",
+          type: "number",
+          required: true,
+          min: 0,
+        },
+      ],
     },
     {
       name: "items",
@@ -65,6 +101,14 @@ export const Orders: CollectionConfig = {
         { label: "Доставлен", value: "delivered" },
         { label: "Отменён", value: "cancelled" },
       ],
+    },
+    {
+      name: "paymentId",
+      type: "text",
+      unique: true,
+      admin: {
+        description: "id платежа ЮKassa — используется вебхуком для поиска заказа и идемпотентности",
+      },
     },
   ],
 };

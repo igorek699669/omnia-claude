@@ -6,8 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
-import { authClient } from "@/shared/lib/auth-client";
-import { errorMessage } from "../error-messages";
+import { authClient, errorMessage } from "@/shared/lib";
 
 const emailSchema = z.object({
   email: z.string().min(1, "Укажите почту").email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз"),

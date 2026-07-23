@@ -6,8 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
-import { authClient } from "@/shared/lib/auth-client";
-import { errorMessage } from "../error-messages";
+import { authClient, errorMessage } from "@/shared/lib";
 
 const codeSchema = z.object({
   code: z.string().length(6, "Код состоит из 6 цифр"),

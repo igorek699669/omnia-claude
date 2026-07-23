@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/shared/lib/auth-client";
+import { useSession } from "@/shared/lib";
 import { EmailStep } from "./components/EmailStep";
 import { CodeStep } from "./components/CodeStep";
 import { DoneStep } from "./components/DoneStep";
