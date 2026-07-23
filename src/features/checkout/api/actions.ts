@@ -88,7 +88,8 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       return { error: "ЮKassa не вернула ссылку на оплату" };
     }
     return { confirmationUrl: payment.confirmation.confirmation_url };
-  } catch {
+  } catch (err) {
+    console.error("[createOrderPayment] YooKassa payment creation failed:", err);
     await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });
     return { error: "Не удалось создать платёж. Попробуйте ещё раз." };
   }
