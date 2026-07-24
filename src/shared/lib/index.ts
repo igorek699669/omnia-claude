@@ -1,4 +1,4 @@
-export { formatPrice } from "./format";
+export { formatPrice, formatDate } from "./format";
 export { CHECKOUT_SELECTION_KEY } from "./storage-keys";
 export { authClient, useSession, signOut } from "./auth-client";
 export { errorMessage } from "./auth-errors";

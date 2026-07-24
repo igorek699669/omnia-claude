@@ -5,3 +5,9 @@ export function formatPrice(value: number): string {
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+export function formatDate(value: string | Date): string {
+  return new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(
+    new Date(value),
+  );
+}
