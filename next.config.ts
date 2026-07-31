@@ -3,6 +3,7 @@ import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  reactCompiler: true,
 };
 
 // Расположение конфига (payload/payload.config.ts, а не дефолтный корневой) резолвится
