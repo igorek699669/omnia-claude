@@ -8,3 +8,5 @@ export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./
 export { Select, SelectTrigger, SelectContent, SelectItem } from "./Select";
 export { Dialog, DialogTrigger, DialogTitle, DialogClose, DialogContent } from "./Dialog";
 export { Popover, PopoverTrigger, PopoverContent } from "./Popover";
+export { Backdrop } from "./Backdrop";
+export { LegalLinks } from "./LegalLinks";

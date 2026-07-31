@@ -29,6 +29,8 @@ jobs:
           context: .
           push: true
           tags: ${{ env.IMAGE }}:latest
+          build-args: |
+            NEXT_PUBLIC_YANDEX_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_YANDEX_MAPS_API_KEY }}
 
       - name: Build and push migrate image (builder stage, has CLI)
         uses: docker/build-push-action@v6
@@ -37,6 +39,8 @@ jobs:
           target: builder
           push: true
           tags: ${{ env.IMAGE }}:migrate
+          build-args: |
+            NEXT_PUBLIC_YANDEX_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_YANDEX_MAPS_API_KEY }}
 
   deploy:
     needs: build-and-push
@@ -50,7 +54,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD
           script: |
             set -e
             mkdir -p /opt/omnia
@@ -80,6 +84,8 @@ jobs:
             SMTP_FROM=${SMTP_FROM}
             YOOKASSA_SHOP_ID=${YOOKASSA_SHOP_ID}
             YOOKASSA_SECRET_KEY=${YOOKASSA_SECRET_KEY}
+            CDEK_ACCOUNT=${CDEK_ACCOUNT}
+            CDEK_SECURE_PASSWORD=${CDEK_SECURE_PASSWORD}
             EOF
 
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
@@ -104,3 +110,5 @@ jobs:
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
           YOOKASSA_SHOP_ID: ${{ secrets.YOOKASSA_SHOP_ID }}
           YOOKASSA_SECRET_KEY: ${{ secrets.YOOKASSA_SECRET_KEY }}
+          CDEK_ACCOUNT: ${{ secrets.CDEK_ACCOUNT }}
+          CDEK_SECURE_PASSWORD: ${{ secrets.CDEK_SECURE_PASSWORD }}

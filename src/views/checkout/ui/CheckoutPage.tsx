@@ -10,11 +10,9 @@ import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
 import { formatPrice, CHECKOUT_SELECTION_KEY, useSession } from "@/shared/lib";
-import { SectionTitle, ArrowButton, Checkbox } from "@/shared/ui";
+import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
-import { Backdrop } from "./components/Backdrop";
-import { LegalLinks } from "./components/LegalLinks";
-import { DeliveryPicker, type Delivery } from "./components/DeliveryPicker";
+import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
 import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
 
 const orderSchema = z.object({
@@ -68,7 +66,7 @@ export function CheckoutPage() {
   const total = subtotal + (delivery?.cost ?? 0);
   const canSubmit = agreed && emailConfirmed && orderItems.length > 0 && delivery !== null;
 
-  const submitOrder = useMutation({
+  const { mutate: submitOrder, isPending: isSubmittingOrder } = useMutation({
     mutationFn: async (input: CheckoutInput) => {
       const result = await createOrderPayment(input);
       if ("error" in result) throw new Error(result.error);
@@ -85,7 +83,7 @@ export function CheckoutPage() {
   function handleOrderSubmit() {
     if (orderItems.length === 0 || !delivery || !emailConfirmed) return;
     const values = orderForm.getValues();
-    submitOrder.mutate({
+    submitOrder({
       items: orderItems.map((item) => ({ productId: item.productId, qty: item.qty })),
       customer: {
         lastName: values.lastName,
@@ -93,13 +91,21 @@ export function CheckoutPage() {
         email: values.email,
         phone: values.phone,
       },
-      delivery: { label: delivery.label, cost: delivery.cost },
+      delivery: {
+        provider: delivery.provider,
+        type: delivery.type,
+        label: delivery.label,
+        address: delivery.address,
+        cost: delivery.cost,
+        pvzCode: delivery.pvzCode,
+      },
     });
   }
 
   if (showDelivery) {
     return (
       <DeliveryPicker
+        items={orderItems.map((item) => ({ productId: item.productId, qty: item.qty }))}
         onApply={(d) => {
           setDelivery(d);
           setShowDelivery(false);
@@ -228,8 +234,8 @@ export function CheckoutPage() {
                 </p>
               </div>
               <div className={!canSubmit ? "pointer-events-none opacity-50" : ""}>
-                <ArrowButton type="submit" disabled={!canSubmit || submitOrder.isPending}>
-                  {submitOrder.isPending ? "Переходим к оплате…" : "Оформить заказ"}
+                <ArrowButton type="submit" disabled={!canSubmit || isSubmittingOrder}>
+                  {isSubmittingOrder ? "Переходим к оплате…" : "Оформить заказ"}
                 </ArrowButton>
               </div>
             </div>

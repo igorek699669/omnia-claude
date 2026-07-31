@@ -56,6 +56,32 @@ export const Orders: CollectionConfig = {
           required: true,
           min: 0,
         },
+        {
+          // Значения синхронизированы вручную с src/shared/lib/delivery-providers.ts —
+          // payload/ не импортирует из src/ (бэкенд-конфиг, не FSD, см. CLAUDE.md).
+          name: "provider",
+          type: "select",
+          options: [{ label: "СДЭК", value: "cdek" }],
+        },
+        {
+          name: "type",
+          type: "select",
+          options: [
+            { label: "Пункт выдачи", value: "pvz" },
+            { label: "Курьер", value: "courier" },
+          ],
+        },
+        {
+          name: "address",
+          type: "text",
+        },
+        {
+          name: "pvzCode",
+          type: "text",
+          admin: {
+            description: "Код пункта выдачи СДЭК — понадобится для регистрации отправления (Roadmap)",
+          },
+        },
       ],
     },
     {

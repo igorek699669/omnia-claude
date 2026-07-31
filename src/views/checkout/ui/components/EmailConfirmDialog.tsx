@@ -29,7 +29,7 @@ export function EmailConfirmDialog({
     defaultValues: { code: "" },
   });
 
-  const sendOtp = useMutation({
+  const { mutate: sendOtp, isPending: isSendingOtp } = useMutation({
     mutationFn: async () => {
       const { error } = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
       if (error) throw error;
@@ -44,7 +44,7 @@ export function EmailConfirmDialog({
     },
   });
 
-  const verifyOtp = useMutation({
+  const { mutate: verifyOtp, isPending: isVerifyingOtp } = useMutation({
     mutationFn: async (otp: string) => {
       const { error } = await authClient.signIn.emailOtp({ email, otp });
       if (error) throw error;
@@ -62,7 +62,7 @@ export function EmailConfirmDialog({
   async function handleSendClick() {
     const valid = await validate();
     if (!valid) return;
-    sendOtp.mutate();
+    sendOtp();
   }
 
   return (
@@ -70,10 +70,10 @@ export function EmailConfirmDialog({
       <button
         type="button"
         onClick={handleSendClick}
-        disabled={sendOtp.isPending}
+        disabled={isSendingOtp}
         className="shrink-0 cursor-pointer rounded-full bg-paper-100 px-3.5 py-2 text-sm font-medium transition-colors hover:bg-brand hover:text-white disabled:cursor-default disabled:opacity-50"
       >
-        {sendOtp.isPending ? "Отправляем…" : "Подтвердить"}
+        {isSendingOtp ? "Отправляем…" : "Подтвердить"}
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -83,7 +83,7 @@ export function EmailConfirmDialog({
             Мы отправили шестизначный код на <b className="text-ink-900">{email}</b>
           </p>
 
-          <form onSubmit={codeForm.handleSubmit((values) => verifyOtp.mutate(values.code))} className="mt-6">
+          <form onSubmit={codeForm.handleSubmit((values) => verifyOtp(values.code))} className="mt-6">
             <Controller
               control={codeForm.control}
               name="code"
@@ -107,10 +107,10 @@ export function EmailConfirmDialog({
             <div className="mt-6 flex items-center gap-5">
               <button
                 type="submit"
-                disabled={verifyOtp.isPending}
+                disabled={isVerifyingOtp}
                 className="flex-1 cursor-pointer rounded-full bg-brand px-6 py-3.5 font-medium text-white transition-colors hover:bg-brand-dark disabled:cursor-default disabled:opacity-50"
               >
-                {verifyOtp.isPending ? "Проверяем…" : "Подтвердить"}
+                {isVerifyingOtp ? "Проверяем…" : "Подтвердить"}
               </button>
               <DialogClose asChild>
                 <button

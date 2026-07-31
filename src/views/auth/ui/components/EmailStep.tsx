@@ -19,7 +19,7 @@ export function EmailStep({ onSent }: { onSent: (email: string) => void }) {
     defaultValues: { email: "" },
   });
 
-  const sendOtp = useMutation({
+  const { mutate: sendOtp, isPending: isSendingOtp } = useMutation({
     mutationFn: async (email: string) => {
       const { error } = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
       if (error) throw error;
@@ -35,7 +35,7 @@ export function EmailStep({ onSent }: { onSent: (email: string) => void }) {
   });
 
   return (
-    <form onSubmit={form.handleSubmit((values) => sendOtp.mutate(values.email))} noValidate>
+    <form onSubmit={form.handleSubmit((values) => sendOtp(values.email))} noValidate>
       <SectionTitle>Вход или регистрация</SectionTitle>
       <p className="mt-4 text-ink-600">
         Укажите почту — пришлём на неё код подтверждения. Пароль не нужен.
@@ -51,8 +51,8 @@ export function EmailStep({ onSent }: { onSent: (email: string) => void }) {
         <p className="mt-3 text-sm text-brand-dark">{form.formState.errors.email.message}</p>
       )}
       <div className="mt-6">
-        <ArrowButton type="submit" disabled={sendOtp.isPending}>
-          {sendOtp.isPending ? "Отправляем…" : "Получить код"}
+        <ArrowButton type="submit" disabled={isSendingOtp}>
+          {isSendingOtp ? "Отправляем…" : "Получить код"}
         </ArrowButton>
       </div>
     </form>

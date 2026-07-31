@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DELIVERY_PROVIDERS, DELIVERY_TYPES } from "@/shared/lib";
 
 export const checkoutInputSchema = z.object({
   items: z
@@ -16,8 +17,12 @@ export const checkoutInputSchema = z.object({
     phone: z.string().min(1),
   }),
   delivery: z.object({
+    provider: z.enum(DELIVERY_PROVIDERS),
+    type: z.enum(DELIVERY_TYPES),
     label: z.string().min(1),
+    address: z.string().min(1),
     cost: z.number().min(0),
+    pvzCode: z.string().optional(),
   }),
 });
 

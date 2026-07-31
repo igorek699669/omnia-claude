@@ -27,7 +27,7 @@ export function CodeStep({
     defaultValues: { code: "" },
   });
 
-  const verifyOtp = useMutation({
+  const { mutate: verifyOtp, isPending: isVerifyingOtp } = useMutation({
     mutationFn: async (otp: string) => {
       const { error } = await authClient.signIn.emailOtp({ email, otp });
       if (error) throw error;
@@ -42,7 +42,7 @@ export function CodeStep({
   });
 
   return (
-    <form onSubmit={form.handleSubmit((values) => verifyOtp.mutate(values.code))} noValidate>
+    <form onSubmit={form.handleSubmit((values) => verifyOtp(values.code))} noValidate>
       <SectionTitle>Введите код</SectionTitle>
       <p className="mt-4 text-ink-600">
         Отправили 6-значный код на <b className="text-ink-900">{email}</b>. Письмо может попасть в
@@ -68,8 +68,8 @@ export function CodeStep({
         <p className="mt-3 text-sm text-brand-dark">{form.formState.errors.code.message}</p>
       )}
       <div className="mt-6 flex flex-wrap items-center gap-5">
-        <ArrowButton type="submit" disabled={verifyOtp.isPending}>
-          {verifyOtp.isPending ? "Проверяем…" : "Войти"}
+        <ArrowButton type="submit" disabled={isVerifyingOtp}>
+          {isVerifyingOtp ? "Проверяем…" : "Войти"}
         </ArrowButton>
         <button
           type="button"
