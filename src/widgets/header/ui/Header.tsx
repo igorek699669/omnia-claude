@@ -33,8 +33,8 @@ export function Header() {
     <Dialog open={open} onOpenChange={setOpen}>
       <header className="sticky top-0 z-50 border-b border-ink-900/8 bg-paper-50/88 backdrop-blur-md">
         <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-3 px-5 md:px-12 justify-between ">
-          <Link href="/" className="font-display text-[26px] font-semibold uppercase tracking-[0.16em]">
-            Omn<b className="font-semibold text-brand">i</b>a
+          <Link href="/" className="font-display text-[26px] font-semibold tracking-[0.16em]">
+            <b className="font-semibold text-brand">OM</b>NIA
           </Link>
 
           <nav aria-label="Основная навигация" className="mx-auto hidden gap-8 lg:flex">
@@ -113,8 +113,8 @@ export function Header() {
 
       <DialogContent className="lg:hidden">
         <div className="flex items-center justify-between">
-          <span className="font-display text-[26px] font-semibold uppercase tracking-[0.16em]">
-            Omn<b className="font-semibold text-brand">i</b>a
+          <span className="font-display text-[26px] font-semibold tracking-[0.16em]">
+            <b className="font-semibold text-brand">OM</b>NIA
           </span>
           <DialogClose asChild>
             <button

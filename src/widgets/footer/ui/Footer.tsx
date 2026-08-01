@@ -6,8 +6,8 @@ export function Footer() {
       <div className="mx-auto max-w-[1440px] px-5 md:px-12">
         <div className="grid grid-cols-2 gap-12 py-18 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="font-display text-[26px] font-semibold uppercase tracking-[0.16em]">
-              Omn<b className="font-semibold text-brand">i</b>a
+            <Link href="/" className="font-display text-[26px] font-semibold tracking-[0.16em]">
+              <b className="font-semibold text-brand">OM</b>NIA
             </Link>
             <p className="mt-4 max-w-[34ch] text-sm text-paper-50/60">
               Мастерская хангов из нержавеющей стали. Ручная настройка, честные цены,
