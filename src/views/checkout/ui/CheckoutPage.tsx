@@ -10,7 +10,7 @@ import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
 import { formatPrice, CHECKOUT_SELECTION_KEY, useSession } from "@/shared/lib";
-import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks } from "@/shared/ui";
+import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
 import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
 import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
@@ -19,7 +19,10 @@ const orderSchema = z.object({
   lastName: z.string().min(1, "Введите фамилию"),
   firstName: z.string().min(1, "Введите имя"),
   email: z.string().min(1, "Введите почту").email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз"),
-  phone: z.string().min(1, "Введите телефон"),
+  phone: z
+    .string()
+    .min(1, "Введите телефон")
+    .refine((val) => val.replace(/\D/g, "").length === 11, "Введите телефон полностью"),
   agreed: z.boolean().refine((v) => v === true, {
     message: "Нужно согласие с политикой конфиденциальности",
   }),
@@ -50,6 +53,7 @@ export function CheckoutPage() {
 
   const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [delivery, setDelivery] = useState<Delivery | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Если пользователь уже вошёл (Better Auth сессия) — почта берётся из аккаунта
   // и считается подтверждённой сразу, без повторного OTP.
@@ -60,11 +64,9 @@ export function CheckoutPage() {
     }
   }, [session, orderForm]);
 
-  const agreed = orderForm.watch("agreed");
   const email = orderForm.watch("email");
   const subtotal = cartTotal(orderItems);
   const total = subtotal + (delivery?.cost ?? 0);
-  const canSubmit = agreed && emailConfirmed && orderItems.length > 0 && delivery !== null;
 
   const { mutate: submitOrder, isPending: isSubmittingOrder } = useMutation({
     mutationFn: async (input: CheckoutInput) => {
@@ -80,9 +82,8 @@ export function CheckoutPage() {
     },
   });
 
-  function handleOrderSubmit() {
-    if (orderItems.length === 0 || !delivery || !emailConfirmed) return;
-    const values = orderForm.getValues();
+  function handleOrderSubmit(values: OrderValues) {
+    if (!delivery || !emailConfirmed) return;
     submitOrder({
       items: orderItems.map((item) => ({ productId: item.productId, qty: item.qty })),
       customer: {
@@ -132,7 +133,13 @@ export function CheckoutPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={orderForm.handleSubmit(handleOrderSubmit)} noValidate>
+          <form
+            onSubmit={(e) => {
+              setSubmitAttempted(true);
+              return orderForm.handleSubmit(handleOrderSubmit)(e);
+            }}
+            noValidate
+          >
             <SectionTitle className="text-[32px]">Оформление заказа</SectionTitle>
 
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -165,11 +172,26 @@ export function CheckoutPage() {
                     />
                   )}
                 </div>
-                {orderForm.formState.errors.email && (
+                {orderForm.formState.errors.email ? (
                   <p className="mt-1.5 text-sm text-brand-dark">{orderForm.formState.errors.email.message}</p>
+                ) : (
+                  submitAttempted &&
+                  !emailConfirmed && <p className="mt-1.5 text-sm text-brand-dark">Подтвердите почту</p>
                 )}
               </div>
-              <Field label="Телефон" type="tel" error={orderForm.formState.errors.phone?.message} {...orderForm.register("phone")} />
+              <Controller
+                control={orderForm.control}
+                name="phone"
+                render={({ field }) => (
+                  <PhoneInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    error={orderForm.formState.errors.phone?.message}
+                  />
+                )}
+              />
             </div>
 
             <button
@@ -189,6 +211,9 @@ export function CheckoutPage() {
                 {delivery ? "Изменить" : "На карте"}
               </span>
             </button>
+            {submitAttempted && !delivery && (
+              <p className="mt-1.5 text-sm text-brand-dark">Выберите способ доставки</p>
+            )}
 
             <Controller
               control={orderForm.control}
@@ -233,11 +258,9 @@ export function CheckoutPage() {
                   Итог: {formatPrice(total)}
                 </p>
               </div>
-              <div className={!canSubmit ? "pointer-events-none opacity-50" : ""}>
-                <ArrowButton type="submit" disabled={!canSubmit || isSubmittingOrder}>
-                  {isSubmittingOrder ? "Переходим к оплате…" : "Оформить заказ"}
-                </ArrowButton>
-              </div>
+              <ArrowButton type="submit" disabled={isSubmittingOrder}>
+                {isSubmittingOrder ? "Переходим к оплате…" : "Оформить заказ"}
+              </ArrowButton>
             </div>
 
             <LegalLinks />
