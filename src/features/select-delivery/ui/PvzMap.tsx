@@ -7,9 +7,11 @@ const MOSCOW_CENTER: [number, number] = [55.751244, 37.618423];
 
 export function PvzMap({
   points,
+  selectedCode,
   onSelect,
 }: {
   points: Pvz[];
+  selectedCode?: string;
   onSelect: (point: Pvz) => void;
 }) {
   const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
@@ -21,20 +23,29 @@ export function PvzMap({
     );
   }
 
-  const center: [number, number] = points[0] ? [points[0].lat, points[0].lon] : MOSCOW_CENTER;
+  const selectedPoint = points.find((p) => p.code === selectedCode);
+  const center: [number, number] = selectedPoint
+    ? [selectedPoint.lat, selectedPoint.lon]
+    : points[0]
+      ? [points[0].lat, points[0].lon]
+      : MOSCOW_CENTER;
 
   return (
     <YMaps query={{ apikey: apiKey, lang: "ru_RU" }}>
       <Map defaultState={{ center, zoom: 11 }} className="aspect-[4/3] overflow-hidden rounded-input">
-        {points.map((point) => (
-          <Placemark
-            key={point.code}
-            geometry={[point.lat, point.lon]}
-            properties={{ hintContent: point.address }}
-            options={{ preset: "islands#orangeDotIcon" }}
-            onClick={() => onSelect(point)}
-          />
-        ))}
+        {points.map((point) => {
+          const isSelected = point.code === selectedCode;
+          return (
+            <Placemark
+              key={point.code}
+              geometry={[point.lat, point.lon]}
+              properties={{ hintContent: point.address }}
+              // Выбранный ПВЗ — фирменным оранжевым Omnia и поверх остальных, остальные — зелёным СДЭК.
+              options={{ preset: isSelected ? "islands#orangeDotIcon" : "islands#greenDotIcon", zIndex: isSelected ? 1000 : undefined }}
+              onClick={() => onSelect(point)}
+            />
+          );
+        })}
       </Map>
     </YMaps>
   );

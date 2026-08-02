@@ -15,10 +15,17 @@ const SENDER_CITY_CODE = 220;
 
 export interface CdekPvz {
   code: string;
+  city: string;
   address: string;
   lat: number;
   lon: number;
   workTime?: string;
+}
+
+export interface CdekCityMatch {
+  code: number;
+  city: string;
+  region?: string;
 }
 
 interface PackageBox {
@@ -97,11 +104,71 @@ export async function resolveCdekCityCode(city: string): Promise<number> {
   return match.code;
 }
 
+interface CityListCache {
+  cities: CdekCityMatch[];
+  expiresAt: number;
+}
+
+let cityListCache: CityListCache | null = null;
+let cityListFetch: Promise<CdekCityMatch[]> | null = null;
+
+// Справочник городов почти не меняется — держим в памяти процесса подольше.
+const CITY_LIST_TTL_MS = 12 * 60 * 60 * 1000;
+const CITY_PAGE_SIZE = 1000;
+// Предохранитель от бесконечного цикла, если СДЭК когда-нибудь перестанет отдавать короткую последнюю страницу.
+const CITY_MAX_PAGES = 200;
+
+async function fetchAllCdekCities(): Promise<CdekCityMatch[]> {
+  const all: CdekCityMatch[] = [];
+  for (let page = 0; page < CITY_MAX_PAGES; page++) {
+    // have_cdekpvz=true — иначе в справочник попадает вообще каждый населённый пункт РФ
+    // (хутора, деревни), а не только те, где реально есть сеть ПВЗ. Без фильтра в подсказках
+    // всплывают омонимы вроде «Брянск» в Дагестане (реальный хутор, но без единого ПВЗ) —
+    // выбор такого пункта ломает загрузку карты, потому что точек выдачи для него просто нет.
+    const batch = await cdekFetch<CdekCityMatch[]>(
+      `/location/cities?size=${CITY_PAGE_SIZE}&page=${page}&country_codes=RU&have_cdekpvz=true`,
+    );
+    all.push(...batch);
+    if (batch.length < CITY_PAGE_SIZE) break;
+  }
+  return all;
+}
+
+// Живой фильтр /location/cities?city=... матчит, судя по всему, только точные/начинающиеся
+// с полного слова названия — на неполном вводе или опечатке отдаёт пустой список (проверено
+// эмпирически). Поэтому вместо него тянем справочник целиком (кешируя в памяти процесса) и
+// ищем подстроку сами — так подсказки работают от 3 букв независимо от качества их фильтра.
+export async function getAllCdekCities(): Promise<CdekCityMatch[]> {
+  if (cityListCache && cityListCache.expiresAt > Date.now()) {
+    return cityListCache.cities;
+  }
+  if (!cityListFetch) {
+    cityListFetch = fetchAllCdekCities()
+      .then((cities) => {
+        cityListCache = { cities, expiresAt: Date.now() + CITY_LIST_TTL_MS };
+        return cities;
+      })
+      .finally(() => {
+        cityListFetch = null;
+      });
+  }
+  return cityListFetch;
+}
+
 export async function getCdekPvzPoints(cityCode: number): Promise<CdekPvz[]> {
   const points = await cdekFetch<
     {
       code: string;
-      location: { address: string; longitude: number; latitude: number };
+      location: {
+        city: string;
+        region?: string;
+        address: string;
+        // Не задокументировано во всех версиях ответа СДЭК — на практике либо есть
+        // готовый полный адрес с городом, либо приходится собирать его самим (ниже).
+        address_full?: string;
+        longitude: number;
+        latitude: number;
+      };
       work_time?: string;
     }[]
   >(`/deliverypoints?city_code=${cityCode}&type=PVZ`);
@@ -110,7 +177,8 @@ export async function getCdekPvzPoints(cityCode: number): Promise<CdekPvz[]> {
     .filter((p) => Number.isFinite(p.location.latitude) && Number.isFinite(p.location.longitude))
     .map((p) => ({
       code: p.code,
-      address: p.location.address,
+      city: p.location.city,
+      address: p.location.address_full || `${p.location.city}, ${p.location.address}`,
       lat: p.location.latitude,
       lon: p.location.longitude,
       workTime: p.work_time,
