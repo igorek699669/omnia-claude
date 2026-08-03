@@ -108,7 +108,7 @@ export function CartPage() {
                     <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-paper-200">
                       <HandpanArt className="h-3/4 w-3/4" />
                     </div>
-                    <div className="min-w-45 flex-1">
+                    <div className="min-w-0 flex-1 sm:min-w-45">
                       <Link href={`/product/${item.slug}`} className="font-display text-lg font-medium hover:text-brand-dark">
                         {item.name}
                       </Link>
@@ -173,7 +173,7 @@ export function CartPage() {
             <div className={`mt-6 flex justify-center ${selected.size === 0 ? "pointer-events-none opacity-50" : ""}`}>
               <ArrowLink
                 href="/checkout"
-                className="lg:w-full lg:justify-center"
+                className="w-full justify-center sm:w-auto lg:w-full"
                 onClick={() => {
                   try {
                     sessionStorage.setItem(CHECKOUT_SELECTION_KEY, JSON.stringify([...selected]));
