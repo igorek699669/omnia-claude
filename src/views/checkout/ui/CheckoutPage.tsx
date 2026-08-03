@@ -12,7 +12,7 @@ import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
 import { formatPrice, CHECKOUT_SELECTION_KEY, useSession } from "@/shared/lib";
 import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput } from "@/shared/ui";
 import { HandpanArt } from "@/shared/assets";
-import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
+import { DeliveryPicker, warmUpCityCache, type Delivery } from "@/features/select-delivery";
 import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
 
 const orderSchema = z.object({
@@ -33,6 +33,16 @@ export function CheckoutPage() {
   const { items } = useCart();
   const { data: session } = useSession();
   const [showDelivery, setShowDelivery] = useState(false);
+
+  // Справочник городов СДЭК первый раз грузится постранично и небыстро (см.
+  // warmUpCityCache) — запускаем прогрев сразу на входе в оформление заказа, чтобы
+  // к моменту, когда пользователь откроет выбор доставки, кеш уже был тёплым.
+  useEffect(() => {
+    warmUpCityCache().catch(() => {
+      // Тихо: это фоновый прогрев кеша, а не действие пользователя — покажется
+      // тост при реальном поиске в DeliveryPicker, если СДЭК всё ещё недоступен.
+    });
+  }, []);
 
   const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
   useEffect(() => {
