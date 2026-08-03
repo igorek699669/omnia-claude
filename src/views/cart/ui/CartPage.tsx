@@ -95,46 +95,54 @@ export function CartPage() {
 
             <ul className="flex flex-col gap-4">
               {items.map((item) => (
-                <li key={item.productId} className="flex flex-wrap items-center gap-4 rounded-[28px] bg-white p-6">
-                  <Checkbox
-                    checked={selected.has(item.productId)}
-                    onCheckedChange={() => toggleOne(item.productId)}
-                    aria-label={`Выбрать «${item.name}»`}
-                  />
-                  <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-paper-200">
-                    <HandpanArt className="h-3/4 w-3/4" />
-                  </div>
-                  <div className="min-w-[180px] flex-1">
-                    <Link href={`/product/${item.slug}`} className="font-display text-lg font-medium hover:text-brand-dark">
-                      {item.name}
-                    </Link>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <span className="font-display text-xl font-semibold">{formatPrice(item.price)}</span>
-                      {item.oldPrice && item.oldPrice > item.price && (
-                        <>
-                          <s className="text-sm text-ink-600">{formatPrice(item.oldPrice)}</s>
-                          <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand-dark">
-                            −{Math.round((1 - item.price / item.oldPrice) * 100)}%
-                          </span>
-                        </>
-                      )}
+                <li
+                  key={item.productId}
+                  className="flex flex-col gap-4 rounded-[28px] bg-white p-6 sm:flex-row sm:flex-wrap sm:items-center"
+                >
+                  <div className="flex items-center gap-4 sm:flex-1">
+                    <Checkbox
+                      checked={selected.has(item.productId)}
+                      onCheckedChange={() => toggleOne(item.productId)}
+                      aria-label={`Выбрать «${item.name}»`}
+                    />
+                    <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-paper-200">
+                      <HandpanArt className="h-3/4 w-3/4" />
+                    </div>
+                    <div className="min-w-45 flex-1">
+                      <Link href={`/product/${item.slug}`} className="font-display text-lg font-medium hover:text-brand-dark">
+                        {item.name}
+                      </Link>
+                      <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                        <span className="font-display text-xl font-semibold">{formatPrice(item.price)}</span>
+                        {item.oldPrice && item.oldPrice > item.price && (
+                          <>
+                            <s className="text-sm text-ink-600">{formatPrice(item.oldPrice)}</s>
+                            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand-dark">
+                              −{Math.round((1 - item.price / item.oldPrice) * 100)}%
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <QtyBtn onClick={() => setQty(item.productId, item.qty - 1)}>−</QtyBtn>
-                    <span className="w-6 text-center font-medium">{item.qty}</span>
-                    <QtyBtn onClick={() => setQty(item.productId, item.qty + 1)}>+</QtyBtn>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <QtyBtn onClick={() => setQty(item.productId, item.qty - 1)}>−</QtyBtn>
+                      <span className="w-6 text-center font-medium">{item.qty}</span>
+                      <QtyBtn onClick={() => setQty(item.productId, item.qty + 1)}>+</QtyBtn>
+                      <button
+                        onClick={() => handleRemove(item.productId)}
+                        aria-label={`Убрать «${item.name}» из корзины`}
+                        className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-ink-900/15 text-ink-600 transition-colors hover:border-brand hover:text-brand-dark"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                    <span className="font-display text-lg font-semibold sm:w-28 sm:text-right">
+                      {formatPrice(item.price * item.qty)}
+                    </span>
                   </div>
-                  <span className="w-28 text-right font-display text-lg font-semibold">
-                    {formatPrice(item.price * item.qty)}
-                  </span>
-                  <button
-                    onClick={() => handleRemove(item.productId)}
-                    aria-label={`Убрать «${item.name}» из корзины`}
-                    className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-ink-900/15 text-ink-600 transition-colors hover:border-brand hover:text-brand-dark"
-                  >
-                    <TrashIcon />
-                  </button>
                 </li>
               ))}
             </ul>
