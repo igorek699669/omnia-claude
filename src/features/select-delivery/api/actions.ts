@@ -4,6 +4,7 @@ import { getAllCdekCities, getCdekPvzPoints, resolveCdekCityCode, calculateCdekT
 import type { CdekCityMatch } from "@/shared/lib";
 import { deriveShipmentPackages } from "./package";
 import { CITY_SEARCH_MIN_CHARS } from "../model/types";
+import { TOP_RU_CITIES } from "../model/topCities";
 import type { DeliveryType, Pvz } from "../model/types";
 
 function normalizeCityName(text: string): string {
@@ -27,16 +28,20 @@ export async function searchCitySuggestions(query: string): Promise<CdekCityMatc
   if (q.length < CITY_SEARCH_MIN_CHARS) return [];
 
   const cities = await getAllCdekCities();
-  const matches: { city: CdekCityMatch; index: number }[] = [];
+  const matches: { city: CdekCityMatch; index: number; isTop: boolean }[] = [];
   for (const city of cities) {
     const index = normalizeCityName(city.city).indexOf(q);
     if (index === -1) continue;
-    matches.push({ city, index });
+    matches.push({ city, index, isTop: TOP_RU_CITIES.has(normalizeCityName(city.city)) });
   }
 
-  // Совпадения с начала названия («Бря» → «Брянск») — выше тех, где строка встретилась
-  // где-то в середине; при равенстве — короче название вперёд (обычно оно и нужнее).
-  matches.sort((a, b) => a.index - b.index || a.city.city.length - b.city.city.length);
+  // Города из топ-50 по населению — всегда выше остальных совпадений (мелкие тёзки и
+  // посёлки менее релевантны для покупателя). Дальше как раньше: совпадения с начала
+  // названия («Бря» → «Брянск») — выше тех, где строка встретилась в середине; при
+  // равенстве — короче название вперёд (обычно оно и нужнее).
+  matches.sort(
+    (a, b) => Number(b.isTop) - Number(a.isTop) || a.index - b.index || a.city.city.length - b.city.city.length,
+  );
   return matches.slice(0, 8).map((m) => m.city);
 }
 
