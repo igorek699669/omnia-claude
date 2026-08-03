@@ -155,9 +155,9 @@ export function DeliveryPicker({
   }
 
   return (
-    <section className="relative isolate flex min-h-[75vh] items-center justify-center overflow-hidden px-5 py-16">
+    <section className="relative isolate overflow-hidden sm:flex sm:min-h-[75vh] sm:items-center sm:justify-center sm:px-5 sm:py-16">
       <Backdrop />
-      <div className="relative w-full max-w-[620px] rounded-card bg-paper-50/95 p-8 shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] backdrop-blur-sm md:p-10">
+      <div className="relative w-full bg-paper-50 p-5 sm:max-w-155 sm:rounded-card sm:bg-paper-50/95 sm:p-8 sm:shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] sm:backdrop-blur-sm md:p-10">
         <button
           onClick={onBack}
           className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
