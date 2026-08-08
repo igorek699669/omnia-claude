@@ -7,6 +7,12 @@ interface OrderDoc {
   id: number | string;
   status: string;
   total: number;
+  items: { product: number | string; qty: number }[];
+}
+
+interface ProductStockDoc {
+  id: number | string;
+  stockQty?: number | null;
 }
 
 export async function POST(request: Request) {
@@ -36,6 +42,7 @@ export async function POST(request: Request) {
     collection: "orders",
     where: { paymentId: { equals: payment.id } },
     limit: 1,
+    depth: 0,
   });
   const order = found.docs[0] as OrderDoc | undefined;
   if (!order) {
@@ -52,6 +59,14 @@ export async function POST(request: Request) {
     const expected = Number(order.total).toFixed(2);
     if (payment.amount.value !== expected) {
       return NextResponse.json({ error: "amount mismatch" }, { status: 400 });
+    }
+    for (const item of order.items) {
+      const product = (await payload.findByID({
+        collection: "products",
+        id: item.product,
+      })) as ProductStockDoc;
+      const nextQty = Math.max(0, (product.stockQty ?? 0) - item.qty);
+      await payload.update({ collection: "products", id: item.product, data: { stockQty: nextQty } });
     }
     await payload.update({ collection: "orders", id: order.id, data: { status: "paid" } });
   } else if (payment.status === "canceled") {

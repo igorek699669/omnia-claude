@@ -21,7 +21,12 @@ export function ProductCard({
   return (
     <article className="flex flex-col overflow-hidden rounded-card bg-white transition-all hover:-translate-y-1 hover:shadow-[0_32px_64px_-32px_rgba(28,20,16,0.3)]">
       {/* Медиа-слайдер: первый слайд — видео */}
-      <div className="relative aspect-[4/3] bg-paper-200">
+      <div className={`relative aspect-[4/3] bg-paper-200 ${product.inStock ? "" : "grayscale"}`}>
+        {!product.inStock && (
+          <span className="absolute left-3.5 top-3.5 z-10 rounded-full bg-ink-900/85 px-3.5 py-1.5 text-[13px] font-semibold text-white">
+            Нет в наличии
+          </span>
+        )}
         {slides.map((slide, i) => (
           <div
             key={slide}
@@ -86,7 +91,7 @@ export function ProductCard({
         </div>
         <p className="text-[13px] text-ink-600">
           {product.notesCount} нот · {(product.weightGrams / 1000).toLocaleString("ru-RU")} кг ·
-          диаметр {product.diameterCm} см · {product.material.toLowerCase()}
+          диаметр {product.diameterCm} см · {product.material.toLowerCase()} · {product.tuningHz} Hz
         </p>
 
         <div className="mt-auto flex items-center justify-between gap-4 pt-2">

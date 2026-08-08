@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getProducts, ProductCard } from "@/entities/product";
 import { AddToCartButton } from "@/features/cart";
+import { NotifyMeButton } from "@/features/notify-me";
 import { Tag, SectionTitle } from "@/shared/ui";
 
 export async function PopularProducts() {
@@ -22,7 +23,17 @@ export async function PopularProducts() {
       </div>
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} cartAction={<AddToCartButton key={p.id} product={p} />} />
+          <ProductCard
+            key={p.id}
+            product={p}
+            cartAction={
+              p.inStock ? (
+                <AddToCartButton key={p.id} product={p} />
+              ) : (
+                <NotifyMeButton key={p.id} product={p} variant="icon" />
+              )
+            }
+          />
         ))}
       </div>
     </section>

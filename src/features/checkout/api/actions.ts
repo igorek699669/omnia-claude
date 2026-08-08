@@ -11,7 +11,7 @@ interface ProductDoc {
   id: number | string;
   name: string;
   price: number;
-  inStock?: boolean | null;
+  stockQty?: number | null;
 }
 
 interface OrderDoc {
@@ -40,8 +40,8 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     } catch {
       doc = null;
     }
-    if (!doc || doc.inStock === false) {
-      return { error: `Товар «${doc?.name ?? item.productId}» больше недоступен` };
+    if (!doc || (doc.stockQty ?? 0) < item.qty) {
+      return { error: `Товар «${doc?.name ?? item.productId}» больше недоступен в нужном количестве` };
     }
     orderItems.push({ product: doc.id, qty: item.qty, price: doc.price });
     subtotal += doc.price * item.qty;

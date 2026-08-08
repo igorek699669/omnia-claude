@@ -19,6 +19,8 @@ interface ProductDoc {
   weightGrams: number;
   diameterCm: number;
   material: string;
+  tuningHz: "440" | "432";
+  stockQty?: number | null;
   inStock?: boolean | null;
 }
 
@@ -36,14 +38,17 @@ function toProduct(doc: ProductDoc): Product {
     weightGrams: doc.weightGrams,
     diameterCm: doc.diameterCm,
     material: doc.material,
+    tuningHz: doc.tuningHz,
+    stockQty: doc.stockQty ?? 0,
     inStock: doc.inStock ?? true,
   };
 }
 
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(filters?: { tuningHz?: "440" | "432" }): Promise<Product[]> {
   const payload = await getPayload({ config });
   const result = await payload.find({
     collection: "products",
+    where: filters?.tuningHz ? { tuningHz: { equals: filters.tuningHz } } : undefined,
     limit: 100,
     sort: "-createdAt",
   });

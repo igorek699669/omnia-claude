@@ -20,7 +20,7 @@ export async function ProductPage({ slug }: { slug: string }) {
         </div>
 
         <div>
-          <Tag>{product.inStock ? "В наличии" : "Под заказ"}</Tag>
+          <Tag>{product.inStock ? "В наличии" : "Нет в наличии"}</Tag>
           <h1 className="mt-5 font-display text-[clamp(36px,4vw,56px)] font-medium leading-[1.05] tracking-tight">
             {product.name}
           </h1>
@@ -33,6 +33,7 @@ export async function ProductPage({ slug }: { slug: string }) {
             <Spec label="Диаметр">{product.diameterCm} см</Spec>
             <Spec label="Вес">{(product.weightGrams / 1000).toLocaleString("ru-RU")} кг</Spec>
             <Spec label="Материал">{product.material}</Spec>
+            <Spec label="Строй, Hz">{product.tuningHz} Hz</Spec>
           </dl>
 
           <div className="mt-8 flex items-baseline gap-4">

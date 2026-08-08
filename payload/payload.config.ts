@@ -7,12 +7,13 @@ import { Media } from "./collections/Media";
 import { Categories } from "./collections/Categories";
 import { Products } from "./collections/Products";
 import { Orders } from "./collections/Orders";
+import { StockSubscriptions } from "./collections/StockSubscriptions";
 
 export default buildConfig({
   admin: {
     user: Users.slug,
   },
-  collections: [Users, Media, Categories, Products, Orders],
+  collections: [Users, Media, Categories, Products, Orders, StockSubscriptions],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   localization: {

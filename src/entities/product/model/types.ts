@@ -11,5 +11,7 @@ export interface Product {
   weightGrams: number;
   diameterCm: number;
   material: string;
+  tuningHz: "440" | "432";
+  stockQty: number;
   inStock: boolean;
 }
