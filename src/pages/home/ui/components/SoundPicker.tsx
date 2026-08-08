@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  HandpanArt,
 } from "@/shared/ui";
-import { HandpanArt } from "@/shared/assets";
 
 const dings = ["D3", "C#3", "E3", "F3", "G3", "A3"];
 const notes = ["A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4"];

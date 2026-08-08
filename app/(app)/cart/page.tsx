@@ -1,1 +1,1 @@
-export { CartPage as default } from "@/views/cart";
+export { CartPage as default } from "@/pages/cart";

@@ -1,4 +1,4 @@
-import { CheckoutSuccessPage } from "@/views/checkout-success";
+import { CheckoutSuccessPage } from "@/pages/checkout-success";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
   const { orderId } = await searchParams;

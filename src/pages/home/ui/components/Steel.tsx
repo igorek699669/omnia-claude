@@ -1,5 +1,4 @@
-import { Tag, SectionTitle } from "@/shared/ui";
-import { HandpanArt } from "@/shared/assets";
+import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
 
 const left = [
   ["Не подвержен коррозии", "Не требует обработки антикоррозийными маслами — переживёт репетиции у моря и игру под открытым небом."],

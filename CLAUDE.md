@@ -16,15 +16,15 @@
 
 ## Архитектура: Feature-Sliced Design
 
-`app/` — ТОЛЬКО тонкий роутинг Next.js: каждый `page.tsx` — одна строка re-export из `src/views`. Всю логику и разметку класть в `src/`:
+`app/` — ТОЛЬКО тонкий роутинг Next.js: каждый `page.tsx` — одна строка re-export из `src/pages`. Всю логику и разметку класть в `src/`:
 
-- `src/views/` — страницы (FSD-слой pages, переименован из-за конфликта с Next)
+- `src/pages/` — страницы (стандартный FSD-слой `pages`). Пустая папка `pages/` в корне проекта (рядом с `app/`, вне `src/`) — не удалять: без неё Next.js начинает сканировать `src/pages` как корень своего Pages Router и ломает сборку. Схема — по официальному гайду [FSD + Next.js](https://feature-sliced.design/ru/docs/guides/tech/with-nextjs).
 - `src/widgets/` — крупные составные блоки (Header, Footer)
 - `src/features/` — пользовательские сценарии (cart, позже auth-otp, select-delivery)
 - `src/entities/` — доменные сущности (product; позже order, user)
 - `src/shared/` — UI-кит, утилиты, API-клиенты
 
-Правила: импорты только сверху вниз (views → widgets → features → entities → shared). Каждый слайс экспортируется через `index.ts` (public API). Payload-конфиг, когда появится, живёт в `payload/` в корне — это бэкенд, не FSD.
+Правила: импорты только сверху вниз (pages → widgets → features → entities → shared). Каждый слайс экспортируется через `index.ts` (public API). Payload-конфиг, когда появится, живёт в `payload/` в корне — это бэкенд, не FSD.
 
 Внутри `ui/` слайса-страницы: сам компонент страницы (`HomePage.tsx`, `CheckoutPage.tsx` и т.п.) лежит прямо в `ui/`, а компоненты, которые использует только эта страница (секции, шаги, локальные виджеты), — в `ui/components/`. Не складывать их в одну кучу. Если у страницы всего один файл — подпапка `components/` не нужна.
 

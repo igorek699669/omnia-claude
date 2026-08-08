@@ -1,5 +1,4 @@
-import { ArrowLink } from "@/shared/ui";
-import { HandpanArt } from "@/shared/assets";
+import { ArrowLink, HandpanArt } from "@/shared/ui";
 import Link from "next/link";
 
 const points = [

@@ -1,1 +1,1 @@
-export { DeliveryPage as default } from "@/views/delivery";
+export { DeliveryPage as default } from "@/pages/delivery";

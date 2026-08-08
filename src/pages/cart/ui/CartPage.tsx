@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice, CHECKOUT_SELECTION_KEY } from "@/shared/lib";
-import { Tag, SectionTitle, ArrowLink, Checkbox } from "@/shared/ui";
-import { HandpanArt } from "@/shared/assets";
+import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt } from "@/shared/ui";
 
 export function CartPage() {
   const { items, setQty, remove } = useCart();

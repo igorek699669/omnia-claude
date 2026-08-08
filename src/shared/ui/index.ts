@@ -12,3 +12,4 @@ export { Combobox } from "./Combobox";
 export { Backdrop } from "./Backdrop";
 export { PhoneInput } from "./PhoneInput";
 export { LegalLinks } from "./LegalLinks";
+export { HandpanArt } from "./assets/HandpanArt";

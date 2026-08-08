@@ -10,8 +10,7 @@ import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
 import { formatPrice, CHECKOUT_SELECTION_KEY, useSession } from "@/shared/lib";
-import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput } from "@/shared/ui";
-import { HandpanArt } from "@/shared/assets";
+import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt } from "@/shared/ui";
 import { DeliveryPicker, warmUpCityCache, type Delivery } from "@/features/select-delivery";
 import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
 

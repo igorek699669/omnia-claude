@@ -1,1 +1,1 @@
-export { CheckoutPage as default } from "@/views/checkout";
+export { CheckoutPage as default } from "@/pages/checkout";

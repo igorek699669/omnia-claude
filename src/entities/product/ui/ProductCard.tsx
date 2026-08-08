@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Product } from "../model/types";
 import { formatPrice } from "@/shared/lib";
-import { HandpanArt } from "@/shared/assets";
+import { HandpanArt } from "@/shared/ui";
 
 /** Слайды медиа: видео идёт первым (пока заглушки — см. CLAUDE.md) */
 const slides = ["video", "photo", "photo-close"] as const;

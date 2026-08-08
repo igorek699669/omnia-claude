@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/entities/product";
 import { formatPrice } from "@/shared/lib";
-import { Tag } from "@/shared/ui";
-import { HandpanArt } from "@/shared/assets";
+import { Tag, HandpanArt } from "@/shared/ui";
 import { AddToCartSection } from "./components/AddToCartSection";
 
 export async function ProductPage({ slug }: { slug: string }) {
