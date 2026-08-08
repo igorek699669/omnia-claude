@@ -10,9 +10,11 @@ export async function CatalogPage({
   searchParams: Promise<{ tuningHz?: string }>;
 }) {
   const { tuningHz } = await searchParams;
-  const products = await getProducts(
+  const fetched = await getProducts(
     tuningHz === "440" || tuningHz === "432" ? { tuningHz } : undefined,
   );
+  // Товары без остатка — в конец списка, доступные показываются первыми.
+  const products = [...fetched].sort((a, b) => Number(!a.inStock) - Number(!b.inStock));
 
   return (
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
