@@ -61,7 +61,7 @@ Figma MCP на Starter-плане быстро упирается в лимит 
 
 ## Roadmap (порядок согласован)
 
-1. **Payload CMS 3.x + Postgres** — встроить в это же Next-приложение (`payload/` в корне). Коллекции: `products` (name, slug, soundCharacter, scale, scaleNotes, price, oldPrice, notesCount, weightGrams, diameterCm, material, inStock, media[], video), `orders`, `categories`, `media`. У полей контента включать `localized: true` (задел под i18n). Заменить mock.ts на Local API (без HTTP).
+1. **Payload CMS 3.x + Postgres** — встроить в это же Next-приложение (`payload/` в корне). Коллекции: `products` (name, slug, scale, scaleNotes, price, oldPrice, notesCount, tuningHz, inStock, media[], video), `orders`, `categories`, `media`. У полей контента включать `localized: true` (задел под i18n). Заменить mock.ts на Local API (без HTTP).
 2. **Better Auth, email OTP** — ✅ подключено (`auth.ts`, плагин `emailOTP`, SMTP через `nodemailer`). Когда появится Payload (шаг 1), `orders.customerId` будет ссылаться на Better Auth user; админы — в родной auth Payload, не смешивать. Телефонный вход (SMS/Flash Call) — отложен: в РФ SMS платные, добавить позже плагином `phoneNumber`.
 3. **ЮKassa** — Server Action создаёт заказ (pending) → создание платежа → redirect → вебхук `payment.succeeded` в `app/api/webhooks/yookassa` (проверка подписи, идемпотентность, сумма проверяется на сервере).
 4. **СДЭК API v2** — калькулятор тарифа на чекауте (вес/габариты из product), виджет выбора ПВЗ; после оплаты — регистрация отправления (hook `afterChange` в Payload), трек-номер в заказ; вебхуки статусов + fallback-поллинг. Профиль показывает статус и трек.
@@ -85,5 +85,5 @@ npm run build      # проверка типов + сборка
 
 - Язык интерфейса и коммуникации — русский. Валюта — ₽ через `formatPrice` (src/shared/lib/format.ts).
 - Server Components по умолчанию; `"use client"` — только там, где есть состояние/события.
-- Не выдумывать характеристики инструментов: реалистично 8–14 нот, диаметр 45–60 см, вес 2–5 кг.
+- Не выдумывать характеристики инструментов: реалистично 8–14 нот. Диаметр (53 см + 3 см окантовка), вес (3800 г) и материал (нержавеющая сталь Ember) одинаковы для всех хангов — захардкожены как константы в `src/entities/product/model/constants.ts`, не поля Payload.
 - Доступность: aria-label на иконочных кнопках, `prefers-reduced-motion` для анимаций, фокус-стили не убирать.

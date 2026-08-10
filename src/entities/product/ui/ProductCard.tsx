@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Product } from "../model/types";
+import { HANDPAN_DIAMETER_CM, HANDPAN_RIM_CM, HANDPAN_WEIGHT_GRAMS } from "../model/constants";
 import { formatPrice } from "@/shared/lib";
 import { HandpanArt } from "@/shared/ui";
 
@@ -77,7 +78,6 @@ export function ProductCard({
             {product.name}
           </Link>
         </h3>
-        <p className="text-sm text-ink-600">{product.soundCharacter}</p>
         <p className="text-sm font-medium">
           <span className="font-normal text-ink-600">Строй · </span>
           {product.scale} — {product.scaleNotes.split(" ").slice(0, 3).join(" ")}
@@ -90,8 +90,8 @@ export function ProductCard({
           )}
         </div>
         <p className="text-[13px] text-ink-600">
-          {product.notesCount} нот · {(product.weightGrams / 1000).toLocaleString("ru-RU")} кг ·
-          диаметр {product.diameterCm} см · {product.material.toLowerCase()} · {product.tuningHz} Hz
+          {product.notesCount} нот · {(HANDPAN_WEIGHT_GRAMS / 1000).toLocaleString("ru-RU")} кг ·
+          диаметр {HANDPAN_DIAMETER_CM} см (+{HANDPAN_RIM_CM} см окантовка) · {product.tuningHz} Hz
         </p>
 
         <div className="mt-auto flex items-center justify-between gap-4 pt-2">

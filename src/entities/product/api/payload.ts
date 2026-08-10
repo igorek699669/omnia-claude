@@ -10,15 +10,11 @@ interface ProductDoc {
   id: number | string;
   slug: string;
   name: string;
-  soundCharacter: string;
   scale: string;
   scaleNotes: string;
   price: number;
   oldPrice?: number | null;
   notesCount: number;
-  weightGrams: number;
-  diameterCm: number;
-  material: string;
   tuningHz: "440" | "432";
   stockQty?: number | null;
   inStock?: boolean | null;
@@ -29,15 +25,11 @@ function toProduct(doc: ProductDoc): Product {
     id: String(doc.id),
     slug: doc.slug,
     name: doc.name,
-    soundCharacter: doc.soundCharacter,
     scale: doc.scale,
     scaleNotes: doc.scaleNotes,
     price: doc.price,
     oldPrice: doc.oldPrice ?? undefined,
     notesCount: doc.notesCount,
-    weightGrams: doc.weightGrams,
-    diameterCm: doc.diameterCm,
-    material: doc.material,
     tuningHz: doc.tuningHz,
     stockQty: doc.stockQty ?? 0,
     inStock: doc.inStock ?? true,

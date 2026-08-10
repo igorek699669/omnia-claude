@@ -69,12 +69,6 @@ export const Products: CollectionConfig = {
       unique: true,
     },
     {
-      name: "soundCharacter",
-      type: "text",
-      required: true,
-      localized: true,
-    },
-    {
       name: "scale",
       type: "text",
       required: true,
@@ -102,22 +96,6 @@ export const Products: CollectionConfig = {
       required: true,
       min: 8,
       max: 14,
-    },
-    {
-      name: "weightGrams",
-      type: "number",
-      required: true,
-    },
-    {
-      name: "diameterCm",
-      type: "number",
-      required: true,
-    },
-    {
-      name: "material",
-      type: "text",
-      required: true,
-      localized: true,
     },
     {
       name: "tuningHz",

@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
-import { getProductBySlug } from "@/entities/product";
+import {
+  getProductBySlug,
+  HANDPAN_DIAMETER_CM,
+  HANDPAN_RIM_CM,
+  HANDPAN_WEIGHT_GRAMS,
+  HANDPAN_MATERIAL,
+} from "@/entities/product";
 import { formatPrice } from "@/shared/lib";
 import { Tag, HandpanArt } from "@/shared/ui";
 import { AddToCartSection } from "./components/AddToCartSection";
@@ -23,15 +29,16 @@ export async function ProductPage({ slug }: { slug: string }) {
           <h1 className="mt-5 font-display text-[clamp(36px,4vw,56px)] font-medium leading-[1.05] tracking-tight">
             {product.name}
           </h1>
-          <p className="mt-3 text-lg text-ink-600">{product.soundCharacter}</p>
 
           <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-4 border-y border-ink-900/10 py-6 text-[15px]">
             <Spec label="Строй">{product.scale}</Spec>
             <Spec label="Звукоряд">{product.scaleNotes}</Spec>
             <Spec label="Количество нот">{product.notesCount}</Spec>
-            <Spec label="Диаметр">{product.diameterCm} см</Spec>
-            <Spec label="Вес">{(product.weightGrams / 1000).toLocaleString("ru-RU")} кг</Spec>
-            <Spec label="Материал">{product.material}</Spec>
+            <Spec label="Диаметр">
+              {HANDPAN_DIAMETER_CM} см (+{HANDPAN_RIM_CM} см окантовка)
+            </Spec>
+            <Spec label="Вес">{(HANDPAN_WEIGHT_GRAMS / 1000).toLocaleString("ru-RU")} кг</Spec>
+            <Spec label="Материал">{HANDPAN_MATERIAL}</Spec>
             <Spec label="Строй, Hz">{product.tuningHz} Hz</Spec>
           </dl>
 
