@@ -13,13 +13,14 @@ export function TuningFilter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const value = searchParams.get("tuningHz") ?? "all";
+  const value = searchParams?.get("tuningHz") ?? "all";
 
   function handleChange(next: string) {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams ?? undefined);
     if (next === "all") params.delete("tuningHz");
     else params.set("tuningHz", next);
-    router.push(params.size > 0 ? `${pathname}?${params.toString()}` : pathname);
+    const target = pathname ?? "/catalog";
+    router.push(params.size > 0 ? `${target}?${params.toString()}` : target);
   }
 
   return (
