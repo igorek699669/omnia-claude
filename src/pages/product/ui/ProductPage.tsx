@@ -31,7 +31,6 @@ export async function ProductPage({ slug }: { slug: string }) {
           </h1>
 
           <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-4 border-y border-ink-900/10 py-6 text-[15px]">
-            <Spec label="Строй">{product.scale}</Spec>
             <Spec label="Звукоряд">{product.scaleNotes}</Spec>
             <Spec label="Количество нот">{product.notesCount}</Spec>
             <Spec label="Диаметр">

@@ -61,7 +61,7 @@ Figma MCP на Starter-плане быстро упирается в лимит 
 
 ## Roadmap (порядок согласован)
 
-1. **Payload CMS 3.x + Postgres** — встроить в это же Next-приложение (`payload/` в корне). Коллекции: `products` (name, slug, scale, scaleNotes, price, oldPrice, notesCount, tuningHz, inStock, media[], video), `orders`, `categories`, `media`. У полей контента включать `localized: true` (задел под i18n). Заменить mock.ts на Local API (без HTTP).
+1. **Payload CMS 3.x + Postgres** — встроить в это же Next-приложение (`payload/` в корне). Коллекции: `products` (name, slug, scaleNotes, price, oldPrice, notesCount, tuningHz, inStock, media[], video), `orders`, `categories`, `media`. У полей контента включать `localized: true` (задел под i18n). Заменить mock.ts на Local API (без HTTP).
 2. **Better Auth, email OTP** — ✅ подключено (`auth.ts`, плагин `emailOTP`, SMTP через `nodemailer`). Когда появится Payload (шаг 1), `orders.customerId` будет ссылаться на Better Auth user; админы — в родной auth Payload, не смешивать. Телефонный вход (SMS/Flash Call) — отложен: в РФ SMS платные, добавить позже плагином `phoneNumber`.
 3. **ЮKassa** — Server Action создаёт заказ (pending) → создание платежа → redirect → вебхук `payment.succeeded` в `app/api/webhooks/yookassa` (проверка подписи, идемпотентность, сумма проверяется на сервере).
 4. **СДЭК API v2** — калькулятор тарифа на чекауте (вес/габариты из product), виджет выбора ПВЗ; после оплаты — регистрация отправления (hook `afterChange` в Payload), трек-номер в заказ; вебхуки статусов + fallback-поллинг. Профиль показывает статус и трек.

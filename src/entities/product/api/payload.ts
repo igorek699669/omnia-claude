@@ -10,7 +10,6 @@ interface ProductDoc {
   id: number | string;
   slug: string;
   name: string;
-  scale: string;
   scaleNotes: string;
   price: number;
   oldPrice?: number | null;
@@ -25,7 +24,6 @@ function toProduct(doc: ProductDoc): Product {
     id: String(doc.id),
     slug: doc.slug,
     name: doc.name,
-    scale: doc.scale,
     scaleNotes: doc.scaleNotes,
     price: doc.price,
     oldPrice: doc.oldPrice ?? undefined,

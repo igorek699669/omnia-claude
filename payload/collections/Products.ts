@@ -5,7 +5,7 @@ export const Products: CollectionConfig = {
   slug: "products",
   admin: {
     useAsTitle: "name",
-    defaultColumns: ["name", "scale", "price", "stockQty", "inStock"],
+    defaultColumns: ["name", "scaleNotes", "price", "stockQty", "inStock"],
   },
   access: {
     read: () => true,
@@ -67,12 +67,6 @@ export const Products: CollectionConfig = {
       type: "text",
       required: true,
       unique: true,
-    },
-    {
-      name: "scale",
-      type: "text",
-      required: true,
-      localized: true,
     },
     {
       name: "scaleNotes",

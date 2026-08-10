@@ -2,7 +2,6 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
-  scale: string;
   scaleNotes: string;
   price: number;
   oldPrice?: number;

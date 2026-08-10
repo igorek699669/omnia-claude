@@ -10,7 +10,6 @@ const products = [
   {
     slug: "dancing-waves",
     name: "Танцующие волны",
-    scale: "D Kurd",
     scaleNotes: "D3 / A3 B3 C4 D4 E4 F4 A4",
     price: 32000,
     oldPrice: 36000,
@@ -21,7 +20,6 @@ const products = [
   {
     slug: "morning-mist",
     name: "Утренний туман",
-    scale: "Celtic Minor",
     scaleNotes: "D3 / A3 C4 D4 E4 F4 G4 A4",
     price: 32000,
     oldPrice: 36000,
@@ -32,7 +30,6 @@ const products = [
   {
     slug: "warm-current",
     name: "Тёплое течение",
-    scale: "Hijaz",
     scaleNotes: "D3 / A3 Bb3 C#4 D4 E4 F4 A4",
     price: 32000,
     oldPrice: 36000,
@@ -44,7 +41,6 @@ const products = [
   {
     slug: "moon-path",
     name: "Лунный путь",
-    scale: "Sabye",
     scaleNotes: "D3 / A3 Bb3 D4 E4 F4 A4",
     price: 34000,
     notesCount: 8,
@@ -54,7 +50,6 @@ const products = [
   {
     slug: "northern-wind",
     name: "Северный ветер",
-    scale: "Pygmy",
     scaleNotes: "D3 / A3 C4 D4 E4 F4 G4 A4 C5 D5",
     price: 39000,
     oldPrice: 43000,
@@ -65,7 +60,6 @@ const products = [
   {
     slug: "fire-circle",
     name: "Огненный круг",
-    scale: "Ashakiran",
     scaleNotes: "D3 / A3 B3 D4 E4 F#4 A4 B4",
     price: 33000,
     notesCount: 10,

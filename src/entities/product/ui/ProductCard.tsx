@@ -79,8 +79,8 @@ export function ProductCard({
           </Link>
         </h3>
         <p className="text-sm font-medium">
-          <span className="font-normal text-ink-600">Строй · </span>
-          {product.scale} — {product.scaleNotes.split(" ").slice(0, 3).join(" ")}
+          <span className="font-normal text-ink-600">Звукоряд · </span>
+          {product.scaleNotes.split(" ").slice(0, 3).join(" ")}
         </p>
 
         <div className="flex items-baseline gap-3 pt-1">
