@@ -1,4 +1,5 @@
 import { getPayload } from "payload";
+import type { Where } from "payload";
 import config from "@payload-config";
 import type { Product } from "../model/types";
 
@@ -17,6 +18,7 @@ interface ProductDoc {
   tuningHz: "440" | "432";
   stockQty?: number | null;
   inStock?: boolean | null;
+  audioSample?: string | null;
 }
 
 function toProduct(doc: ProductDoc): Product {
@@ -31,6 +33,7 @@ function toProduct(doc: ProductDoc): Product {
     tuningHz: doc.tuningHz,
     stockQty: doc.stockQty ?? 0,
     inStock: doc.inStock ?? true,
+    audioSample: doc.audioSample ?? undefined,
   };
 }
 
@@ -43,6 +46,54 @@ export async function getProducts(filters?: { tuningHz?: "440" | "432" }): Promi
     sort: "-createdAt",
   });
   return (result.docs as ProductDoc[]).map(toProduct);
+}
+
+export interface CatalogFilters {
+  q?: string;
+  priceMin?: number;
+  priceMax?: number;
+  notesMin?: number;
+  notesMax?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface CatalogResult {
+  docs: Product[];
+  page: number;
+  totalPages: number;
+  totalDocs: number;
+}
+
+/** Каталог с поиском, диапазонами цены/нот и постраничной навигацией — для CatalogPage. */
+export async function getCatalogProducts(filters: CatalogFilters = {}): Promise<CatalogResult> {
+  const payload = await getPayload({ config });
+
+  const and: Where[] = [];
+  const q = filters.q?.trim();
+  if (q && q.length >= 2) {
+    and.push({ or: [{ name: { contains: q } }, { scaleNotes: { contains: q } }] });
+  }
+  if (filters.priceMin != null) and.push({ price: { greater_than_equal: filters.priceMin } });
+  if (filters.priceMax != null) and.push({ price: { less_than_equal: filters.priceMax } });
+  if (filters.notesMin != null) and.push({ notesCount: { greater_than_equal: filters.notesMin } });
+  if (filters.notesMax != null) and.push({ notesCount: { less_than_equal: filters.notesMax } });
+
+  const result = await payload.find({
+    collection: "products",
+    where: and.length ? { and } : undefined,
+    // Товары без остатка — в конец списка, доступные показываются первыми.
+    sort: "-inStock,-createdAt",
+    page: filters.page ?? 1,
+    limit: filters.limit ?? 12,
+  });
+
+  return {
+    docs: (result.docs as ProductDoc[]).map(toProduct),
+    page: result.page ?? 1,
+    totalPages: result.totalPages ?? 1,
+    totalDocs: result.totalDocs ?? 0,
+  };
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {

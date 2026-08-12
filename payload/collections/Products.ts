@@ -89,7 +89,11 @@ export const Products: CollectionConfig = {
       type: "number",
       required: true,
       min: 8,
-      max: 14,
+      max: 22,
+      admin: {
+        description:
+          "Для инструментов с нижними нотами («+N» в исходном названии строя) — сумма верхних и нижних нот.",
+      },
     },
     {
       name: "tuningHz",
@@ -135,6 +139,13 @@ export const Products: CollectionConfig = {
       name: "video",
       type: "upload",
       relationTo: "media",
+    },
+    {
+      name: "audioSample",
+      type: "text",
+      admin: {
+        description: "Путь к аудиозаписи строя в public/, например /audio/D_Kurd_12.m4a",
+      },
     },
   ],
 };

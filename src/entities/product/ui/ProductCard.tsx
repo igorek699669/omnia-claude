@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Product } from "../model/types";
 import { HANDPAN_DIAMETER_CM, HANDPAN_RIM_CM, HANDPAN_WEIGHT_GRAMS } from "../model/constants";
 import { formatPrice } from "@/shared/lib";
-import { HandpanArt } from "@/shared/ui";
+import { HandpanArt, AudioPlayerChip } from "@/shared/ui";
 
 /** Слайды медиа: видео идёт первым (пока заглушки — см. CLAUDE.md) */
 const slides = ["video", "photo", "photo-close"] as const;
@@ -22,7 +22,7 @@ export function ProductCard({
   return (
     <article className="flex flex-col overflow-hidden rounded-card bg-white transition-all hover:-translate-y-1 hover:shadow-[0_32px_64px_-32px_rgba(28,20,16,0.3)]">
       {/* Медиа-слайдер: первый слайд — видео */}
-      <div className={`relative aspect-[4/3] bg-paper-200 ${product.inStock ? "" : "grayscale"}`}>
+      <div className={`relative aspect-[4/3] overflow-hidden bg-paper-200 ${product.inStock ? "" : "grayscale"}`}>
         {!product.inStock && (
           <span className="absolute left-3.5 top-3.5 z-10 rounded-full bg-ink-900/85 px-3.5 py-1.5 text-[13px] font-semibold text-white">
             Нет в наличии
@@ -31,7 +31,7 @@ export function ProductCard({
         {slides.map((slide, i) => (
           <div
             key={slide}
-            className={`absolute inset-0 transition-opacity duration-400 ${i === active ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 transition-opacity duration-400 ${i === active ? "opacity-100" : "pointer-events-none opacity-0"}`}
           >
             {slide === "video" ? (
               <div className="relative h-full w-full bg-[#241a12]">
@@ -64,9 +64,7 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         <div className="flex items-center justify-between gap-3">
-          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-paper-100 px-4 py-2 text-sm font-medium transition-colors hover:bg-brand hover:text-white">
-            <PlayIcon size={12} /> Поиграть на ханге
-          </button>
+          <AudioPlayerChip src={product.audioSample} />
           <div className="flex gap-2">
             <SocialLink label="Спросить в Telegram" href="#" icon="tg" />
             <SocialLink label="Спросить в WhatsApp" href="#" icon="wa" />
@@ -80,7 +78,7 @@ export function ProductCard({
         </h3>
         <p className="text-sm font-medium">
           <span className="font-normal text-ink-600">Звукоряд · </span>
-          {product.scaleNotes.split(" ").slice(0, 3).join(" ")}
+          {product.scaleNotes}
         </p>
 
         <div className="flex items-baseline gap-3 pt-1">

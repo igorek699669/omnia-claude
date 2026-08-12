@@ -13,3 +13,4 @@ export { Backdrop } from "./Backdrop";
 export { PhoneInput } from "./PhoneInput";
 export { LegalLinks } from "./LegalLinks";
 export { HandpanArt } from "./assets/HandpanArt";
+export { AudioPlayerChip, AudioPlayerBar } from "./AudioPlayer";

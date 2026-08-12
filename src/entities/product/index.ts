@@ -5,5 +5,6 @@ export {
   HANDPAN_WEIGHT_GRAMS,
   HANDPAN_MATERIAL,
 } from "./model/constants";
-export { getProducts, getProductBySlug } from "./api/payload";
+export { getProducts, getProductBySlug, getCatalogProducts } from "./api/payload";
+export type { CatalogFilters, CatalogResult } from "./api/payload";
 export { ProductCard } from "./ui/ProductCard";

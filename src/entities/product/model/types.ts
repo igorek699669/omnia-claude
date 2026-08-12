@@ -9,4 +9,5 @@ export interface Product {
   tuningHz: "440" | "432";
   stockQty: number;
   inStock: boolean;
+  audioSample?: string;
 }

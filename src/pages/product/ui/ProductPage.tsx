@@ -7,7 +7,7 @@ import {
   HANDPAN_MATERIAL,
 } from "@/entities/product";
 import { formatPrice } from "@/shared/lib";
-import { Tag, HandpanArt } from "@/shared/ui";
+import { Tag, HandpanArt, AudioPlayerBar } from "@/shared/ui";
 import { AddToCartSection } from "./components/AddToCartSection";
 
 export async function ProductPage({ slug }: { slug: string }) {
@@ -22,6 +22,12 @@ export async function ProductPage({ slug }: { slug: string }) {
           <div className="overflow-hidden rounded-card bg-paper-200 p-10">
             <HandpanArt className="mx-auto w-full max-w-[480px]" />
           </div>
+          {product.audioSample && (
+            <AudioPlayerBar
+              src={product.audioSample}
+              className="absolute inset-x-6 bottom-6"
+            />
+          )}
         </div>
 
         <div>
