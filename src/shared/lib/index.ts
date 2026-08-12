@@ -9,3 +9,5 @@ export { resolveCdekCityCode, getAllCdekCities, getCdekPvzPoints, calculateCdekT
 export type { CdekPvz, CdekCityMatch } from "./cdek";
 export { DELIVERY_PROVIDERS, DELIVERY_PROVIDER_LABELS, DELIVERY_TYPES } from "./delivery-providers";
 export type { DeliveryProvider, DeliveryType } from "./delivery-providers";
+export { useBreakpoints } from "./useBreakpoints";
+export type { Breakpoints } from "./useBreakpoints";
