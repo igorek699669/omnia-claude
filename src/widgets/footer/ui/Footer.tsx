@@ -5,8 +5,8 @@ export function Footer() {
     <footer className="mt-12 rounded-t-card bg-ink-900 text-paper-50">
       <div className="mx-auto max-w-[1440px] px-5 md:px-12">
         <div className="grid grid-cols-2 gap-12 py-18 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="font-display text-[26px] font-semibold tracking-[0.16em]">
+          <div className="col-span-2 min-w-0 md:col-span-1">
+            <Link href="/" className="font-display text-[20px] font-semibold tracking-[0.16em] sm:text-[26px]">
               <b className="font-semibold text-brand">OM</b>NIA
             </Link>
             <p className="mt-4 max-w-[34ch] text-sm text-paper-50/60">
@@ -16,7 +16,7 @@ export function Footer() {
           </div>
           <FooterCol title="Магазин" links={[["Каталог", "/catalog"], ["Подбор звука", "/#sound"], ["Доставка и оплата", "/delivery"]]} />
           <FooterCol title="Покупателям" links={[["Личный кабинет", "/profile"], ["Вопросы и ответы", "/#faq"], ["Политика конфиденциальности", "#"], ["Публичная оферта", "#"]]} />
-          <div>
+          <div className="min-w-0">
             <h4 className="mb-5 font-display text-base font-medium uppercase tracking-wider text-paper-50/70">
               Связаться
             </h4>
@@ -48,14 +48,14 @@ export function Footer() {
 
 function FooterCol({ title, links }: { title: string; links: [string, string][] }) {
   return (
-    <div>
+    <div className="min-w-0">
       <h4 className="mb-5 font-display text-base font-medium uppercase tracking-wider text-paper-50/70">
         {title}
       </h4>
       <ul className="flex flex-col gap-3">
         {links.map(([label, href]) => (
           <li key={label}>
-            <Link href={href} className="text-[15px] transition-colors hover:text-brand">
+            <Link href={href} className="wrap-break-word text-[15px] transition-colors hover:text-brand">
               {label}
             </Link>
           </li>

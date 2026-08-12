@@ -33,7 +33,7 @@ export function Header() {
     <Dialog open={open} onOpenChange={setOpen}>
       <header className="sticky top-0 z-50 border-b border-ink-900/8 bg-paper-50/88 backdrop-blur-md">
         <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-3 px-5 md:px-12 justify-between ">
-          <Link href="/" className="font-display text-[26px] font-semibold tracking-[0.16em]">
+          <Link href="/" className="font-display text-[20px] font-semibold tracking-[0.16em] sm:text-[26px]">
             <b className="font-semibold text-brand">OM</b>NIA
           </Link>
 
@@ -49,7 +49,7 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-4 lg:ml-0">
+          <div className="ml-auto flex items-center gap-2 sm:gap-4 lg:ml-0">
             <a href="tel:+79000000000" className="hidden text-[15px] font-medium sm:block">
               +7 900 000-00-00
             </a>
@@ -113,7 +113,7 @@ export function Header() {
 
       <DialogContent className="lg:hidden">
         <div className="flex items-center justify-between">
-          <span className="font-display text-[26px] font-semibold tracking-[0.16em]">
+          <span className="font-display text-[20px] font-semibold tracking-[0.16em] sm:text-[26px]">
             <b className="font-semibold text-brand">OM</b>NIA
           </span>
           <DialogClose asChild>
