@@ -17,7 +17,7 @@ const products = [
     oldPrice: 167990,
     notesCount: 14,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/A2_Hijaz_14.m4a",
   },
   {
@@ -28,7 +28,7 @@ const products = [
     oldPrice: 239990,
     notesCount: 20,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/C-sharp_Kurd_20.m4a",
   },
   {
@@ -39,7 +39,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/C-sharp_Low_Pygmy_17.m4a",
   },
   {
@@ -50,7 +50,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/C-sharp_Pygmy_11+6.m4a",
   },
   {
@@ -61,7 +61,7 @@ const products = [
     oldPrice: 227990,
     notesCount: 19,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/C-sharp_Pygmy_12+7.m4a",
   },
   {
@@ -72,7 +72,7 @@ const products = [
     oldPrice: 191990,
     notesCount: 16,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/C_Ashakiran_16.m4a",
   },
   {
@@ -83,7 +83,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/C_Ashakiran_9+8.m4a",
   },
   {
@@ -94,7 +94,7 @@ const products = [
     oldPrice: 119990,
     notesCount: 10,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/D_Hijaz_10.m4a",
   },
   {
@@ -105,7 +105,7 @@ const products = [
     oldPrice: 155990,
     notesCount: 13,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/D_Kurd_10+3.m4a",
   },
   {
@@ -116,7 +116,7 @@ const products = [
     oldPrice: 119990,
     notesCount: 10,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 2,
     audioSample: "/audio/D_Kurd_10.m4a",
   },
   {
@@ -127,7 +127,7 @@ const products = [
     oldPrice: 191990,
     notesCount: 16,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/D_Kurd_12+4.m4a",
   },
   {
@@ -138,7 +138,7 @@ const products = [
     oldPrice: 239990,
     notesCount: 20,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/D_Kurd_12+8.m4a",
   },
   {
@@ -149,7 +149,20 @@ const products = [
     oldPrice: 143990,
     notesCount: 12,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
+    audioSample: "/audio/D_Kurd_12.m4a",
+  },
+  {
+    // Отдельной записи строя на 11 нот нет — берём ближайшую (D Kurd 12) и обрезаем
+    // на одну верхнюю ноту; аудио оставляем от 12-нотного, т.к. отдельной записи нет.
+    slug: "d-kurd-11",
+    name: "Ханг D Kurd 11",
+    scaleNotes: "D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4 C5",
+    price: 87990,
+    oldPrice: 131990,
+    notesCount: 11,
+    tuningHz: "440",
+    stockQty: 0,
     audioSample: "/audio/D_Kurd_12.m4a",
   },
   {
@@ -160,7 +173,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/D_Kurd_17.m4a",
   },
   {
@@ -171,7 +184,7 @@ const products = [
     oldPrice: 239990,
     notesCount: 20,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/E_Amara_13+7.m4a",
   },
   {
@@ -182,7 +195,7 @@ const products = [
     oldPrice: 191990,
     notesCount: 16,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/E_Amara_16.m4a",
   },
   {
@@ -193,7 +206,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/E_Amara_17.m4a",
   },
   {
@@ -204,7 +217,7 @@ const products = [
     oldPrice: 227990,
     notesCount: 19,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/E_Amara_19.m4a",
   },
   {
@@ -215,7 +228,7 @@ const products = [
     oldPrice: 143990,
     notesCount: 12,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/E_Equinox_12.m4a",
   },
   {
@@ -226,7 +239,7 @@ const products = [
     oldPrice: 227990,
     notesCount: 19,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/E_Kurd_19.m4a",
   },
   {
@@ -237,7 +250,7 @@ const products = [
     oldPrice: 263990,
     notesCount: 22,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F-sharp_Kurd_16+6.m4a",
   },
   {
@@ -248,7 +261,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F-sharp_Low_Pygmy_17.m4a",
   },
   {
@@ -260,7 +273,7 @@ const products = [
     oldPrice: 251990,
     notesCount: 21,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F-sharp_Low_Pygmy_21.m4a",
   },
   {
@@ -271,7 +284,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F-sharp_Pygmy_11+6.m4a",
   },
   {
@@ -282,7 +295,7 @@ const products = [
     oldPrice: 251990,
     notesCount: 21,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F-sharp_Pygmy_12+9.m4a",
   },
   {
@@ -293,7 +306,7 @@ const products = [
     oldPrice: 155990,
     notesCount: 13,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F-sharp_Romanian_Hijaz_13.m4a",
   },
   {
@@ -304,7 +317,7 @@ const products = [
     oldPrice: 179990,
     notesCount: 15,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F_Kurd_9+6.m4a",
   },
   {
@@ -315,7 +328,7 @@ const products = [
     oldPrice: 143990,
     notesCount: 12,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F_Low_Pygmy_12.m4a",
   },
   {
@@ -326,7 +339,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F_Low_Pygmy_17.m4a",
   },
   {
@@ -337,7 +350,7 @@ const products = [
     oldPrice: 203990,
     notesCount: 17,
     tuningHz: "440",
-    stockQty: 1,
+    stockQty: 0,
     audioSample: "/audio/F_Pygmy_17.m4a",
   },
 ];
