@@ -83,7 +83,8 @@ export async function getCatalogProducts(filters: CatalogFilters = {}): Promise<
     collection: "products",
     where: and.length ? { and } : undefined,
     // Товары без остатка — в конец списка, доступные показываются первыми.
-    sort: "-inStock,-createdAt",
+    // Local API не разбивает строку по запятой на несколько полей (в отличие от REST) — нужен массив.
+    sort: ["-inStock", "-createdAt"],
     page: filters.page ?? 1,
     limit: filters.limit ?? 12,
   });

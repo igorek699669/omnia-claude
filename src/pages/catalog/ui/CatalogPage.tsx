@@ -54,8 +54,8 @@ export async function CatalogPage({
         Пока в каталоге ханги. Глюкофоны, RAV-драмы и комплектующие появятся позже.
       </p>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
-        <div className="sticky top-20 z-10 self-start lg:top-26">
+      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
+        <div className="sticky top-20 z-10 min-w-0 self-start lg:top-26">
           <CatalogFilters />
         </div>
 
@@ -67,7 +67,7 @@ export async function CatalogPage({
           ) : (
             <>
               <p className="text-sm text-ink-600">Найдено инструментов: {totalDocs}</p>
-              <div className="mt-4 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {products.map((p, i) => (
                   <div
                     key={p.id}
