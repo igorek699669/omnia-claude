@@ -1,6 +1,4 @@
-import { HandpanArt } from "@/shared/ui";
-// import { ArrowLink } from "@/shared/ui"; // временно не используется — вернуть вместе со ссылкой на /#sound
-import Link from "next/link";
+import { ArrowLink, HandpanArt } from "@/shared/ui";
 
 const points = [
   ["Сустейн", "Глубокое и чистое звучание"],
@@ -33,12 +31,7 @@ export function Hero() {
           </p>
           <div className="flex flex-wrap items-center gap-6">
             {/* <ArrowLink href="/#sound">Выбрать звук</ArrowLink> временно скрыт, вернуть позже */}
-            <Link
-              href="/catalog"
-              className="border-b border-ink-900/25 py-3.5 text-base font-medium transition-colors hover:border-brand hover:text-brand-dark"
-            >
-              Каталог инструментов
-            </Link>
+            <ArrowLink href="/catalog">Каталог инструментов</ArrowLink>
           </div>
         </div>
 
