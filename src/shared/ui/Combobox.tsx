@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useState, type KeyboardEvent } from "react";
 
 export interface ComboboxProps<T> {
   value: string;
@@ -49,9 +49,13 @@ export function Combobox<T>({
   // (фокус и так уже стоит на поле) и список не откроется, пока не стереть/ввести текст.
   const [isSuppressed, setIsSuppressed] = useState(false);
 
-  useEffect(() => {
+  // Сбрасываем подсветку варианта при каждом новом наборе результатов поиска —
+  // без useEffect, чтобы не ловить лишний рендер (react-hooks/set-state-in-effect).
+  const [prevItems, setPrevItems] = useState(items);
+  if (items !== prevItems) {
+    setPrevItems(items);
     setActiveIndex(-1);
-  }, [items]);
+  }
 
   const isOpen =
     !disabled && isFocused && !isSuppressed && value.trim().length >= minChars && (items.length > 0 || isLoading);

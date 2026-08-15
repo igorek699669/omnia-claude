@@ -36,12 +36,6 @@ function useAudioPlayer(src: string | undefined, preload: "none" | "metadata" = 
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    setPlaying(false);
-    setCurrent(0);
-    setDuration(0);
-  }, [src]);
-
-  useEffect(() => {
     return () => {
       if (activeAudio === audioRef.current) activeAudio = null;
     };
@@ -95,9 +89,23 @@ export function AudioPlayerChip({
   label?: string;
   className?: string;
 }) {
-  const { audioEl, playing, current, duration, toggle, seek } = useAudioPlayer(src);
-
   if (!src) return null;
+
+  // key={src} пересоздаёт внутренний компонент при смене записи, чтобы playing/current/duration
+  // сбросились сами через начальное состояние — без useEffect, ставящего state синхронно.
+  return <AudioPlayerChipInner key={src} src={src} label={label} className={className} />;
+}
+
+function AudioPlayerChipInner({
+  src,
+  label,
+  className,
+}: {
+  src: string;
+  label: string;
+  className: string;
+}) {
+  const { audioEl, playing, current, duration, toggle, seek } = useAudioPlayer(src);
 
   return (
     <div
@@ -140,11 +148,15 @@ export function AudioPlayerChip({
 
 /** Полноразмерный плеер с прогресс-баром — для страницы товара. */
 export function AudioPlayerBar({ src, className = "" }: { src?: string; className?: string }) {
+  if (!src) return null;
+
+  return <AudioPlayerBarInner key={src} src={src} className={className} />;
+}
+
+function AudioPlayerBarInner({ src, className }: { src: string; className: string }) {
   // Единственный плеер на странице товара — можно грузить метаданные сразу,
   // без риска забить лимит соединений (в отличие от карточек в каталоге).
   const { audioEl, playing, current, duration, toggle, seek } = useAudioPlayer(src, "metadata");
-
-  if (!src) return null;
 
   return (
     <div className={`flex items-center gap-3 rounded-full bg-white/90 px-3 py-2 shadow-lg backdrop-blur ${className}`}>
