@@ -17,7 +17,12 @@ import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
 const orderSchema = z.object({
   lastName: z.string().min(1, "Введите фамилию"),
   firstName: z.string().min(1, "Введите имя"),
-  email: z.string().min(1, "Введите почту").email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз"),
+  // pipe, а не z.email().min(1) — иначе на пустом поле первым сообщением
+  // окажется «опечатка в адресе» вместо «введите почту».
+  email: z
+    .string()
+    .min(1, "Введите почту")
+    .pipe(z.email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз")),
   phone: z
     .string()
     .min(1, "Введите телефон")

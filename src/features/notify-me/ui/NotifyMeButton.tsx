@@ -11,7 +11,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogClose } from "
 import type { Product } from "@/entities/product";
 
 const emailSchema = z.object({
-  email: z.string().email("Введите корректную почту"),
+  email: z.email("Введите корректную почту"),
 });
 type EmailValues = z.infer<typeof emailSchema>;
 

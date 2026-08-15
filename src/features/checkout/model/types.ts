@@ -13,7 +13,7 @@ export const checkoutInputSchema = z.object({
   customer: z.object({
     lastName: z.string().min(1),
     firstName: z.string().min(1),
-    email: z.string().email(),
+    email: z.email(),
     phone: z.string().min(1),
   }),
   delivery: z.object({

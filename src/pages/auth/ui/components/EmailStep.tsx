@@ -9,7 +9,12 @@ import { SectionTitle, ArrowButton } from "@/shared/ui";
 import { authClient, errorMessage } from "@/shared/lib";
 
 const emailSchema = z.object({
-  email: z.string().min(1, "Укажите почту").email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз"),
+  // pipe, а не z.email().min(1) — иначе на пустом поле первым сообщением
+  // окажется «опечатка в адресе» вместо «укажите почту».
+  email: z
+    .string()
+    .min(1, "Укажите почту")
+    .pipe(z.email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз")),
 });
 type EmailValues = z.infer<typeof emailSchema>;
 
