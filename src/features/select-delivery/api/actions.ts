@@ -1,8 +1,7 @@
 "use server";
 
-import { getAllCdekCities, getCdekPvzPoints, resolveCdekCityCode, calculateCdekTariff } from "@/shared/lib";
-import type { CdekCityMatch } from "@/shared/lib";
-import { deriveShipmentPackages } from "./package";
+import { getAllCdekCities, getCdekPvzPoints, calculateCdekTariff, deriveShipmentPackages } from "@/shared/lib";
+import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
 import { CITY_SEARCH_MIN_CHARS } from "../model/types";
 import { TOP_RU_CITIES } from "../model/topCities";
 import type { DeliveryType, Pvz } from "../model/types";
@@ -61,14 +60,20 @@ export async function getPvzPointsByCity(cityCode: number): Promise<Pvz[]> {
 export interface CalculateDeliveryCostInput {
   items: { productId: string; qty: number }[];
   type: DeliveryType;
-  city: string;
+  cityCode: number;
 }
 
-export async function calculateDeliveryCost(input: CalculateDeliveryCostInput): Promise<number> {
+/**
+ * Возвращает не только сумму, но и код тарифа: по нему после оплаты регистрируется
+ * отправление, и он обязан совпадать с тем, по которому покупателю показали цену.
+ *
+ * Город принимаем кодом, а не названием: он уже известен из выбранной подсказки, так что
+ * лишний резолв по строке только добавлял бы риск попасть в город-тёзку.
+ */
+export async function calculateDeliveryCost(input: CalculateDeliveryCostInput): Promise<CdekTariff> {
   const packages = deriveShipmentPackages(input.items);
-  const cityCode = await resolveCdekCityCode(input.city);
   return calculateCdekTariff({
-    cityCode,
+    cityCode: input.cityCode,
     type: input.type,
     packages,
   });

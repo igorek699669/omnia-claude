@@ -79,7 +79,26 @@ export const Orders: CollectionConfig = {
           name: "pvzCode",
           type: "text",
           admin: {
-            description: "Код пункта выдачи СДЭК — понадобится для регистрации отправления (Roadmap)",
+            description: "Код пункта выдачи СДЭК — получатель забирает заказ отсюда",
+          },
+        },
+        {
+          name: "city",
+          type: "text",
+        },
+        {
+          name: "cityCode",
+          type: "number",
+          admin: {
+            description: "Код города СДЭК. Хранится кодом, а не названием: у городов есть тёзки",
+          },
+        },
+        {
+          name: "tariffCode",
+          type: "number",
+          admin: {
+            description:
+              "Тариф, по которому покупателю посчитали доставку. Отправление регистрируется ровно по нему, иначе СДЭК выставит другую сумму",
           },
         },
       ],
@@ -134,6 +153,24 @@ export const Orders: CollectionConfig = {
       unique: true,
       admin: {
         description: "id платежа ЮKassa — используется вебхуком для поиска заказа и идемпотентности",
+      },
+    },
+    {
+      name: "cdekUuid",
+      type: "text",
+      admin: {
+        readOnly: true,
+        description:
+          "id отправления в СДЭК. Проставляется автоматически после оплаты; заполнен — значит отправление уже зарегистрировано, повторно оно не создаётся",
+      },
+    },
+    {
+      name: "cdekNumber",
+      type: "text",
+      admin: {
+        readOnly: true,
+        description:
+          "Номер накладной СДЭК. Появляется не сразу: заказ обрабатывается на их стороне асинхронно, номер подтягивается позже",
       },
     },
   ],

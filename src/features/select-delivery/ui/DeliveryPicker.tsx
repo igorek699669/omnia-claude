@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { SectionTitle, Tabs, TabsList, TabsTrigger, TabsContent, Backdrop, LegalLinks, Combobox } from "@/shared/ui";
 import { formatPrice, DELIVERY_PROVIDER_LABELS } from "@/shared/lib";
-import type { CdekCityMatch } from "@/shared/lib";
+import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
 import { searchCitySuggestions, getPvzPointsByCity, calculateDeliveryCost } from "../api/actions";
 import { PvzMap } from "./PvzMap";
 import { CITY_SEARCH_MIN_CHARS } from "../model/types";
@@ -31,11 +31,14 @@ export function DeliveryPicker({
 
   const [pvzQuery, setPvzQuery] = useState("");
   const [selectedPoint, setSelectedPoint] = useState<Pvz | null>(null);
-  const [pvzCost, setPvzCost] = useState<number | null>(null);
+  const [pvzTariff, setPvzTariff] = useState<CdekTariff | null>(null);
 
-  const [courierCity, setCourierCity] = useState("");
+  // Город курьерской вкладки держим объектом, а не строкой: для регистрации отправления
+  // нужен его код СДЭК, а по одному названию его не восстановить (города-тёзки).
+  const [courierQuery, setCourierQuery] = useState("");
+  const [courierCity, setCourierCity] = useState<CdekCityMatch | null>(null);
   const [address, setAddress] = useState("");
-  const [courierCost, setCourierCost] = useState<number | null>(null);
+  const [courierTariff, setCourierTariff] = useState<CdekTariff | null>(null);
 
   // Подсказки городов: справочник СДЭК тянется и фильтруется на сервере (см. actions.ts
   // searchCitySuggestions) — оттуда сразу приходит настоящий code, резолвить его отдельно не нужно.
@@ -66,19 +69,19 @@ export function DeliveryPicker({
   });
 
   const { mutate: calculatePvzCost, isPending: isCalculatingPvz } = useMutation({
-    mutationFn: (cityForCalc: string) => calculateDeliveryCost({ items, type: "pvz", city: cityForCalc }),
-    onSuccess: (cost) => setPvzCost(cost),
+    mutationFn: (cityCode: number) => calculateDeliveryCost({ items, type: "pvz", cityCode }),
+    onSuccess: (tariff) => setPvzTariff(tariff),
     onError: (error) => {
-      setPvzCost(null);
+      setPvzTariff(null);
       toast.error(errorMessage(error, "Не удалось рассчитать стоимость"));
     },
   });
 
   const { mutate: calculateCourierCost, isPending: isCalculatingCourier } = useMutation({
-    mutationFn: () => calculateDeliveryCost({ items, type: "courier", city: courierCity }),
-    onSuccess: (cost) => setCourierCost(cost),
+    mutationFn: (cityCode: number) => calculateDeliveryCost({ items, type: "courier", cityCode }),
+    onSuccess: (tariff) => setCourierTariff(tariff),
     onError: (error) => {
-      setCourierCost(null);
+      setCourierTariff(null);
       toast.error(errorMessage(error, "Не удалось рассчитать стоимость"));
     },
   });
@@ -87,7 +90,7 @@ export function DeliveryPicker({
     setSelectedCity(city);
     setCityQuery(city.city);
     setSelectedPoint(null);
-    setPvzCost(null);
+    setPvzTariff(null);
     setPvzQuery("");
     loadCityPvz(city.code, {
       onError: (error) => toast.error(errorMessage(error, "Не удалось загрузить пункты выдачи")),
@@ -105,23 +108,25 @@ export function DeliveryPicker({
   }, [cityQuery]);
 
   function selectCourierCity(city: CdekCityMatch) {
-    setCourierCity(city.city);
-    setCourierCost(null);
+    setCourierCity(city);
+    setCourierQuery(city.city);
+    setCourierTariff(null);
   }
 
   useEffect(() => {
-    const query = courierCity.trim();
+    const query = courierQuery.trim();
     if (query.length < CITY_SEARCH_MIN_CHARS) return;
     const timer = setTimeout(() => searchCourierCities(query), 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courierCity]);
+  }, [courierQuery]);
 
   function selectPvzPoint(point: Pvz) {
+    if (!selectedCity) return;
     setSelectedPoint(point);
     setPvzQuery(point.address);
-    setPvzCost(null);
-    calculatePvzCost(point.city);
+    setPvzTariff(null);
+    calculatePvzCost(selectedCity.code);
   }
 
   // ПВЗ выбранного города уже загружены целиком — фильтруем локально, без похода в сеть.
@@ -132,25 +137,33 @@ export function DeliveryPicker({
   const pvzSuggestions = pvzMatches.slice(0, 8);
 
   function applyPvz() {
-    if (!selectedPoint || pvzCost === null) return;
+    if (!selectedPoint || !selectedCity || !pvzTariff) return;
     onApply({
       provider: selectedPoint.provider,
       type: "pvz",
       label: `${DELIVERY_PROVIDER_LABELS[selectedPoint.provider]}, ПВЗ`,
       address: selectedPoint.address,
-      cost: pvzCost,
+      cost: pvzTariff.cost,
       pvzCode: selectedPoint.code,
+      city: selectedCity.city,
+      cityCode: selectedCity.code,
+      tariffCode: pvzTariff.tariffCode,
     });
   }
 
   function applyCourier() {
-    if (courierCost === null) return;
+    if (!courierCity || !courierTariff) return;
     onApply({
       provider: "cdek",
       type: "courier",
       label: `${DELIVERY_PROVIDER_LABELS.cdek}, курьер`,
-      address,
-      cost: courierCost,
+      // Город обязательно в самом адресе: без него в заказе остались бы только «улица,
+      // дом, квартира» — по такой строке ни собрать доставку, ни понять, куда она едет.
+      address: `${courierCity.city}, ${address}`,
+      cost: courierTariff.cost,
+      city: courierCity.city,
+      cityCode: courierCity.code,
+      tariffCode: courierTariff.tariffCode,
     });
   }
 
@@ -229,12 +242,12 @@ export function DeliveryPicker({
                 )}
                 <p className="mt-1">
                   <b>Стоимость:</b>{" "}
-                  {isCalculatingPvz ? "считаем…" : pvzCost !== null ? formatPrice(pvzCost) : "—"}
+                  {isCalculatingPvz ? "считаем…" : pvzTariff ? formatPrice(pvzTariff.cost) : "—"}
                 </p>
                 <button
                   type="button"
                   onClick={applyPvz}
-                  disabled={pvzCost === null}
+                  disabled={!pvzTariff}
                   className="mt-3 w-full cursor-pointer rounded-full border border-ink-900/18 py-2 text-sm font-medium transition-colors hover:border-brand disabled:opacity-50"
                 >
                   Забрать отсюда
@@ -245,10 +258,13 @@ export function DeliveryPicker({
 
           <TabsContent value="courier" className="mt-5 flex flex-col gap-4">
             <Combobox
-              value={courierCity}
+              value={courierQuery}
               onValueChange={(value) => {
-                setCourierCity(value);
-                setCourierCost(null);
+                setCourierQuery(value);
+                // Правка текста сбрасывает выбранный город: набранная руками строка — ещё
+                // не город из справочника, кода СДЭК у неё нет.
+                setCourierCity(null);
+                setCourierTariff(null);
               }}
               items={courierCitySuggestions ?? []}
               getItemKey={(c) => String(c.code)}
@@ -263,7 +279,7 @@ export function DeliveryPicker({
                 value={address}
                 onChange={(e) => {
                   setAddress(e.target.value);
-                  setCourierCost(null);
+                  setCourierTariff(null);
                 }}
                 className="w-full min-w-0 flex-1 bg-transparent text-base outline-none"
                 placeholder="Улица, дом, квартира"
@@ -272,23 +288,23 @@ export function DeliveryPicker({
 
             <button
               type="button"
-              onClick={() => calculateCourierCost()}
+              onClick={() => courierCity && calculateCourierCost(courierCity.code)}
               disabled={!address || !courierCity || isCalculatingCourier}
               className="w-full cursor-pointer rounded-full bg-paper-100 py-3 text-sm font-medium transition-colors hover:bg-paper-200 disabled:opacity-50"
             >
               {isCalculatingCourier ? "Считаем…" : "Рассчитать стоимость"}
             </button>
 
-            {courierCost !== null && (
+            {courierTariff && (
               <p className="text-[15px]">
-                <b>Стоимость доставки:</b> {formatPrice(courierCost)}
+                <b>Стоимость доставки:</b> {formatPrice(courierTariff.cost)}
               </p>
             )}
 
             <button
               type="button"
               onClick={applyCourier}
-              disabled={courierCost === null}
+              disabled={!courierTariff}
               className="w-full cursor-pointer rounded-full bg-brand py-3.5 font-medium text-white transition-colors hover:bg-brand-dark disabled:opacity-50"
             >
               Применить

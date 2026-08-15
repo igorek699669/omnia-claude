@@ -22,4 +22,13 @@ export interface Delivery {
   address: string;
   cost: number;
   pvzCode?: string;
+  /**
+   * Город и тариф нужны уже после оплаты — для регистрации отправления (см.
+   * features/checkout/api/shipment). Город в виде кода, а не строки: у названий есть
+   * тёзки (тот самый хутор «Брянск» в Дагестане), а тариф — ровно тот, по которому
+   * покупателю посчитали cost, иначе СДЭК выставит другую сумму.
+   */
+  city: string;
+  cityCode: number;
+  tariffCode: number;
 }
