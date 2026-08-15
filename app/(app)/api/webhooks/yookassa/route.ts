@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getYookassaPayment } from "@/shared/lib";
+import { registerCdekShipment } from "@/features/checkout/server";
 
 interface OrderDoc {
   id: number | string;
@@ -69,6 +70,15 @@ export async function POST(request: Request) {
       await payload.update({ collection: "products", id: item.product, data: { stockQty: nextQty } });
     }
     await payload.update({ collection: "orders", id: order.id, data: { status: "paid" } });
+
+    // Сбой на стороне СДЭК не должен ронять обработку вебхука: деньги уже приняты, остаток
+    // списан, заказ оплачен — ответь мы ошибкой, ЮKassa начала бы ретраить событие и
+    // прогонять всё это заново. Отправление в этом случае придётся завести вручную.
+    try {
+      await registerCdekShipment(order.id);
+    } catch (err) {
+      console.error(`[cdek] не удалось зарегистрировать отправление по заказу ${order.id}:`, err);
+    }
   } else if (payment.status === "canceled") {
     await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });
   }

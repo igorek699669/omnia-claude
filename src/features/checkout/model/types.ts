@@ -23,6 +23,10 @@ export const checkoutInputSchema = z.object({
     address: z.string().min(1),
     cost: z.number().min(0),
     pvzCode: z.string().optional(),
+    // Нужны после оплаты, при регистрации отправления (см. api/shipment).
+    city: z.string().min(1),
+    cityCode: z.number().int().positive(),
+    tariffCode: z.number().int().positive(),
   }),
 });
 

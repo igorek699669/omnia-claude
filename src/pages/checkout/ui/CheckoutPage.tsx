@@ -113,6 +113,9 @@ export function CheckoutPage() {
         address: delivery.address,
         cost: delivery.cost,
         pvzCode: delivery.pvzCode,
+        city: delivery.city,
+        cityCode: delivery.cityCode,
+        tariffCode: delivery.tariffCode,
       },
     });
   }

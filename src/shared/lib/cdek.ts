@@ -1,3 +1,5 @@
+import { PACKAGE_WEIGHT_GRAMS, type PackageBox } from "./shipment-package";
+
 /**
  * СДЭК API v2 — https://apidoc.cdek.ru/. Набор доступных tariff_code различается между
  * контурами/договорами (напрямую проверено: 136/138 недоступны на тестовом контуре —
@@ -26,11 +28,6 @@ export interface CdekCityMatch {
   code: number;
   city: string;
   region?: string;
-}
-
-interface PackageBox {
-  weightGrams: number;
-  boxCm: { length: number; width: number; height: number };
 }
 
 interface TokenCache {
@@ -91,17 +88,6 @@ async function cdekFetch<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`СДЭК: запрос ${path} не удался (${res.status}): ${await res.text()}`);
   }
   return res.json();
-}
-
-export async function resolveCdekCityCode(city: string): Promise<number> {
-  const cities = await cdekFetch<{ code: number; city: string }[]>(
-    `/location/cities?city=${encodeURIComponent(city)}&size=1&country_codes=RU`,
-  );
-  const match = cities[0];
-  if (!match) {
-    throw new Error(`СДЭК: город «${city}» не найден`);
-  }
-  return match.code;
 }
 
 interface CityListCache {
@@ -185,11 +171,17 @@ export async function getCdekPvzPoints(cityCode: number): Promise<CdekPvz[]> {
     }));
 }
 
+export interface CdekTariff {
+  /** Код выбранного тарифа — при регистрации отправления нужен ровно тот, по которому посчитали цену покупателю. */
+  tariffCode: number;
+  cost: number;
+}
+
 export async function calculateCdekTariff(params: {
   cityCode: number;
   type: "pvz" | "courier";
   packages: PackageBox[];
-}): Promise<number> {
+}): Promise<CdekTariff> {
   const result = await cdekFetch<{
     tariff_codes: { tariff_code: number; delivery_mode: number; delivery_sum: number }[];
   }>("/calculator/tarifflist", {
@@ -212,5 +204,117 @@ export async function calculateCdekTariff(params: {
   if (matching.length === 0) {
     throw new Error("СДЭК: нет доступных тарифов для этого направления");
   }
-  return Math.min(...matching.map((t) => t.delivery_sum));
+  const cheapest = matching.reduce((min, t) => (t.delivery_sum < min.delivery_sum ? t : min));
+  return { tariffCode: cheapest.tariff_code, cost: cheapest.delivery_sum };
+}
+
+export interface CdekOrderItem {
+  /** Идентификатор товара в нашей системе — уходит в ware_key. */
+  wareKey: string;
+  name: string;
+  qty: number;
+  /** Цена за единицу в рублях — объявленная стоимость. */
+  price: number;
+}
+
+export interface CreateCdekOrderParams {
+  /** Наш номер заказа. СДЭК не даёт завести два заказа с одинаковым number — это и есть защита от дублей. */
+  orderNumber: string;
+  tariffCode: number;
+  type: "pvz" | "courier";
+  cityCode: number;
+  /** Только для курьера: улица, дом, квартира. */
+  address?: string;
+  /** Только для ПВЗ: код пункта выдачи получателя. */
+  pvzCode?: string;
+  recipientName: string;
+  recipientPhone: string;
+  recipientEmail: string;
+  items: CdekOrderItem[];
+  packages: PackageBox[];
+}
+
+/**
+ * Регистрация отправления — POST /v2/orders. Заказ создаётся асинхронно: ответ отдаёт
+ * только uuid и статус заявки, номер накладной (cdek_number) появляется позже, поэтому
+ * его забирает отдельный getCdekOrderNumber.
+ *
+ * Товар уже оплачен через ЮKassa, поэтому наложенный платёж по каждой позиции — 0.
+ * В items.cost идёт реальная цена: это объявленная стоимость (страховка), занижать её
+ * для дорогого инструмента нельзя — при утере СДЭК возместит только объявленное.
+ */
+export async function createCdekOrder(params: CreateCdekOrderParams): Promise<string> {
+  // Один кофр на инструмент (см. deriveShipmentPackages), но вложения СДЭК требует
+  // перечислить внутри места. Кладём весь состав заказа в первое место: дробить позиции
+  // по коробкам смысла нет — вес и габариты у всех мест одинаковые.
+  const cdekItems = params.items.map((item) => ({
+    ware_key: item.wareKey,
+    name: item.name,
+    payment: { value: 0 },
+    cost: item.price,
+    amount: item.qty,
+    weight: PACKAGE_WEIGHT_GRAMS,
+  }));
+
+  const body: Record<string, unknown> = {
+    type: 1,
+    number: params.orderNumber,
+    tariff_code: params.tariffCode,
+    recipient: {
+      name: params.recipientName,
+      phones: [{ number: params.recipientPhone }],
+      email: params.recipientEmail,
+    },
+    packages: params.packages.map((p, index) => ({
+      number: String(index + 1),
+      weight: p.weightGrams,
+      length: p.boxCm.length,
+      width: p.boxCm.width,
+      height: p.boxCm.height,
+      items: index === 0 ? cdekItems : [],
+    })),
+  };
+
+  // Тарифы, которыми мы пользуемся, — оба «от склада»: продавец сам привозит груз в ПВЗ.
+  // Если код своего пункта приёма задан в .env — отдаём его; иначе СДЭК примет город
+  // отправителя и выберет пункт сам (from_location и shipment_point взаимоисключающие).
+  const shipmentPoint = process.env.CDEK_SHIPMENT_POINT;
+  if (shipmentPoint) {
+    body.shipment_point = shipmentPoint;
+  } else {
+    body.from_location = { code: SENDER_CITY_CODE };
+  }
+
+  if (params.type === "pvz") {
+    body.delivery_point = params.pvzCode;
+  } else {
+    body.to_location = { code: params.cityCode, address: params.address };
+  }
+
+  const result = await cdekFetch<{
+    entity?: { uuid?: string };
+    requests?: { state?: string; errors?: { code?: string; message?: string }[] }[];
+  }>("/orders", { method: "POST", body: JSON.stringify(body) });
+
+  // HTTP 202 приходит и на отклонённую заявку — реальный результат лежит в requests[].state.
+  const invalid = result.requests?.find((r) => r.state === "INVALID");
+  if (invalid) {
+    const reason = invalid.errors?.map((e) => e.message ?? e.code).join("; ") || "причина не указана";
+    throw new Error(`СДЭК отклонил регистрацию заказа: ${reason}`);
+  }
+
+  const uuid = result.entity?.uuid;
+  if (!uuid) {
+    throw new Error("СДЭК: ответ на создание заказа не содержит uuid");
+  }
+  return uuid;
+}
+
+/**
+ * Номер накладной по uuid. Заказ обрабатывается асинхронно, поэтому сразу после создания
+ * номера может ещё не быть — тогда возвращаем null, а не считаем это ошибкой.
+ */
+export async function getCdekOrderNumber(uuid: string): Promise<string | null> {
+  const result = await cdekFetch<{ entity?: { cdek_number?: string } }>(`/orders/${uuid}`);
+  return result.entity?.cdek_number ?? null;
 }
