@@ -89,7 +89,7 @@ export function Header() {
             <button
               aria-label={open ? "Закрыть меню" : "Меню"}
               onClick={() => setOpen((v) => !v)}
-              className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15"
+              className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15 transition-colors hover:border-brand hover:bg-paper-100"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M3 6h18M3 12h18M3 18h18" />}
@@ -107,7 +107,7 @@ export function Header() {
           <DialogClose asChild>
             <button
               aria-label="Закрыть меню"
-              className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15"
+              className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15 transition-colors hover:border-brand hover:bg-paper-100"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
