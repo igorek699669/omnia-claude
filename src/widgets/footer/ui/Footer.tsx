@@ -14,7 +14,7 @@ export function Footer() {
               доставка по всей России.
             </p>
           </div>
-          <FooterCol title="Магазин" links={[["Каталог", "/catalog"], ["Подбор звука", "/#sound"], ["Доставка и оплата", "/delivery"]]} />
+          <FooterCol title="Магазин" links={[["Каталог", "/catalog"], ["Доставка и оплата", "/delivery"]]} />
           <FooterCol title="Покупателям" links={[["Личный кабинет", "/profile"], ["Вопросы и ответы", "/#faq"], ["Политика конфиденциальности", "#"], ["Публичная оферта", "#"]]} />
           <div className="min-w-0">
             <h4 className="mb-5 font-display text-base font-medium uppercase tracking-wider text-paper-50/70">

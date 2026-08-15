@@ -9,7 +9,7 @@ import { useSession, signOut } from "@/shared/lib";
 
 const nav = [
   { href: "/catalog", label: "Каталог" },
-  { href: "/#sound", label: "Подбор звука" },
+  // { href: "/#sound", label: "Подбор звука" }, // временно скрыт, вернуть позже
   { href: "/delivery", label: "Доставка" },
   { href: "/#faq", label: "Вопросы" },
 ];
@@ -37,19 +37,7 @@ export function Header() {
             <b className="font-semibold text-brand">OM</b>NIA
           </Link>
 
-          <nav aria-label="Основная навигация" className="mx-auto hidden gap-8 lg:flex">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-[15px] font-medium text-ink-600 transition-colors hover:text-ink-900"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-2 sm:gap-4 lg:ml-0">
+          <div className="ml-auto flex items-center gap-2 sm:gap-4">
             <a href="tel:+79000000000" className="hidden text-[15px] font-medium sm:block">
               +7 900 000-00-00
             </a>
@@ -101,7 +89,7 @@ export function Header() {
             <button
               aria-label={open ? "Закрыть меню" : "Меню"}
               onClick={() => setOpen((v) => !v)}
-              className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15 lg:hidden"
+              className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M3 6h18M3 12h18M3 18h18" />}
@@ -111,7 +99,7 @@ export function Header() {
         </div>
       </header>
 
-      <DialogContent className="lg:hidden">
+      <DialogContent>
         <div className="flex items-center justify-between">
           <span className="font-display text-[20px] font-semibold tracking-[0.16em] sm:text-[26px]">
             <b className="font-semibold text-brand">OM</b>NIA
@@ -127,8 +115,8 @@ export function Header() {
             </button>
           </DialogClose>
         </div>
-        <DialogTitle className="sr-only">Мобильное меню</DialogTitle>
-        <nav aria-label="Мобильная навигация" className="mt-8">
+        <DialogTitle className="sr-only">Меню</DialogTitle>
+        <nav aria-label="Основная навигация" className="mt-8">
           <ul className="flex flex-col gap-5">
             {nav.map((item) => (
               <li key={item.href}>

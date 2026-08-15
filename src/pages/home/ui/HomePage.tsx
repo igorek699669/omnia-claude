@@ -1,7 +1,7 @@
 import { Hero } from "./components/Hero";
 import { Quote } from "./components/Quote";
 import { PopularProducts } from "./components/PopularProducts";
-import { SoundPicker } from "./components/SoundPicker";
+// import { SoundPicker } from "./components/SoundPicker"; // временно скрыт, вернуть позже
 import { Steel } from "./components/Steel";
 import { Firsthand } from "./components/Firsthand";
 import { DeliverySteps } from "./components/DeliverySteps";
@@ -14,7 +14,7 @@ export function HomePage() {
       <Hero />
       <Quote />
       <PopularProducts />
-      <SoundPicker />
+      {/* <SoundPicker /> временно скрыт, вернуть позже */}
       <Steel />
       <Firsthand />
       <DeliverySteps />
