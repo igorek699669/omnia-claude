@@ -42,20 +42,8 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[560px] lg:max-w-none">
-          <HandpanArt className="relative z-10 aspect-square w-full rounded-full shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]" />
-          <div className="absolute bottom-[6%] right-[4%] z-20 flex items-center gap-3 rounded-full bg-white py-3 pl-3.5 pr-5.5 shadow-[0_16px_40px_-16px_rgba(28,20,16,0.35)]">
-            <button
-              aria-label="Послушать звучание"
-              className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full bg-brand text-white transition-colors hover:bg-brand-dark"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            </button>
-            <div className="leading-tight">
-              <strong className="block text-[15px] font-semibold">Послушать звучание</strong>
-              <small className="text-[13px] text-ink-600">Танцующие волны · D Kurd</small>
-            </div>
-          </div>
+        <div className="mx-auto w-full max-w-[560px] lg:max-w-none">
+          <HandpanArt className="aspect-square w-full rounded-full shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]" />
         </div>
       </div>
     </section>
