@@ -57,7 +57,7 @@ Figma MCP на Starter-плане быстро упирается в лимит 
 - Градиентные фоны в DeliverySteps и Faq — заменить на фото процесса упаковки и мастерской.
 - `entities/product/api/mock.ts` — мок-каталог. Заменить на Payload Local API.
 - Телефон +7 900 000-00-00, email, ссылки соцсетей — плейсхолдеры.
-- Заказы в ProfilePage — моки (пока нет `orders` в Payload).
+- Фото товара в заказах ProfilePage и в корзине — та же заглушка `HandpanArt`: у `Product` нет поля с медиа, `media[]` из Payload наружу пока не проброшено.
 
 ## Roadmap (порядок согласован)
 
