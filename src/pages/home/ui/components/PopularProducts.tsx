@@ -1,18 +1,17 @@
+import { Suspense } from "react";
 import Link from "next/link";
-import { getProducts, ProductCard } from "@/entities/product";
+import { getProducts, ProductCard, ProductCardSkeleton } from "@/entities/product";
 import { AddToCartButton } from "@/features/cart";
 import { NotifyMeButton } from "@/features/notify-me";
 import { Tag, SectionTitle, ArrowLink } from "@/shared/ui";
 
 const VISIBLE_COUNT = 3;
 
-export async function PopularProducts() {
-  const allProducts = await getProducts();
-  // Товары без остатка — в конец списка, чтобы на витрине сначала показывались доступные.
-  const sorted = [...allProducts].sort((a, b) => Number(!a.inStock) - Number(!b.inStock));
-  const products = sorted.slice(0, VISIBLE_COUNT);
-  const hasMore = allProducts.length > VISIBLE_COUNT;
-
+/**
+ * Заголовок секции — статика, поэтому рендерится сразу, а витрина из Payload
+ * подгружается под Suspense: остальная главная не ждёт ответа базы.
+ */
+export function PopularProducts() {
   return (
     <section id="catalog" className="mx-auto max-w-[1440px] scroll-mt-24 px-5 py-24 md:px-12">
       <div className="mb-12 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
@@ -27,6 +26,45 @@ export async function PopularProducts() {
           Весь каталог
         </Link>
       </div>
+      <Suspense fallback={<PopularGridSkeleton />}>
+        <PopularGrid />
+      </Suspense>
+    </section>
+  );
+}
+
+async function PopularGrid() {
+  // Витрина — одна из секций главной, а не вся страница: если Payload недоступен,
+  // показываем сообщение вместо карточек, но остальная главная остаётся рабочей.
+  let allProducts;
+  try {
+    allProducts = await getProducts();
+  } catch {
+    return (
+      <div className="rounded-card bg-white p-12 text-center">
+        <p className="text-ink-600">Не получилось загрузить витрину — попробуйте открыть каталог.</p>
+        <div className="mt-6 flex justify-center">
+          <ArrowLink href="/catalog">Перейти в каталог</ArrowLink>
+        </div>
+      </div>
+    );
+  }
+
+  // Товары без остатка — в конец списка, чтобы на витрине сначала показывались доступные.
+  const sorted = [...allProducts].sort((a, b) => Number(!a.inStock) - Number(!b.inStock));
+  const products = sorted.slice(0, VISIBLE_COUNT);
+  const hasMore = allProducts.length > VISIBLE_COUNT;
+
+  if (products.length === 0) {
+    return (
+      <p className="rounded-card bg-white p-12 text-center text-ink-600">
+        Витрина обновляется — инструменты появятся здесь совсем скоро.
+      </p>
+    );
+  }
+
+  return (
+    <>
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {products.map((p) => (
           <ProductCard
@@ -47,6 +85,22 @@ export async function PopularProducts() {
           <ArrowLink href="/catalog">Показать все инструменты</ArrowLink>
         </div>
       )}
-    </section>
+    </>
+  );
+}
+
+function PopularGridSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Загружаем инструменты"
+      className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+    >
+      {Array.from({ length: VISIBLE_COUNT }, (_, i) => (
+        <div key={i} className={i === 0 ? undefined : i === 1 ? "hidden md:block" : "hidden xl:block"}>
+          <ProductCardSkeleton />
+        </div>
+      ))}
+    </div>
   );
 }

@@ -1,17 +1,7 @@
-import { getCatalogProducts, ProductCard } from "@/entities/product";
-import { AddToCartButton } from "@/features/cart";
-import { NotifyMeButton } from "@/features/notify-me";
+import { Suspense } from "react";
 import { Tag, SectionTitle } from "@/shared/ui";
 import { CatalogFilters } from "./components/CatalogFilters";
-import { Pagination } from "./components/Pagination";
-
-// Сколько карточек показывать за раз зависит от того, сколько колонок в сетке
-// (см. grid ниже: 1 колонка < sm, 2 колонки sm–xl, 3 колонки xl+). Сервер не знает
-// ширину экрана, поэтому забираем сразу под самую широкую раскладку (12 = 3×4),
-// а лишние карточки на узких экранах прячем через CSS, не трогая пагинацию.
-const PAGE_SIZE = 12;
-const MOBILE_VISIBLE = 5;
-const TABLET_VISIBLE = 8;
+import { CatalogGrid, CatalogGridSkeleton, PAGE_SIZE } from "./components/CatalogGrid";
 
 type SearchParams = {
   q?: string;
@@ -36,16 +26,6 @@ export async function CatalogPage({
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const { docs: products, totalPages, totalDocs } = await getCatalogProducts({
-    q: sp.q,
-    priceMin: toNumber(sp.priceMin),
-    priceMax: toNumber(sp.priceMax),
-    notesMin: toNumber(sp.notesMin),
-    notesMax: toNumber(sp.notesMax),
-    page,
-    limit: PAGE_SIZE,
-  });
-
   return (
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
       <Tag>Каталог</Tag>
@@ -60,37 +40,24 @@ export async function CatalogPage({
         </div>
 
         <div>
-          {products.length === 0 ? (
-            <p className="rounded-card bg-white p-12 text-center text-ink-600">
-              Ничего не найдено — попробуйте изменить фильтры.
-            </p>
-          ) : (
-            <>
-              <p className="text-sm text-ink-600">Найдено инструментов: {totalDocs}</p>
-              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {products.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className={
-                      i < MOBILE_VISIBLE ? undefined : i < TABLET_VISIBLE ? "hidden sm:block" : "hidden xl:block"
-                    }
-                  >
-                    <ProductCard
-                      product={p}
-                      cartAction={
-                        p.inStock ? (
-                          <AddToCartButton key={p.id} product={p} />
-                        ) : (
-                          <NotifyMeButton key={p.id} product={p} variant="icon" />
-                        )
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-              <Pagination page={page} totalPages={totalPages} searchParams={sp} />
-            </>
-          )}
+          {/* Запрос к Payload вынесен под Suspense, а не в loading.tsx всего сегмента:
+              фильтры и поле поиска остаются смонтированными, пока грузится выдача, —
+              иначе при автоприменении фильтра инпут терял бы фокус на каждой букве.
+              key заставляет границу пересуспендиться при смене фильтров. */}
+          <Suspense key={JSON.stringify(sp)} fallback={<CatalogGridSkeleton />}>
+            <CatalogGrid
+              query={{
+                q: sp.q,
+                priceMin: toNumber(sp.priceMin),
+                priceMax: toNumber(sp.priceMax),
+                notesMin: toNumber(sp.notesMin),
+                notesMax: toNumber(sp.notesMax),
+                page,
+                limit: PAGE_SIZE,
+              }}
+              searchParams={sp}
+            />
+          </Suspense>
         </div>
       </div>
     </section>

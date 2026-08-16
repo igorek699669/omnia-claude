@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
-import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent } from "@/shared/ui";
+import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent, Skeleton } from "@/shared/ui";
 import { useSession, signOut } from "@/shared/lib";
 
 const nav = [
@@ -18,7 +18,9 @@ export function Header() {
   const items = useCart((s) => s.items);
   const count = cartCount(items);
   const [open, setOpen] = useState(false);
-  const { data: session } = useSession();
+  // isPending — сессия ещё проверяется. Без него вошедший пользователь на первых
+  // кадрах видит кнопку «Войти», и она тут же подменяется иконкой аккаунта.
+  const { data: session, isPending: isSessionLoading } = useSession();
 
   async function handleSignOut() {
     const { error } = await signOut();
@@ -53,7 +55,9 @@ export function Header() {
                 </span>
               )}
             </Link>
-            {session ? (
+            {isSessionLoading ? (
+              <Skeleton className="h-10.5 w-23 rounded-full" />
+            ) : session ? (
               <Popover>
                 <PopoverTrigger asChild>
                   <button
@@ -126,7 +130,9 @@ export function Header() {
               </li>
             ))}
             <li className="mt-3 border-t border-ink-900/10 pt-5">
-              {session ? (
+              {isSessionLoading ? (
+                <Skeleton className="h-7 w-48" />
+              ) : session ? (
                 <div className="flex flex-col gap-4">
                   <Link href="/profile" onClick={() => setOpen(false)} className="block text-lg font-medium">
                     {session.user.email}

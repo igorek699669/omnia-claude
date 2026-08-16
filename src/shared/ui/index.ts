@@ -12,5 +12,8 @@ export { Combobox } from "./Combobox";
 export { Backdrop } from "./Backdrop";
 export { PhoneInput } from "./PhoneInput";
 export { LegalLinks } from "./LegalLinks";
+export { Skeleton } from "./Skeleton";
+export { Spinner } from "./Spinner";
+export { ErrorState } from "./ErrorState";
 export { HandpanArt } from "./assets/HandpanArt";
 export { AudioPlayerChip, AudioPlayerBar } from "./AudioPlayer";
