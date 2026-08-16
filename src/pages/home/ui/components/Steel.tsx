@@ -1,4 +1,5 @@
-import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
+import Image from "next/image";
+import { Tag, SectionTitle } from "@/shared/ui";
 
 const left = [
   ["Не подвержен коррозии", "Не ржавеет и сохраняет хороший вид с минимумом ухода"],
@@ -23,7 +24,13 @@ export function Steel() {
             <Feature key={title} title={title} text={text} />
           ))}
         </div>
-        <HandpanArt className="w-[min(420px,70vw)] drop-shadow-[0_32px_48px_rgba(28,20,16,0.3)] lg:w-[min(420px,34vw)]" />
+        <Image
+          src="/images/steel/steel-handpan.png"
+          alt="Ханг из нержавеющей стали, вид сбоку"
+          width={1918}
+          height={1007}
+          className="h-auto w-[min(420px,70vw)] drop-shadow-[0_32px_48px_rgba(28,20,16,0.3)] lg:w-[min(420px,34vw)]"
+        />
         <div className="flex flex-col gap-12">
           {right.map(([title, text]) => (
             <Feature key={title} title={title} text={text} align="right" />

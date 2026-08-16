@@ -1,4 +1,5 @@
-import { ArrowLink, HandpanArt } from "@/shared/ui";
+import Image from "next/image";
+import { ArrowLink } from "@/shared/ui";
 
 const points = [
   ["Яркий и длительный звук", "Профессиональное звучание по разумной цене"],
@@ -36,7 +37,14 @@ export function Hero() {
         </div>
 
         <div className="mx-auto w-full max-w-[560px] lg:max-w-none">
-          <HandpanArt className="aspect-square w-full rounded-full shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]" />
+          <Image
+            src="/images/hero/hero-handpan.png"
+            alt="Ханг из нержавеющей стали"
+            width={513}
+            height={501}
+            priority
+            className="aspect-square w-full rounded-full object-cover shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]"
+          />
         </div>
       </div>
     </section>
