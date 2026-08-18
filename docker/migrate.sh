@@ -40,14 +40,15 @@ const tryOnce = () => new Promise((resolve, reject) => {
 })();
 "
 
-# Пересид каталога — только по явному запросу:
-#   docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED=1 migrate
-# Сам сид живёт в /api/dev-seed (роут проверяет тот же SEED=1) — CLI-путь сломан тем же
+# Наполнение каталога — только по явному запросу:
+#   docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED=photos migrate
+# Логика живёт в /api/dev-seed (роут проверяет ту же переменную) — CLI-путь сломан тем же
 # багом Payload, что и migrate выше, а внутри процесса Next всё работает.
-# ⚠️ Удаляет все products и media перед пересозданием: ссылки на товары в существующих
-# заказах станут битыми. Без SEED=1 этот блок не выполняется.
-if [ "$SEED" = "1" ]; then
-  echo "SEED=1 — пересидим каталог..."
+#   SEED=photos — проставить фото товарам, ничего не удаляя (рабочий режим для прода).
+#   SEED=1      — ⚠️ полный пересид с удалением всех products и media.
+# Без переменной SEED этот блок не выполняется.
+if [ -n "$SEED" ]; then
+  echo "SEED=$SEED — наполняем каталог..."
   node -e "
   const http = require('http');
   const req = http.request(

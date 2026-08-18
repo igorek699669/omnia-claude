@@ -363,11 +363,69 @@ function getUpperNotes(name: string): number {
   return Number(lastToken.split("+")[0]);
 }
 
+const PHOTOS = [
+  { filename: "handpan-12.webp", alt: "Ханг, 12-нотная дека", upperNotes: 12 },
+  { filename: "handpan-10.webp", alt: "Ханг, 10-нотная дека", upperNotes: 10 },
+] as const;
+
+/** Находит media по имени файла или загружает его из public/images/products. */
+async function findOrUploadPhoto(payload: Payload, filename: string, alt: string) {
+  const found = await payload.find({
+    collection: "media",
+    where: { filename: { equals: filename } },
+    limit: 1,
+  });
+  if (found.docs[0]) return found.docs[0];
+
+  return payload.create({
+    collection: "media",
+    data: { alt },
+    filePath: path.resolve(process.cwd(), "public/images/products", filename),
+  });
+}
+
+/**
+ * Проставляет товарам фото, ничего не удаляя, — в отличие от runSeed, которая
+ * пересоздаёт каталог целиком. На боевой базе нужен именно этот путь: удалить товар,
+ * на который ссылается оформленный заказ, Postgres всё равно не даст
+ * (orders_items.product_id NOT NULL), да и терять связь заказа с инструментом нельзя.
+ *
+ * Идемпотентна: media ищутся по имени файла, товары с непустым media[] пропускаются —
+ * значит фото, выставленные вручную через админку, не перетираются.
+ */
+export async function attachProductPhotos(payload: Payload) {
+  const [photo12, photo10] = await Promise.all(
+    PHOTOS.map((p) => findOrUploadPhoto(payload, p.filename, p.alt)),
+  );
+
+  const all = await payload.find({ collection: "products", limit: 1000 });
+  let updated = 0;
+
+  for (const doc of all.docs) {
+    if (Array.isArray(doc.media) && doc.media.length > 0) continue;
+
+    const photo = getUpperNotes(doc.name) === 12 ? photo12 : photo10;
+    await payload.update({
+      collection: "products",
+      id: doc.id,
+      data: { media: [photo.id] },
+    });
+    updated++;
+    console.log(`Фото проставлено: ${doc.slug}`);
+  }
+
+  console.log(`Готово. Обновлено товаров: ${updated} из ${all.docs.length}.`);
+  return { updated, total: all.docs.length };
+}
+
 /**
  * Пересоздаёт media и products. Принимает уже готовый `payload`, а не вызывает
  * `getPayload` сама — так её можно позвать и из процесса Next.js dev-сервера
  * (см. app/(app)/api/dev-seed/route.ts), в обход `payload` CLI/`tsx payload/seed.ts`,
  * которые на Next.js 16 падают в payload/dist/bin/loadEnv.js (payloadcms/payload#16378).
+ *
+ * ⚠️ Только для пустой/локальной базы: на базе с заказами удаление товаров упадёт
+ * на orders_items.product_id NOT NULL — там нужна attachProductPhotos.
  */
 export async function runSeed(payload: Payload) {
   const oldProducts = await payload.find({ collection: "products", limit: 1000 });
