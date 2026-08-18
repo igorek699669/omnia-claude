@@ -12,23 +12,11 @@ export function Hero() {
     <section className="mx-auto max-w-[1440px] px-5 pb-16 pt-8 md:px-12 md:pb-26">
       <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
         <div>
-          <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-7 sm:gap-y-4">
-            {points.map(([title, text]) => (
-              <div key={title} className="relative min-w-0 pl-4 sm:flex-1 sm:basis-40">
-                <span className="absolute left-0 top-1.5 size-[7px] rounded-full bg-brand" />
-                <strong className="block font-display text-[15px] font-medium">{title}</strong>
-                <p className="text-[13px] leading-snug text-ink-600">{text}</p>
-              </div>
-            ))}
-          </div>
-
           <h1 className="mb-6 text-balance font-display text-[clamp(44px,5vw,72px)] font-medium leading-[1.04] tracking-tight">
             Ханги, резонирующие с&nbsp;ритмом <em className="not-italic text-brand">вашей души</em>
           </h1>
           <p className="mb-10 max-w-[46ch] text-lg text-ink-600">
-            Подбираем инструмент под ваш слух и практику — от первого прослушивания до
-            бережной доставки до двери. Каждый ханг настроен вручную и звучит в три раза
-            дольше аналогов.
+            Каждый инструмент настроен мастером вручную и проходит тройной контроль качества.
           </p>
           <div className="flex flex-wrap items-center gap-6">
             {/* <ArrowLink href="/#sound">Выбрать звук</ArrowLink> временно скрыт, вернуть позже */}
@@ -36,7 +24,7 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[560px] lg:max-w-none">
+        <div className="mx-auto w-full max-w-140 lg:max-w-none">
           <Image
             src="/images/hero/hero-handpan.png"
             alt="Ханг из нержавеющей стали"
@@ -46,6 +34,16 @@ export function Hero() {
             className="aspect-square w-full rounded-full object-cover shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]"
           />
         </div>
+      </div>
+
+      <div className="mt-14 flex flex-col gap-3 sm:flex-row">
+        {points.map(([title, text]) => (
+          <div key={title} className="relative min-w-0 rounded-2xl bg-white py-4 pl-9 pr-5 sm:flex-1">
+            <span className="absolute left-5 top-5.5 size-1.75 rounded-full bg-brand" />
+            <strong className="block font-display text-[15px] font-medium">{title}</strong>
+            <p className="text-[13px] leading-snug text-ink-600">{text}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
