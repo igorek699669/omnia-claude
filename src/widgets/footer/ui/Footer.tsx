@@ -1,4 +1,12 @@
 import Link from "next/link";
+import {
+  CONTACT_PHONE,
+  CONTACT_PHONE_HREF,
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_HREF,
+  CONTACT_TELEGRAM_URL,
+  CONTACT_WHATSAPP_URL,
+} from "@/shared/lib";
 
 export function Footer() {
   return (
@@ -21,19 +29,19 @@ export function Footer() {
               Связаться
             </h4>
             <p className="text-[13px] text-paper-50/50">Номер телефона</p>
-            <a href="tel:+79000000000" className="font-display text-[22px] transition-colors hover:text-brand">
-              +7 (900) 000-00-00
+            <a href={CONTACT_PHONE_HREF} className="font-display text-[22px] transition-colors hover:text-brand">
+              {CONTACT_PHONE}
             </a>
             <p className="mt-3">
-              <a href="mailto:hello@omnia.ru" className="text-[15px] transition-colors hover:text-brand">
-                hello@omnia.ru
+              <a href={CONTACT_EMAIL_HREF} className="text-[15px] transition-colors hover:text-brand">
+                {CONTACT_EMAIL}
               </a>
             </p>
             <p className="mt-5 text-[13px] text-paper-50/50">Мы на связи в соцсетях</p>
             <div className="mt-3 flex gap-2.5">
-              <Social label="Telegram"><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z" /></Social>
-              <Social label="WhatsApp"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z" /></Social>
-              <Social label="ВКонтакте"><path d="M13.2 17.5C7.6 17.5 4.3 13.6 4.2 7h2.8c.1 4.8 2.3 6.9 4 7.3V7h2.7v4.2c1.7-.2 3.4-2.1 4-4.2h2.7c-.5 2.6-2.3 4.5-3.6 5.3 1.3.6 3.4 2.3 4.2 5.2h-3c-.6-1.9-2.1-3.4-4.3-3.6v3.6h-.5z" /></Social>
+              <Social label="Telegram" href={CONTACT_TELEGRAM_URL}><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z" /></Social>
+              <Social label="WhatsApp" href={CONTACT_WHATSAPP_URL}><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z" /></Social>
+              <Social label="ВКонтакте" href="#"><path d="M13.2 17.5C7.6 17.5 4.3 13.6 4.2 7h2.8c.1 4.8 2.3 6.9 4 7.3V7h2.7v4.2c1.7-.2 3.4-2.1 4-4.2h2.7c-.5 2.6-2.3 4.5-3.6 5.3 1.3.6 3.4 2.3 4.2 5.2h-3c-.6-1.9-2.1-3.4-4.3-3.6v3.6h-.5z" /></Social>
             </div>
           </div>
         </div>
@@ -65,11 +73,12 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   );
 }
 
-function Social({ label, children }: { label: string; children: React.ReactNode }) {
+function Social({ label, href, children }: { label: string; href: string; children: React.ReactNode }) {
   return (
     <a
-      href="#"
+      href={href}
       aria-label={label}
+      {...(href !== "#" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className="grid size-9.5 place-items-center rounded-full border border-paper-50/25 transition-colors hover:border-brand hover:text-brand"
     >
       <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">{children}</svg>

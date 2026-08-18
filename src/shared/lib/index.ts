@@ -1,4 +1,14 @@
 export { formatPrice, formatDate } from "./format";
+export {
+  CONTACT_PHONE,
+  CONTACT_PHONE_HREF,
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_HREF,
+  CONTACT_TELEGRAM_USERNAME,
+  CONTACT_TELEGRAM_URL,
+  CONTACT_WHATSAPP_URL,
+  CONTACT_MAX_URL,
+} from "./contacts";
 export { CHECKOUT_SELECTION_KEY } from "./storage-keys";
 export { authClient, useSession, signOut } from "./auth-client";
 export { errorMessage } from "./auth-errors";

@@ -5,7 +5,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
 import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent, Skeleton } from "@/shared/ui";
-import { useSession, signOut } from "@/shared/lib";
+import { useSession, signOut, CONTACT_PHONE, CONTACT_PHONE_HREF } from "@/shared/lib";
 
 const nav = [
   { href: "/catalog", label: "Каталог" },
@@ -40,8 +40,8 @@ export function Header() {
           </Link>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-4">
-            <a href="tel:+79000000000" className="hidden text-[15px] font-medium sm:block">
-              +7 900 000-00-00
+            <a href={CONTACT_PHONE_HREF} className="hidden text-[15px] font-medium sm:block">
+              {CONTACT_PHONE}
             </a>
             <Link
               href="/cart"

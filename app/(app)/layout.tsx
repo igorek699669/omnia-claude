@@ -3,6 +3,7 @@ import { Jost, Golos_Text } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
+import { ContactWidget } from "@/widgets/contact-widget";
 import { QueryProvider } from "@/shared/lib";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main>{children}</main>
           <Footer />
+          <ContactWidget />
           <Toaster
             position="top-center"
             toastOptions={{

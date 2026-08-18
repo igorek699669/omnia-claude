@@ -47,11 +47,19 @@ body {
 .animate-overlay-fade-in { animation: overlay-fade-in 0.2s ease-out; }
 .animate-panel-slide-in { animation: panel-slide-in 0.25s ease-out; }
 
+/* Плавающий виджет связи — лёгкая пульсация главной кнопки, пока меню закрыто */
+@keyframes contact-widget-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 12px 28px -8px rgba(28, 20, 16, 0.35); }
+  50% { transform: scale(1.06); box-shadow: 0 16px 34px -6px rgba(255, 89, 0, 0.45); }
+}
+.animate-widget-pulse { animation: contact-widget-pulse 2.4s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-accordion-down,
   .animate-accordion-up,
   .animate-overlay-fade-in,
-  .animate-panel-slide-in {
+  .animate-panel-slide-in,
+  .animate-widget-pulse {
     animation: none;
   }
 }

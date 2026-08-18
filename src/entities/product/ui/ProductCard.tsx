@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Product } from "../model/types";
 import { HANDPAN_DIAMETER_CM, HANDPAN_RIM_CM, HANDPAN_WEIGHT_GRAMS } from "../model/constants";
-import { formatPrice } from "@/shared/lib";
+import { formatPrice, CONTACT_TELEGRAM_URL, CONTACT_WHATSAPP_URL } from "@/shared/lib";
 import { HandpanArt, AudioPlayerChip } from "@/shared/ui";
 
 /** Слайды медиа: видео идёт первым (пока заглушки — см. CLAUDE.md) */
@@ -66,8 +66,8 @@ export function ProductCard({
         <div className="flex items-center justify-between gap-3">
           <AudioPlayerChip src={product.audioSample} />
           <div className="flex gap-2">
-            <SocialLink label="Спросить в Telegram" href="#" icon="tg" />
-            <SocialLink label="Спросить в WhatsApp" href="#" icon="wa" />
+            <SocialLink label="Спросить в Telegram" href={CONTACT_TELEGRAM_URL} icon="tg" />
+            <SocialLink label="Спросить в WhatsApp" href={CONTACT_WHATSAPP_URL} icon="wa" />
           </div>
         </div>
 
@@ -119,6 +119,8 @@ function SocialLink({ label, href, icon }: { label: string; href: string; icon: 
     <a
       href={href}
       aria-label={label}
+      target="_blank"
+      rel="noopener noreferrer"
       className="grid size-8.5 place-items-center rounded-full border border-ink-900/15 text-ink-600 transition-colors hover:border-brand hover:text-brand-dark"
     >
       {icon === "tg" ? (
