@@ -7,3 +7,5 @@ out
 next-env.d.ts
 payload/payload-types.ts
 /media
+*.log
+.claude/scheduled_tasks.lock
