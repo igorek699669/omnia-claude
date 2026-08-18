@@ -7,11 +7,22 @@ import type { ProductMedia } from "../model/types";
 /** Ширина медиа-блока карточки по брейкпоинтам — для next/image. */
 export const CARD_IMAGE_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
 
+/** Медиа-блок страницы товара — половина экрана на десктопе. */
+export const PRODUCT_PAGE_IMAGE_SIZES = "(min-width: 1024px) 50vw, 100vw";
+
 /**
- * Слайдер медиа карточки товара. Рендерится только когда кадров больше одного —
- * на единственном фото точки и переключение не нужны (см. ProductCard).
+ * Слайдер медиа товара. Рендерится только когда кадров больше одного —
+ * на единственном фото точки и переключение не нужны (см. ProductCard/ProductPage).
  */
-export function ProductGallery({ media }: { media: ProductMedia[] }) {
+export function ProductGallery({
+  media,
+  sizes = CARD_IMAGE_SIZES,
+  fit = "cover",
+}: {
+  media: ProductMedia[];
+  sizes?: string;
+  fit?: "cover" | "contain";
+}) {
   const [active, setActive] = useState(0);
 
   return (
@@ -22,8 +33,8 @@ export function ProductGallery({ media }: { media: ProductMedia[] }) {
           src={item.url}
           alt={item.alt}
           fill
-          sizes={CARD_IMAGE_SIZES}
-          className={`object-cover transition-opacity duration-400 ${
+          sizes={sizes}
+          className={`${fit === "cover" ? "object-cover" : "object-contain"} transition-opacity duration-400 ${
             i === active ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         />

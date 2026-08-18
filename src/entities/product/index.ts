@@ -8,4 +8,5 @@ export {
 export { getProducts, getProductBySlug, getCatalogProducts } from "./api/payload";
 export type { CatalogFilters, CatalogResult } from "./api/payload";
 export { ProductCard } from "./ui/ProductCard";
+export { ProductGallery, PRODUCT_PAGE_IMAGE_SIZES } from "./ui/ProductGallery";
 export { ProductCardSkeleton } from "./ui/ProductCardSkeleton";
