@@ -53,6 +53,11 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
     entrypoint: ["sh", "docker/migrate.sh"]
     profiles: ["tools"]
+    # Тот же том, что у app: при SEED=1 сид грузит файлы в media-коллекцию Payload,
+    # и без общего тома они осели бы в слое разового контейнера (--rm) — в БД записи
+    # есть, а самих файлов нет.
+    volumes:
+      - omnia-media-data:/app/media
 
 volumes:
   omnia-db-data:

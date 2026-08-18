@@ -40,5 +40,35 @@ const tryOnce = () => new Promise((resolve, reject) => {
 })();
 "
 
+# Пересид каталога — только по явному запросу:
+#   docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED=1 migrate
+# Сам сид живёт в /api/dev-seed (роут проверяет тот же SEED=1) — CLI-путь сломан тем же
+# багом Payload, что и migrate выше, а внутри процесса Next всё работает.
+# ⚠️ Удаляет все products и media перед пересозданием: ссылки на товары в существующих
+# заказах станут битыми. Без SEED=1 этот блок не выполняется.
+if [ "$SEED" = "1" ]; then
+  echo "SEED=1 — пересидим каталог..."
+  node -e "
+  const http = require('http');
+  const req = http.request(
+    { host: 'localhost', port: 4000, path: '/api/dev-seed', method: 'POST', timeout: 600000 },
+    (res) => {
+      let body = '';
+      res.on('data', (c) => (body += c));
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          console.log('Каталог пересоздан:', body);
+          process.exit(0);
+        }
+        console.error('Сид не отработал, статус ' + res.statusCode + ': ' + body);
+        process.exit(1);
+      });
+    },
+  );
+  req.on('error', (e) => { console.error('Сид не отработал:', e.message); process.exit(1); });
+  req.end();
+  "
+fi
+
 kill "$DEV_PID" 2>/dev/null || true
 wait "$DEV_PID" 2>/dev/null || true
