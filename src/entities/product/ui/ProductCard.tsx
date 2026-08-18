@@ -1,14 +1,10 @@
-"use client";
-
-import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "../model/types";
 import { HANDPAN_DIAMETER_CM, HANDPAN_RIM_CM, HANDPAN_WEIGHT_GRAMS } from "../model/constants";
+import { ProductGallery, CARD_IMAGE_SIZES } from "./ProductGallery";
 import { formatPrice, CONTACT_TELEGRAM_URL, CONTACT_WHATSAPP_URL } from "@/shared/lib";
-import { HandpanArt, AudioPlayerChip } from "@/shared/ui";
-
-/** Слайды медиа: видео идёт первым (пока заглушки — см. CLAUDE.md) */
-const slides = ["video", "photo", "photo-close"] as const;
+import { AudioPlayerChip, HandpanArt } from "@/shared/ui";
 
 export function ProductCard({
   product,
@@ -17,48 +13,35 @@ export function ProductCard({
   product: Product;
   cartAction?: React.ReactNode;
 }) {
-  const [active, setActive] = useState(0);
+  const media = product.media;
 
   return (
     <article className="flex flex-col overflow-hidden rounded-card bg-white transition-all hover:-translate-y-1 hover:shadow-[0_32px_64px_-32px_rgba(28,20,16,0.3)]">
-      {/* Медиа-слайдер: первый слайд — видео */}
-      <div className={`relative aspect-[4/3] overflow-hidden bg-paper-200 ${product.inStock ? "" : "grayscale"}`}>
-        {!product.inStock && (
-          <span className="absolute left-3.5 top-3.5 z-10 rounded-full bg-ink-900/85 px-3.5 py-1.5 text-[13px] font-semibold text-white">
-            Нет в наличии
-          </span>
-        )}
-        {slides.map((slide, i) => (
-          <div
-            key={slide}
-            className={`absolute inset-0 transition-opacity duration-400 ${i === active ? "opacity-100" : "pointer-events-none opacity-0"}`}
-          >
-            {slide === "video" ? (
-              <div className="relative h-full w-full bg-[#241a12]">
-                <HandpanArt className="absolute inset-0 m-auto h-3/4 w-3/4" />
-                <button
-                  aria-label="Смотреть видео"
-                  className="absolute inset-0 m-auto grid size-14 cursor-pointer place-items-center rounded-full bg-white/85 text-brand transition-transform hover:scale-108 hover:bg-white"
-                >
-                  <PlayIcon size={20} />
-                </button>
-              </div>
-            ) : (
-              <HandpanArt
-                className={`absolute inset-0 m-auto ${slide === "photo-close" ? "h-[130%] w-[130%]" : "h-[85%] w-[85%]"}`}
+      {/* Верхний паддинг 20px — снаружи aspect-ratio блока, а не паддингом/inset внутри него:
+          иначе object-cover пришлось бы сильнее обрезать фото по высоте, чтобы всё равно
+          заполнить уменьшенный бокс (см. отступ по бокам ниже — та же причина). */}
+      <div className={`bg-white pt-5 ${product.inStock ? "" : "grayscale"}`}>
+        <div className="relative aspect-[4/3] overflow-hidden">
+          {!product.inStock && (
+            <span className="absolute left-3.5 top-3.5 z-10 rounded-full bg-ink-900/85 px-3.5 py-1.5 text-[13px] font-semibold text-white">
+              Нет в наличии
+            </span>
+          )}
+          <div className="absolute inset-x-6 inset-y-0">
+            {media.length > 1 ? (
+              <ProductGallery media={media} />
+            ) : media[0] ? (
+              <Image
+                src={media[0].url}
+                alt={media[0].alt}
+                fill
+                sizes={CARD_IMAGE_SIZES}
+                className="object-cover"
               />
+            ) : (
+              <HandpanArt className="absolute inset-0 m-auto h-[85%] w-[85%]" />
             )}
           </div>
-        ))}
-        <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 gap-2">
-          {slides.map((slide, i) => (
-            <button
-              key={slide}
-              aria-label={`Слайд ${i + 1}`}
-              onClick={() => setActive(i)}
-              className={`size-2 cursor-pointer rounded-full transition-all ${i === active ? "scale-130 bg-brand" : "bg-white/55"}`}
-            />
-          ))}
         </div>
       </div>
 
@@ -103,14 +86,6 @@ export function ProductCard({
         </div>
       </div>
     </article>
-  );
-}
-
-function PlayIcon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M8 5v14l11-7z" />
-    </svg>
   );
 }
 

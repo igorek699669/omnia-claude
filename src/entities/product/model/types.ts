@@ -1,3 +1,8 @@
+export interface ProductMedia {
+  url: string;
+  alt: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -10,4 +15,5 @@ export interface Product {
   stockQty: number;
   inStock: boolean;
   audioSample?: string;
+  media: ProductMedia[];
 }

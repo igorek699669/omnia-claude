@@ -1,4 +1,6 @@
-import { getPayload } from "payload";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { getPayload, type Payload } from "payload";
 import config from "./payload.config";
 
 /**
@@ -355,24 +357,59 @@ const products = [
   },
 ];
 
-async function seed() {
-  const payload = await getPayload({ config });
+/** Число нот в верхней деке — последний токен имени до "+" (нижние ноты не считаются). */
+function getUpperNotes(name: string): number {
+  const lastToken = name.trim().split(/\s+/).pop() ?? "";
+  return Number(lastToken.split("+")[0]);
+}
 
-  const old = await payload.find({ collection: "products", limit: 1000 });
-  for (const doc of old.docs) {
+/**
+ * Пересоздаёт media и products. Принимает уже готовый `payload`, а не вызывает
+ * `getPayload` сама — так её можно позвать и из процесса Next.js dev-сервера
+ * (см. app/(app)/api/dev-seed/route.ts), в обход `payload` CLI/`tsx payload/seed.ts`,
+ * которые на Next.js 16 падают в payload/dist/bin/loadEnv.js (payloadcms/payload#16378).
+ */
+export async function runSeed(payload: Payload) {
+  const oldProducts = await payload.find({ collection: "products", limit: 1000 });
+  for (const doc of oldProducts.docs) {
     await payload.delete({ collection: "products", id: doc.id });
     console.log(`Удалено: ${doc.slug}`);
   }
 
-  for (const product of products) {
-    await payload.create({ collection: "products", data: product });
-    console.log(`Создано: ${product.slug}`);
+  const oldMedia = await payload.find({ collection: "media", limit: 1000 });
+  for (const doc of oldMedia.docs) {
+    await payload.delete({ collection: "media", id: doc.id });
   }
 
-  process.exit(0);
+  // У мастерской 2 формы верхней деки — 12-нотная и остальные (см. ProductCard).
+  // Пока по одному фото на форму; позже здесь появится реальная съёмка по каждому товару
+  // и поле video — тогда в media[] будет несколько кадров и подключится слайдер.
+  const photo12 = await payload.create({
+    collection: "media",
+    data: { alt: "Ханг, 12-нотная дека" },
+    filePath: path.resolve(process.cwd(), "public/images/products/handpan-12.webp"),
+  });
+  const photo10 = await payload.create({
+    collection: "media",
+    data: { alt: "Ханг, 10-нотная дека" },
+    filePath: path.resolve(process.cwd(), "public/images/products/handpan-10.webp"),
+  });
+
+  for (const product of products) {
+    const photo = getUpperNotes(product.name) === 12 ? photo12 : photo10;
+    await payload.create({ collection: "products", data: { ...product, media: [photo.id] } });
+    console.log(`Создано: ${product.slug}`);
+  }
 }
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Только при прямом запуске (`npm run payload:seed`) — при импорте runSeed из другого
+// модуля (например, из временного dev-роута) сама себя не вызывает и process не завершает.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  getPayload({ config })
+    .then(runSeed)
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}

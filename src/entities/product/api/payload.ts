@@ -7,6 +7,12 @@ import type { Product } from "../model/types";
  * Ручная форма документа products из Payload — без зависимости от payload-types.ts
  * (генерация типов через CLI сейчас недоступна на Windows, см. payloadcms/payload#16378).
  */
+interface MediaDoc {
+  id: number | string;
+  url?: string | null;
+  alt?: string | null;
+}
+
 interface ProductDoc {
   id: number | string;
   slug: string;
@@ -19,6 +25,7 @@ interface ProductDoc {
   stockQty?: number | null;
   inStock?: boolean | null;
   audioSample?: string | null;
+  media?: (MediaDoc | number | string)[] | null;
 }
 
 function toProduct(doc: ProductDoc): Product {
@@ -34,6 +41,9 @@ function toProduct(doc: ProductDoc): Product {
     stockQty: doc.stockQty ?? 0,
     inStock: doc.inStock ?? true,
     audioSample: doc.audioSample ?? undefined,
+    media: (doc.media ?? [])
+      .filter((m): m is MediaDoc => typeof m === "object" && m !== null && !!m.url)
+      .map((m) => ({ url: m.url as string, alt: m.alt ?? doc.name })),
   };
 }
 
