@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { PACKAGE_WEIGHT_GRAMS, type PackageBox } from "./shipment-package";
 
 /**
@@ -90,16 +91,6 @@ async function cdekFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
-interface CityListCache {
-  cities: CdekCityMatch[];
-  expiresAt: number;
-}
-
-let cityListCache: CityListCache | null = null;
-let cityListFetch: Promise<CdekCityMatch[]> | null = null;
-
-// Справочник городов почти не меняется — держим в памяти процесса подольше.
-const CITY_LIST_TTL_MS = 12 * 60 * 60 * 1000;
 const CITY_PAGE_SIZE = 1000;
 // Предохранитель от бесконечного цикла, если СДЭК когда-нибудь перестанет отдавать короткую последнюю страницу.
 const CITY_MAX_PAGES = 200;
@@ -122,24 +113,16 @@ async function fetchAllCdekCities(): Promise<CdekCityMatch[]> {
 
 // Живой фильтр /location/cities?city=... матчит, судя по всему, только точные/начинающиеся
 // с полного слова названия — на неполном вводе или опечатке отдаёт пустой список (проверено
-// эмпирически). Поэтому вместо него тянем справочник целиком (кешируя в памяти процесса) и
-// ищем подстроку сами — так подсказки работают от 3 букв независимо от качества их фильтра.
-export async function getAllCdekCities(): Promise<CdekCityMatch[]> {
-  if (cityListCache && cityListCache.expiresAt > Date.now()) {
-    return cityListCache.cities;
-  }
-  if (!cityListFetch) {
-    cityListFetch = fetchAllCdekCities()
-      .then((cities) => {
-        cityListCache = { cities, expiresAt: Date.now() + CITY_LIST_TTL_MS };
-        return cities;
-      })
-      .finally(() => {
-        cityListFetch = null;
-      });
-  }
-  return cityListFetch;
-}
+// эмпирически). Поэтому вместо него тянем справочник целиком и ищем подстроку сами — так
+// подсказки работают от 3 букв независимо от качества их фильтра.
+//
+// Результат кешируем через Data Cache Next.js (а не в переменной модуля): справочник почти
+// не меняется, а serverless-инстансов на проде несколько и они пересоздаются на каждый
+// деплой — общая персистентная память нужна, чтобы полная постраничная выгрузка не гонялась
+// заново на каждом из них.
+export const getAllCdekCities = unstable_cache(fetchAllCdekCities, ["cdek-all-cities"], {
+  revalidate: 60 * 60 * 24,
+});
 
 export async function getCdekPvzPoints(cityCode: number): Promise<CdekPvz[]> {
   const points = await cdekFetch<
