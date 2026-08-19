@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { useCart } from "@/features/cart";
 import { NotifyMeButton } from "@/features/notify-me";
 import { ArrowButton } from "@/shared/ui";
-import { CONTACT_TELEGRAM_URL } from "@/shared/lib";
 import type { Product } from "@/entities/product";
 
 export function AddToCartSection({ product }: { product: Product }) {
@@ -33,14 +32,6 @@ export function AddToCartSection({ product }: { product: Product }) {
           Добавить в корзину
         </ArrowButton>
       )}
-      <a
-        href={CONTACT_TELEGRAM_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="border-b border-ink-900/25 py-2 text-base font-medium transition-colors hover:border-brand hover:text-brand-dark"
-      >
-        Спросить в Telegram
-      </a>
     </div>
   );
 }

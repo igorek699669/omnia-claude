@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Product } from "../model/types";
 import { HANDPAN_DIAMETER_CM, HANDPAN_RIM_CM, HANDPAN_WEIGHT_GRAMS } from "../model/constants";
 import { ProductGallery, CARD_IMAGE_SIZES } from "./ProductGallery";
-import { formatPrice, CONTACT_TELEGRAM_URL, CONTACT_WHATSAPP_URL } from "@/shared/lib";
+import { formatPrice } from "@/shared/lib";
 import { AudioPlayerChip, HandpanArt } from "@/shared/ui";
 
 export function ProductCard({
@@ -48,10 +48,6 @@ export function ProductCard({
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         <div className="flex items-center justify-between gap-3">
           <AudioPlayerChip src={product.audioSample} />
-          <div className="flex gap-2">
-            <SocialLink label="Спросить в Telegram" href={CONTACT_TELEGRAM_URL} icon="tg" />
-            <SocialLink label="Спросить в WhatsApp" href={CONTACT_WHATSAPP_URL} icon="wa" />
-          </div>
         </div>
 
         <h3 className="font-display text-2xl font-medium leading-tight">
@@ -86,23 +82,5 @@ export function ProductCard({
         </div>
       </div>
     </article>
-  );
-}
-
-function SocialLink({ label, href, icon }: { label: string; href: string; icon: "tg" | "wa" }) {
-  return (
-    <a
-      href={href}
-      aria-label={label}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="grid size-8.5 place-items-center rounded-full border border-ink-900/15 text-ink-600 transition-colors hover:border-brand hover:text-brand-dark"
-    >
-      {icon === "tg" ? (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 19 18.9c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.5-7.7c.4-.3-.1-.5-.6-.2L7.7 13l-4.4-1.4c-1-.3-1-1 .2-1.4l17-6.6c.8-.3 1.5.2 1.4 1z" /></svg>
-      ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.3 14.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.9-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.8 1.9.8 2 .1.1.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l1.8.9c.3.1.5.2.5.3.1.1.1.7-.1 1.1z" /></svg>
-      )}
-    </a>
   );
 }
