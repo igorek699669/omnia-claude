@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
@@ -15,6 +16,7 @@ const nav = [
 ];
 
 export function Header() {
+  const router = useRouter();
   const items = useCart((s) => s.items);
   const count = cartCount(items);
   const [open, setOpen] = useState(false);
@@ -29,6 +31,10 @@ export function Header() {
       return;
     }
     toast.success("Вы вышли");
+    // Без этого уже отрисованные серверные страницы (например /profile) не
+    // перепроверяют сессию сами — человек, нажавший «Выйти» на них, останется
+    // видеть свои заказы, пока не перейдёт куда-то вручную.
+    router.refresh();
   }
 
   return (
