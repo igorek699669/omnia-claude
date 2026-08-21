@@ -12,6 +12,7 @@ export { Combobox } from "./Combobox";
 export { Backdrop } from "./Backdrop";
 export { PhoneInput } from "./PhoneInput";
 export { LegalLinks } from "./LegalLinks";
+export { LegalBlock } from "./LegalBlock";
 export { Skeleton } from "./Skeleton";
 export { Spinner } from "./Spinner";
 export { ErrorState } from "./ErrorState";

@@ -1,0 +1,77 @@
+import { Tag, SectionTitle, LegalBlock } from "@/shared/ui";
+import {
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_HREF,
+  SELLER_LEGAL_NAME,
+  SELLER_TAX_STATUS,
+  SELLER_INN,
+} from "@/shared/lib";
+
+export function PrivacyPage() {
+  return (
+    <section className="mx-auto max-w-[900px] px-5 py-16 md:px-12">
+      <Tag>Документы</Tag>
+      <SectionTitle className="mt-5">Политика обработки персональных данных</SectionTitle>
+      <p className="mt-4 text-sm text-ink-600">
+        В соответствии с Федеральным законом №152-ФЗ «О персональных данных». Действует в
+        редакции от 19.08.2026.
+      </p>
+
+      <div className="mt-10 flex flex-col gap-10 text-[17px] leading-relaxed">
+        <LegalBlock title="1. Оператор">
+          <p>
+            Оператором персональных данных является {SELLER_LEGAL_NAME} ({SELLER_TAX_STATUS},
+            ИНН {SELLER_INN}) — далее «Оператор».
+          </p>
+        </LegalBlock>
+
+        <LegalBlock title="2. Какие данные обрабатываются">
+          <p>Фамилия, имя, номер телефона, адрес электронной почты, адрес доставки, IP-адрес.</p>
+        </LegalBlock>
+
+        <LegalBlock title="3. Цели обработки">
+          <p>
+            Оформление и доставка заказа, связь с покупателем по заказу, направление
+            рекламных рассылок — только при отдельном согласии на чекауте, которое можно
+            отозвать в любой момент.
+          </p>
+        </LegalBlock>
+
+        <LegalBlock title="4. Правовое основание">
+          <p>
+            Согласие субъекта персональных данных, зафиксированное отдельным чекбоксом при
+            оформлении заказа, и необходимость обработки для исполнения договора
+            купли-продажи (ст. 6 ФЗ №152-ФЗ).
+          </p>
+        </LegalBlock>
+
+        <LegalBlock title="5. Хранение и передача">
+          <p>
+            Данные хранятся на серверах, расположенных на территории РФ, и передаются
+            третьим лицам только в объёме, необходимом для исполнения заказа: службе
+            доставки СДЭК и платёжному оператору ЮKassa.
+          </p>
+        </LegalBlock>
+
+        <LegalBlock title="6. Срок хранения">
+          <p>
+            Данные хранятся в течение срока, необходимого для исполнения договора и
+            последующего хранения документов согласно требованиям законодательства РФ, и
+            удаляются по достижении этих целей либо по запросу субъекта данных.
+          </p>
+        </LegalBlock>
+
+        <LegalBlock title="7. Права субъекта персональных данных">
+          <p>
+            Вы вправе запросить у Оператора доступ к своим данным, их уточнение, удаление
+            или отозвать согласие на обработку — напишите на{" "}
+            <a href={CONTACT_EMAIL_HREF} className="text-ink-900 underline underline-offset-2 hover:text-brand-dark">
+              {CONTACT_EMAIL}
+            </a>
+            .
+          </p>
+        </LegalBlock>
+      </div>
+    </section>
+  );
+}

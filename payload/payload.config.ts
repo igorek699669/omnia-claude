@@ -8,12 +8,13 @@ import { Categories } from "./collections/Categories";
 import { Products } from "./collections/Products";
 import { Orders } from "./collections/Orders";
 import { StockSubscriptions } from "./collections/StockSubscriptions";
+import { Consents } from "./collections/Consents";
 
 export default buildConfig({
   admin: {
     user: Users.slug,
   },
-  collections: [Users, Media, Categories, Products, Orders, StockSubscriptions],
+  collections: [Users, Media, Categories, Products, Orders, StockSubscriptions, Consents],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",
   localization: {

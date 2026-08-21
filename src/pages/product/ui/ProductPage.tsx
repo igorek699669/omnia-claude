@@ -78,8 +78,12 @@ export async function ProductPage({ slug }: { slug: string }) {
           <AddToCartSection product={product} />
 
           <p className="mt-6 text-sm text-ink-600">
-            Жёсткий кофр в комплекте. Доставка СДЭК по всей России — трек-номер появится
+            Доставка СДЭК по всей России — трек-номер появится
             в личном кабинете после отправки.
+          </p>
+          <p className="mt-2 text-sm text-ink-600">
+            Ханг не подключается к электросети и не подлежит обязательной сертификации или
+            декларированию соответствия.
           </p>
         </div>
       </div>

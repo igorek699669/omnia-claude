@@ -13,7 +13,7 @@ export function Footer() {
   return (
     <footer className="mt-12 rounded-t-card bg-ink-900 text-paper-50">
       <div className="mx-auto max-w-[1440px] px-5 md:px-12">
-        <div className="grid grid-cols-2 gap-12 py-18 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div className="grid grid-cols-2 gap-12 py-18 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
           <div className="col-span-2 min-w-0 md:col-span-1">
             <Link href="/" className="font-display text-[20px] font-semibold tracking-[0.16em] sm:text-[26px]">
               <b className="font-semibold text-brand">OM</b>NIA
@@ -23,8 +23,17 @@ export function Footer() {
               доставка по всей России.
             </p>
           </div>
-          <FooterCol title="Магазин" links={[["Каталог", "/catalog"], ["Доставка и оплата", "/delivery"]]} />
-          <FooterCol title="Покупателям" links={[["Личный кабинет", "/profile"], ["Вопросы и ответы", "/#faq"], ["Политика конфиденциальности", "#"], ["Публичная оферта", "#"]]} />
+          <FooterCol title="Магазин" links={[["Каталог", "/catalog"], ["Доставка и оплата", "/delivery"], ["Возврат и обмен", "/return"]]} />
+          <FooterCol title="Покупателям" links={[["Личный кабинет", "/profile"], ["Вопросы и ответы", "/#faq"], ["Контакты и реквизиты", "/requisites"]]} />
+          <FooterCol
+            title="Документы"
+            links={[
+              ["Публичная оферта", "/oferta"],
+              ["Политика конфиденциальности", "/privacy"],
+              ["Политика cookie", "/cookie-policy"],
+              ["Пользовательское соглашение", "/terms"],
+            ]}
+          />
           <div className="min-w-0">
             <h4 className="mb-5 font-display text-base font-medium uppercase tracking-wider text-paper-50/70">
               Связаться

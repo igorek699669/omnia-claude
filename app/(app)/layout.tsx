@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
 import { ContactWidget } from "@/widgets/contact-widget";
+import { CookieBanner } from "@/widgets/cookie-banner";
 import { QueryProvider } from "@/shared/lib";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main>{children}</main>
           <Footer />
           <ContactWidget />
+          <CookieBanner />
           <Toaster
             position="top-center"
             toastOptions={{

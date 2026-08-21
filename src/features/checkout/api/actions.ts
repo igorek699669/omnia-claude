@@ -5,7 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { auth } from "@/auth";
 import { checkoutInputSchema, type CheckoutInput, type CheckoutResult } from "../model/types";
-import { createYookassaPayment } from "@/shared/lib";
+import { createYookassaPayment, CONSENT_TEXT_VERSION } from "@/shared/lib";
 
 interface ProductDoc {
   id: number | string;
@@ -26,7 +26,8 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
   if (!parsed.success) {
     return { error: "Некорректные данные заказа" };
   }
-  const { items, customer, delivery } = parsed.data;
+  const { items, customer, delivery, consents } = parsed.data;
+  const requestHeaders = await headers();
 
   const payload = await getPayload({ config });
 
@@ -51,7 +52,7 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
 
   let customerId: string | undefined;
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await auth.api.getSession({ headers: requestHeaders });
     customerId = session?.user?.id;
   } catch {
     // сессии нет — оформляем гостевой заказ
@@ -70,6 +71,28 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       status: "pending",
     },
   })) as OrderDoc;
+
+  // Лог согласий — доказательство законного основания на обработку персональных данных
+  // (ФЗ №152-ФЗ, доказывать обязан оператор). Сбой записи намеренно срывает заказ: иначе
+  // мы бы взяли оплату и сохранили ПДн, не имея чем подтвердить согласие.
+  try {
+    await payload.create({
+      collection: "consents",
+      data: {
+        orderId: String(order.id),
+        personalData: consents.personalData,
+        offer: consents.offer,
+        marketing: consents.marketing,
+        textVersion: CONSENT_TEXT_VERSION,
+        ip: requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? requestHeaders.get("x-real-ip") ?? undefined,
+        userAgent: requestHeaders.get("user-agent") ?? undefined,
+      },
+    });
+  } catch (err) {
+    console.error("[createOrderPayment] Consent logging failed:", err);
+    await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });
+    return { error: "Не удалось сохранить согласия. Попробуйте ещё раз." };
+  }
 
   const siteUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 

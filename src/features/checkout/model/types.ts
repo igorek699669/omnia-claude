@@ -28,6 +28,17 @@ export const checkoutInputSchema = z.object({
     cityCode: z.number().int().positive(),
     tariffCode: z.number().int().positive(),
   }),
+  // Три независимых согласия с чекаута (ФЗ №152-ФЗ) — personalData и offer обязательны,
+  // marketing нет. Логируются отдельной записью в consents, см. api/actions.
+  consents: z
+    .object({
+      personalData: z.boolean(),
+      offer: z.boolean(),
+      marketing: z.boolean(),
+    })
+    .refine((c) => c.personalData && c.offer, {
+      message: "Нужны согласия на обработку данных и с офертой",
+    }),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;

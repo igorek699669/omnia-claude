@@ -27,9 +27,13 @@ const orderSchema = z.object({
     .string()
     .min(1, "Введите телефон")
     .refine((val) => val.replace(/\D/g, "").length === 11, "Введите телефон полностью"),
-  agreed: z.boolean().refine((v) => v === true, {
-    message: "Нужно согласие с политикой конфиденциальности",
+  consentPersonalData: z.boolean().refine((v) => v === true, {
+    message: "Нужно согласие на обработку персональных данных",
   }),
+  consentOffer: z.boolean().refine((v) => v === true, {
+    message: "Нужно подтвердить, что вы ознакомлены с офертой и условиями возврата",
+  }),
+  consentMarketing: z.boolean(),
 });
 type OrderValues = z.infer<typeof orderSchema>;
 
@@ -62,7 +66,15 @@ export function CheckoutPage() {
 
   const orderForm = useForm<OrderValues>({
     resolver: zodResolver(orderSchema),
-    defaultValues: { lastName: "", firstName: "", email: "", phone: "", agreed: false },
+    defaultValues: {
+      lastName: "",
+      firstName: "",
+      email: "",
+      phone: "",
+      consentPersonalData: false,
+      consentOffer: false,
+      consentMarketing: false,
+    },
   });
 
   const [emailConfirmed, setEmailConfirmed] = useState(false);
@@ -116,6 +128,11 @@ export function CheckoutPage() {
         city: delivery.city,
         cityCode: delivery.cityCode,
         tariffCode: delivery.tariffCode,
+      },
+      consents: {
+        personalData: values.consentPersonalData,
+        offer: values.consentOffer,
+        marketing: values.consentMarketing,
       },
     });
   }
@@ -232,19 +249,55 @@ export function CheckoutPage() {
               <p className="mt-1.5 text-sm text-brand-dark">Выберите способ доставки</p>
             )}
 
-            <Controller
-              control={orderForm.control}
-              name="agreed"
-              render={({ field }) => (
-                <label className="mt-5 flex cursor-pointer items-start gap-3 text-[15px]">
-                  <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
-                  Я согласен с политикой конфиденциальности
-                </label>
+            <div className="mt-5 flex flex-col gap-3">
+              <Controller
+                control={orderForm.control}
+                name="consentPersonalData"
+                render={({ field }) => (
+                  <label className="flex cursor-pointer items-start gap-3 text-[15px]">
+                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
+                    {/* Весь текст — одним span: во flex-контейнере каждый текстовый узел между
+                        элементами стал бы отдельным flex-элементом, и строка развалилась бы на
+                        колонки с gap между ними. */}
+                    <span>
+                      Согласен на <ConsentLink href="/privacy">обработку персональных данных</ConsentLink> для
+                      оформления и доставки заказа
+                    </span>
+                  </label>
+                )}
+              />
+              {orderForm.formState.errors.consentPersonalData && (
+                <p className="-mt-2 text-sm text-brand-dark">{orderForm.formState.errors.consentPersonalData.message}</p>
               )}
-            />
-            {orderForm.formState.errors.agreed && (
-              <p className="mt-1.5 text-sm text-brand-dark">{orderForm.formState.errors.agreed.message}</p>
-            )}
+
+              <Controller
+                control={orderForm.control}
+                name="consentOffer"
+                render={({ field }) => (
+                  <label className="flex cursor-pointer items-start gap-3 text-[15px]">
+                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
+                    <span>
+                      Ознакомлен с <ConsentLink href="/oferta">офертой</ConsentLink> и{" "}
+                      <ConsentLink href="/return">условиями возврата</ConsentLink>
+                    </span>
+                  </label>
+                )}
+              />
+              {orderForm.formState.errors.consentOffer && (
+                <p className="-mt-2 text-sm text-brand-dark">{orderForm.formState.errors.consentOffer.message}</p>
+              )}
+
+              <Controller
+                control={orderForm.control}
+                name="consentMarketing"
+                render={({ field }) => (
+                  <label className="flex cursor-pointer items-start gap-3 text-[15px] text-ink-600">
+                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
+                    <span>Хочу получать новости и предложения рассылкой (необязательно)</span>
+                  </label>
+                )}
+              />
+            </div>
 
             <ul className="mt-5 flex max-h-56 flex-col gap-3 overflow-y-auto rounded-input border border-ink-900/12 p-4">
               {orderItems.map((item) => (
@@ -285,6 +338,24 @@ export function CheckoutPage() {
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Ссылка на документ из текста чекбокса согласия. Новая вкладка — иначе переход стёр бы
+ * заполненную форму (см. тот же комментарий в LegalLinks). Клик по ссылке не переключает
+ * чекбокс: по спецификации HTML активация label не срабатывает на интерактивных потомках.
+ */
+function ConsentLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline underline-offset-2 hover:text-brand-dark"
+    >
+      {children}
+    </Link>
   );
 }
 
