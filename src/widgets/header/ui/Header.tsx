@@ -6,7 +6,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCart, cartCount, CartIcon } from "@/features/cart";
 import { Dialog, DialogContent, DialogTitle, DialogClose, Popover, PopoverTrigger, PopoverContent, Skeleton } from "@/shared/ui";
-import { useSession, signOut, CONTACT_PHONE, CONTACT_PHONE_HREF } from "@/shared/lib";
+import { useSession, signOut, formatPhone, CONTACT_PHONE, CONTACT_PHONE_HREF } from "@/shared/lib";
 
 const nav = [
   { href: "/catalog", label: "Каталог" },
@@ -141,7 +141,12 @@ export function Header() {
               ) : session ? (
                 <div className="flex flex-col gap-4">
                   <Link href="/profile" onClick={() => setOpen(false)} className="block text-lg font-medium">
-                    {session.user.email}
+                    {/* Номер есть у всех: войти иначе нельзя. Подпись на случай, если
+                        сессия завелась в обход телефона (например, старый аккаунт). */}
+                    {(() => {
+                      const phone = (session.user as { phoneNumber?: string }).phoneNumber;
+                      return phone ? formatPhone(phone) : "Личный кабинет";
+                    })()}
                   </Link>
                   <button
                     onClick={() => {

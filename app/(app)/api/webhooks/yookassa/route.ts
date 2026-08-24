@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getYookassaPayment } from "@/shared/lib";
-import { registerCdekShipment } from "@/features/checkout/server";
+import { registerCdekShipment, sendPaidOrderEmail } from "@/features/checkout/server";
 
 interface OrderDoc {
   id: number | string;
@@ -78,6 +78,14 @@ export async function POST(request: Request) {
       await registerCdekShipment(order.id);
     } catch (err) {
       console.error(`[cdek] не удалось зарегистрировать отправление по заказу ${order.id}:`, err);
+    }
+
+    // Уведомление продавцу (пока нет CRM) — по той же причине не роняет вебхук: заказ уже
+    // оплачен и лежит в Payload, письмо всего лишь дублирует его на почту.
+    try {
+      await sendPaidOrderEmail(order.id);
+    } catch (err) {
+      console.error(`[order-mail] не удалось отправить письмо по заказу ${order.id}:`, err);
     }
   } else if (payment.status === "canceled") {
     await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });

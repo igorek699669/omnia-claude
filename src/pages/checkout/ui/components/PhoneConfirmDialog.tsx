@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { authClient, errorMessage } from "@/shared/lib";
+import { authClient, errorMessage, normalizePhone, formatPhone } from "@/shared/lib";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/shared/ui";
 
 const codeSchema = z.object({
@@ -14,12 +14,20 @@ const codeSchema = z.object({
 });
 type CodeValues = z.infer<typeof codeSchema>;
 
-export function EmailConfirmDialog({
-  email,
+/**
+ * Подтверждение телефона прямо на чекауте тем же одноразовым кодом, что и на /auth.
+ *
+ * Успешная проверка кода не только помечает номер подтверждённым, но и заводит сессию
+ * (Better Auth создаёт пользователя по первому верному коду) — гость, оформивший заказ,
+ * заодно получает личный кабинет с историей заказов.
+ */
+export function PhoneConfirmDialog({
+  phone,
   validate,
   onConfirmed,
 }: {
-  email: string;
+  /** Значение поля в маске — наружу уходит нормализованным в E.164. */
+  phone: string;
   validate: () => Promise<boolean>;
   onConfirmed: () => void;
 }) {
@@ -31,13 +39,13 @@ export function EmailConfirmDialog({
 
   const { mutate: sendOtp, isPending: isSendingOtp } = useMutation({
     mutationFn: async () => {
-      const { error } = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
+      const { error } = await authClient.phoneNumber.sendOtp({ phoneNumber: normalizePhone(phone) });
       if (error) throw error;
     },
     onSuccess: () => {
       codeForm.reset();
       setOpen(true);
-      toast.success(`Код отправлен на ${email}`);
+      toast.success("Код отправлен по SMS");
     },
     onError: (error) => {
       toast.error(errorMessage(error, "Не получилось отправить код — попробуйте ещё раз"));
@@ -45,14 +53,14 @@ export function EmailConfirmDialog({
   });
 
   const { mutate: verifyOtp, isPending: isVerifyingOtp } = useMutation({
-    mutationFn: async (otp: string) => {
-      const { error } = await authClient.signIn.emailOtp({ email, otp });
+    mutationFn: async (code: string) => {
+      const { error } = await authClient.phoneNumber.verify({ phoneNumber: normalizePhone(phone), code });
       if (error) throw error;
     },
     onSuccess: () => {
       setOpen(false);
       onConfirmed();
-      toast.success("Почта подтверждена");
+      toast.success("Телефон подтверждён");
     },
     onError: (error) => {
       toast.error(errorMessage(error, "Неверный код — проверьте и попробуйте ещё раз"));
@@ -71,7 +79,7 @@ export function EmailConfirmDialog({
         type="button"
         onClick={handleSendClick}
         disabled={isSendingOtp}
-        className="shrink-0 cursor-pointer rounded-full bg-paper-100 px-3.5 py-2 text-sm font-medium transition-colors hover:bg-brand hover:text-white disabled:cursor-default disabled:opacity-50"
+        className="shrink-0 cursor-pointer rounded-full bg-brand px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-dark disabled:cursor-default disabled:opacity-50"
       >
         {isSendingOtp ? "Отправляем…" : "Подтвердить"}
       </button>
@@ -80,7 +88,7 @@ export function EmailConfirmDialog({
         <DialogContent>
           <DialogTitle className="font-display text-2xl font-medium">Введите код подтверждения</DialogTitle>
           <p className="mt-3 text-ink-600">
-            Мы отправили шестизначный код на <b className="text-ink-900">{email}</b>
+            Мы отправили шестизначный код на <b className="text-ink-900">{formatPhone(normalizePhone(phone))}</b>
           </p>
 
           <form onSubmit={codeForm.handleSubmit((values) => verifyOtp(values.code))} className="mt-6">
@@ -92,6 +100,7 @@ export function EmailConfirmDialog({
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={6}
+                  autoComplete="one-time-code"
                   autoFocus
                   value={field.value}
                   onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}

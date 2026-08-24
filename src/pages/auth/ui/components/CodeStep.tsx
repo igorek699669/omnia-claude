@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { SectionTitle, ArrowButton } from "@/shared/ui";
-import { authClient, errorMessage } from "@/shared/lib";
+import { authClient, errorMessage, formatPhone } from "@/shared/lib";
 
 const codeSchema = z.object({
   code: z.string().length(6, "Код состоит из 6 цифр"),
@@ -14,13 +14,13 @@ const codeSchema = z.object({
 type CodeValues = z.infer<typeof codeSchema>;
 
 export function CodeStep({
-  email,
+  phone,
   onVerified,
-  onChangeEmail,
+  onChangePhone,
 }: {
-  email: string;
+  phone: string;
   onVerified: () => void;
-  onChangeEmail: () => void;
+  onChangePhone: () => void;
 }) {
   const form = useForm<CodeValues>({
     resolver: zodResolver(codeSchema),
@@ -28,8 +28,8 @@ export function CodeStep({
   });
 
   const { mutate: verifyOtp, isPending: isVerifyingOtp } = useMutation({
-    mutationFn: async (otp: string) => {
-      const { error } = await authClient.signIn.emailOtp({ email, otp });
+    mutationFn: async (code: string) => {
+      const { error } = await authClient.phoneNumber.verify({ phoneNumber: phone, code });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -45,8 +45,8 @@ export function CodeStep({
     <form onSubmit={form.handleSubmit((values) => verifyOtp(values.code))} noValidate>
       <SectionTitle>Введите код</SectionTitle>
       <p className="mt-4 text-ink-600">
-        Отправили 6-значный код на <b className="text-ink-900">{email}</b>. Письмо может попасть в
-        «Промоакции» или спам.
+        Отправили 6-значный код на <b className="text-ink-900">{formatPhone(phone)}</b>. SMS обычно
+        приходит в течение минуты.
       </p>
       <Controller
         control={form.control}
@@ -56,6 +56,7 @@ export function CodeStep({
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={6}
+            autoComplete="one-time-code"
             autoFocus
             value={field.value}
             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
@@ -73,10 +74,10 @@ export function CodeStep({
         </ArrowButton>
         <button
           type="button"
-          onClick={onChangeEmail}
+          onClick={onChangePhone}
           className="cursor-pointer border-b border-ink-900/25 py-2 text-[15px] font-medium text-ink-600 transition-colors hover:border-brand hover:text-ink-900"
         >
-          Изменить почту
+          Изменить номер
         </button>
       </div>
     </form>

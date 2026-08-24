@@ -9,10 +9,10 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
-import { formatPrice, CHECKOUT_SELECTION_KEY, useSession } from "@/shared/lib";
+import { formatPrice, CHECKOUT_SELECTION_KEY, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
 import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt } from "@/shared/ui";
 import { DeliveryPicker, warmUpCityCache, type Delivery } from "@/features/select-delivery";
-import { EmailConfirmDialog } from "./components/EmailConfirmDialog";
+import { PhoneConfirmDialog } from "./components/PhoneConfirmDialog";
 
 const orderSchema = z.object({
   lastName: z.string().min(1, "Введите фамилию"),
@@ -23,10 +23,7 @@ const orderSchema = z.object({
     .string()
     .min(1, "Введите почту")
     .pipe(z.email("Похоже, в адресе опечатка — проверьте и попробуйте ещё раз")),
-  phone: z
-    .string()
-    .min(1, "Введите телефон")
-    .refine((val) => val.replace(/\D/g, "").length === 11, "Введите телефон полностью"),
+  phone: z.string().min(1, "Введите телефон").refine(isValidRuPhone, "Введите телефон полностью"),
   consentPersonalData: z.boolean().refine((v) => v === true, {
     message: "Нужно согласие на обработку персональных данных",
   }),
@@ -77,20 +74,19 @@ export function CheckoutPage() {
     },
   });
 
-  const [emailConfirmed, setEmailConfirmed] = useState(false);
+  const [phoneConfirmed, setPhoneConfirmed] = useState(false);
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  // Если пользователь уже вошёл (Better Auth сессия) — почта берётся из аккаунта
-  // и считается подтверждённой сразу, без повторного OTP.
   useEffect(() => {
-    if (session?.user?.email) {
-      orderForm.setValue("email", session.user.email);
-      setEmailConfirmed(true);
+    const sessionPhone = (session?.user as { phoneNumber?: string } | undefined)?.phoneNumber;
+    if (sessionPhone) {
+      orderForm.setValue("phone", formatPhone(sessionPhone));
+      setPhoneConfirmed(true);
     }
   }, [session, orderForm]);
 
-  const email = orderForm.watch("email");
+  const phone = orderForm.watch("phone");
   const subtotal = cartTotal(orderItems);
   const total = subtotal + (delivery?.cost ?? 0);
 
@@ -109,7 +105,7 @@ export function CheckoutPage() {
   });
 
   function handleOrderSubmit(values: OrderValues) {
-    if (!delivery || !emailConfirmed) return;
+    if (!delivery || !phoneConfirmed) return;
     submitOrder({
       items: orderItems.map((item) => ({ productId: item.productId, qty: item.qty })),
       customer: {
@@ -181,51 +177,51 @@ export function CheckoutPage() {
               <Field label="Имя" error={orderForm.formState.errors.firstName?.message} {...orderForm.register("firstName")} />
             </div>
 
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div className="mt-5 flex flex-col gap-5">
+              <Field
+                label="you@mail.ru"
+                type="email"
+                error={orderForm.formState.errors.email?.message}
+                {...orderForm.register("email")}
+              />
               <div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="email"
-                    disabled={emailConfirmed}
-                    placeholder="you@mail.ru"
-                    className="w-full min-w-0 flex-1 rounded-input border border-ink-900/18 bg-white px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-brand disabled:bg-paper-100 disabled:text-ink-600"
-                    {...orderForm.register("email")}
+                  <Controller
+                    control={orderForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <PhoneInput
+                        className="min-w-0 flex-1"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        disabled={phoneConfirmed}
+                      />
+                    )}
                   />
-                  {emailConfirmed ? (
+                  {phoneConfirmed ? (
                     <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-dark">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d="M20 6 9 17l-5-5" />
                       </svg>
-                      Подтверждена
+                      Подтверждён
                     </span>
                   ) : (
-                    <EmailConfirmDialog
-                      email={email}
-                      validate={() => orderForm.trigger("email")}
-                      onConfirmed={() => setEmailConfirmed(true)}
+                    <PhoneConfirmDialog
+                      phone={phone}
+                      validate={() => orderForm.trigger("phone")}
+                      onConfirmed={() => setPhoneConfirmed(true)}
                     />
                   )}
                 </div>
-                {orderForm.formState.errors.email ? (
-                  <p className="mt-1.5 text-sm text-brand-dark">{orderForm.formState.errors.email.message}</p>
+                {orderForm.formState.errors.phone ? (
+                  <p className="mt-1.5 text-sm text-brand-dark">{orderForm.formState.errors.phone.message}</p>
                 ) : (
                   submitAttempted &&
-                  !emailConfirmed && <p className="mt-1.5 text-sm text-brand-dark">Подтвердите почту</p>
+                  !phoneConfirmed && <p className="mt-1.5 text-sm text-brand-dark">Подтвердите телефон</p>
                 )}
               </div>
-              <Controller
-                control={orderForm.control}
-                name="phone"
-                render={({ field }) => (
-                  <PhoneInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    name={field.name}
-                    error={orderForm.formState.errors.phone?.message}
-                  />
-                )}
-              />
             </div>
 
             <button

@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/shared/lib";
 import { Spinner } from "@/shared/ui";
-import { EmailStep } from "./components/EmailStep";
+import { PhoneStep } from "./components/PhoneStep";
 import { CodeStep } from "./components/CodeStep";
 import { DoneStep } from "./components/DoneStep";
 
-type Step = "email" | "code" | "done";
+type Step = "phone" | "code" | "done";
 
 export function AuthPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
+  const [step, setStep] = useState<Step>("phone");
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     if (session) router.replace("/profile");
@@ -37,16 +37,16 @@ export function AuthPage() {
         </div>
       ) : (
         <>
-          {step === "email" && (
-            <EmailStep
-              onSent={(sentEmail) => {
-                setEmail(sentEmail);
+          {step === "phone" && (
+            <PhoneStep
+              onSent={(sentPhone) => {
+                setPhone(sentPhone);
                 setStep("code");
               }}
             />
           )}
           {step === "code" && (
-            <CodeStep email={email} onVerified={() => setStep("done")} onChangeEmail={() => setStep("email")} />
+            <CodeStep phone={phone} onVerified={() => setStep("done")} onChangePhone={() => setStep("phone")} />
           )}
         </>
       )}

@@ -7,3 +7,4 @@
  * регистрацию отправления в открытый эндпоинт, дёргаемый из браузера.
  */
 export { registerCdekShipment, syncCdekOrderNumber } from "./api/shipment";
+export { sendPaidOrderEmail } from "./api/order-mail";

@@ -23,6 +23,7 @@ export { hasAnalyticsConsent } from "./cookie-consent";
 export type { CookieConsent } from "./cookie-consent";
 export { authClient, useSession, signOut } from "./auth-client";
 export { errorMessage } from "./auth-errors";
+export { normalizePhone, isValidRuPhone, formatPhone } from "./phone";
 export { QueryProvider } from "./query-provider";
 export { createYookassaPayment, getYookassaPayment } from "./yookassa";
 export type { YookassaPayment } from "./yookassa";
