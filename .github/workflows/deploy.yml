@@ -3,7 +3,22 @@ name: Deploy
 on:
   push:
     branches: [main]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Синхронизация каталога товаров"
+        required: false
+        default: none
+        type: choice
+        options:
+          # none   — обычный деплой, каталог не трогаем
+          # sync   — привести каталог к payload/seed.ts (остатки и фото не трогает)
+          # photos — только проставить фото товарам без media
+          # full   — ⚠️ полный пересид, удаляет ВСЕ products и media. Только на пустой базе.
+          - none
+          - sync
+          - photos
+          - full
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
@@ -54,7 +69,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD
+          envs: SEED,GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD
           script: |
             set -e
             mkdir -p /opt/omnia
@@ -92,10 +107,15 @@ jobs:
             # --profile tools обязателен и здесь: без него pull пропускает сервис migrate
             # (у него profiles: ["tools"]), и запускается старый закешированный образ.
             docker compose -f docker-compose.prod.yml --profile tools pull
-            docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
+            # SEED передаём только при ручном запуске с выбранным режимом: обычный push
+            # в main каталог не трогает (SEED пустой -> роут /api/dev-seed отвечает 404).
+            docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED="$SEED" migrate
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
         env:
+          # "none" и обычный push (inputs пустой) дают пустую строку — сид не запустится.
+          # Работает потому, что "1"/"sync"/"photos" — непустые строки, а значит truthy.
+          SEED: ${{ inputs.seed == 'full' && '1' || inputs.seed == 'sync' && 'sync' || inputs.seed == 'photos' && 'photos' || '' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}

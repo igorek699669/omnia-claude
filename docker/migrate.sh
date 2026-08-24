@@ -41,12 +41,16 @@ const tryOnce = () => new Promise((resolve, reject) => {
 "
 
 # Наполнение каталога — только по явному запросу:
-#   docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED=photos migrate
+#   docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED=sync migrate
 # Логика живёт в /api/dev-seed (роут проверяет ту же переменную) — CLI-путь сломан тем же
 # багом Payload, что и migrate выше, а внутри процесса Next всё работает.
-#   SEED=photos — проставить фото товарам, ничего не удаляя (рабочий режим для прода).
+#   SEED=sync   — привести каталог к payload/seed.ts: обновить поля, создать недостающее,
+#                 убрать лишнее. Остатки и фото не трогает, товар со ссылками из заказов
+#                 не удаляет. Основной рабочий режим для прода.
+#   SEED=photos — только проставить фото товарам, ничего больше не меняя.
 #   SEED=1      — ⚠️ полный пересид с удалением всех products и media.
 # Без переменной SEED этот блок не выполняется.
+# То же можно запустить, не заходя на сервер: Actions -> Deploy -> Run workflow -> seed: sync.
 if [ -n "$SEED" ]; then
   echo "SEED=$SEED — наполняем каталог..."
   node -e "
@@ -58,7 +62,7 @@ if [ -n "$SEED" ]; then
       res.on('data', (c) => (body += c));
       res.on('end', () => {
         if (res.statusCode === 200) {
-          console.log('Каталог пересоздан:', body);
+          console.log('Каталог обновлён:', body);
           process.exit(0);
         }
         console.error('Сид не отработал, статус ' + res.statusCode + ': ' + body);

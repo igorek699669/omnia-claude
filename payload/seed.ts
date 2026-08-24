@@ -5,16 +5,52 @@ import config from "./payload.config";
 
 /**
  * Каталог хангов, собранный по реальным аудиозаписям строёв из public/audio/.
- * scaleNotes рассчитаны по интервальным формулам строёв (Kurd, Hijaz, Pygmy,
- * Ashakiran, Amara, Equinox, Romanian Hijaz) от корневой ноты в названии файла;
  * "+N" в названии — нижние ноты, notesCount = верхние + нижние.
+ *
+ * Формат scaleNotes: динг / звукоряд по возрастанию, нижние ноты — в скобках.
+ * Октавы в каталогах производителей часто не проставлены — дописаны по возрастанию
+ * от динга (динг без явной октавы — третья).
+ *
+ * Сверено по каталогам производителей:
+ * - mrpans.com — C Ashakiran 9+8, C# Pygmy 11+6 и 12+7, D Kurd 10, 10+3, 12 и 12+4,
+ *   E Amara 13+7 и 16 («E Amara 11+5»), E Equinox 12, F Pygmy 11+6 и 12,
+ *   F# Pygmy 11+6 и 12+9, F# Romanian Hijaz 13;
+ * - yishama.com/virtual-pantam — A Hijaz 14, D Hijaz 10, D Kurd 12+8 («D Kurd 20»);
+ * - yataoshop.com (YataoPan/MAG/Mudra/Ayasa) — D Kurd 17 (13+4), C Ashakiran 16
+ *   (достроен между их же 15 и 17), E Amara 17 (13+4) и 19 (13+6);
+ * - C# Kurd 20 и E Kurd 19 — транспонированы с yishama D Kurd 20 и Mudra D Kurd 19
+ *   (интервалы строя фиксированы, перенос по полутонам точен).
+ *
+ * Звукоряды проверены по самим записям: спектральный разбор онсетов
+ * (scratchpad/notes.py + audit.py, ffmpeg + numpy) даёт список реально сыгранных нот.
+ * На заведомо верных строях метод не выдал ни одной лишней ноты, так что расхождение
+ * «услышано, но нет в строе» — сигнал ошибки. Именно так выяснилось, что "Low Pygmy" —
+ * НЕ пигмей с дингом на октаву ниже: на второй октаве у этих записей энергии нет
+ * (0.1–1.6 от уровня шума против 7–21 на третьей). То же пишет handpanshop.eu:
+ * "F2 Pygmy ... the build-up is exactly the same as Low Pygmy, but then another bass
+ * note is added ... So a Low Pygmy with an added bass". Поэтому у "X Low Pygmy" динг
+ * в третьей октаве — и раскладка совпадает с "X Pygmy" того же размера у mrpans.
+ *
+ * Отсюда же — почему в каталоге больше нет позиций "Low Pygmy": четыре из них оказались
+ * тем же строем, что и обычный "Pygmy" того же размера (C# Low Pygmy 17 = C# Pygmy 11+6,
+ * F# Low Pygmy 17 = F# Pygmy 11+6, F# Low Pygmy 21 = F# Pygmy 12+9,
+ * F Low Pygmy 17 = F Pygmy 11+6), и как дубли удалены — осталось по одной позиции с
+ * названием, как у mrpans, и с более длинной из двух записей. Пятая, F Low Pygmy 12,
+ * дубля не имела и просто переименована в F Pygmy 12. Записи удалённых дублей остались
+ * в public/audio/ (C-sharp_Low_Pygmy_17, F-sharp_Low_Pygmy_17, F-sharp_Low_Pygmy_21,
+ * F_Low_Pygmy_17) и больше нигде не используются.
+ *
+ * Двух строёв нет ни в одном каталоге — там раскладка достроена и помечена ⚠️ на месте:
+ * F Kurd 9+6 (верхние 9 стандартны, нижние 6 достроены) и F# Kurd 16+6 (достроен целиком,
+ * 16 верхних нот не делает ни один известный мастер — стоит уточнить у мастерской).
+ *
  * Запуск: npm run payload:seed (старые товары при этом удаляются).
  */
 const products = [
   {
     slug: "a-hijaz-14",
     name: "Ханг A Hijaz 14",
-    scaleNotes: "A2 / A#2 B2 E3 F3 G3 A3 A#3 C#4 D4 E4 F4 G4 A4",
+    scaleNotes: "A2 / (D3) E3 (F3) G3 A3 Bb3 C#4 D4 E4 (F4) G4 (A4) (D5)",
     price: 111990,
     oldPrice: 167990,
     notesCount: 14,
@@ -25,7 +61,7 @@ const products = [
   {
     slug: "c-sharp-kurd-20",
     name: "Ханг C# Kurd 20",
-    scaleNotes: "C#3 / D3 D#3 E3 F3 F#3 G3 G#3 A3 A#3 B3 C4 C#4 D#4 E4 F#4 G#4 A4 B4 C#5",
+    scaleNotes: "C#3 / (D#3) (E3) (F#3) G#3 A3 B3 C#4 D#4 E4 F#4 G#4 B4 C#5 D#5 (E5) (F#5) (G#5) (A5) (B5)",
     price: 159990,
     oldPrice: 239990,
     notesCount: 20,
@@ -34,20 +70,9 @@ const products = [
     audioSample: "/audio/C-sharp_Kurd_20.m4a",
   },
   {
-    slug: "c-sharp-low-pygmy-17",
-    name: "Ханг C# Low Pygmy 17",
-    scaleNotes: "C#2 / D2 D#2 E2 F2 F#2 G2 G#2 A2 A#2 B2 C#3 D#3 F3 G#3 A#3 C#4",
-    price: 135990,
-    oldPrice: 203990,
-    notesCount: 17,
-    tuningHz: "440",
-    stockQty: 0,
-    audioSample: "/audio/C-sharp_Low_Pygmy_17.m4a",
-  },
-  {
     slug: "c-sharp-pygmy-11-6",
     name: "Ханг C# Pygmy 11+6",
-    scaleNotes: "F1 F#1 G#1 F2 F#2 G#2 C#3 / D3 D#3 E3 F3 F#3 G#3 A3 F#4 G#4 A4",
+    scaleNotes: "C#3 / (D3) (E3) F#3 G#3 A3 (B3) C#4 (D4) E4 F#4 G#4 A4 (B4) C#5 (D5) E5",
     price: 135990,
     oldPrice: 203990,
     notesCount: 17,
@@ -58,7 +83,7 @@ const products = [
   {
     slug: "c-sharp-pygmy-12-7",
     name: "Ханг C# Pygmy 12+7",
-    scaleNotes: "F1 F#1 G#1 F2 F#2 G#2 C3 C#3 / D3 D#3 E3 F3 F#3 G3 G#3 A3 F#4 G#4 A4",
+    scaleNotes: "C#3 / (D3) (E3) F#3 G#3 A3 (B3) C#4 (D4) E4 F#4 G#4 A4 (B4) C#5 (D5) E5 F#5 (G#5)",
     price: 151990,
     oldPrice: 227990,
     notesCount: 19,
@@ -69,7 +94,7 @@ const products = [
   {
     slug: "c-ashakiran-16",
     name: "Ханг C Ashakiran 16",
-    scaleNotes: "C3 / C#3 D3 E3 F3 G3 A3 B3 C4 D4 E4 F4 G4 A4 B4 C5",
+    scaleNotes: "C3 / (D3) (E3) F3 G3 A3 B3 C4 D4 E4 (F4) G4 (A4) (B4) (C5) (D5)",
     price: 127990,
     oldPrice: 191990,
     notesCount: 16,
@@ -80,7 +105,7 @@ const products = [
   {
     slug: "c-ashakiran-9-8",
     name: "Ханг C Ashakiran 9+8",
-    scaleNotes: "A#1 C2 C#2 D#2 F2 G2 G#2 A#2 C3 / D3 E3 F3 G3 A3 B3 C4 D4",
+    scaleNotes: "C3 / (D3) (E3) F3 G3 A3 B3 C4 D4 E4 (F4) G4 (A4) (B4) (C5) (D5) (E5)",
     price: 135990,
     oldPrice: 203990,
     notesCount: 17,
@@ -91,7 +116,7 @@ const products = [
   {
     slug: "d-hijaz-10",
     name: "Ханг D Hijaz 10",
-    scaleNotes: "D3 / A3 A#3 C4 D4 D#4 F#4 G4 A4 A#4",
+    scaleNotes: "D3 / A3 C4 D4 Eb4 F#4 G4 A4 C5 D5",
     price: 79990,
     oldPrice: 119990,
     notesCount: 10,
@@ -102,7 +127,7 @@ const products = [
   {
     slug: "d-kurd-10-3",
     name: "Ханг D Kurd 10+3",
-    scaleNotes: "E2 F#2 G2 D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4",
+    scaleNotes: "D3 / (F3) (G3) A3 Bb3 C4 D4 E4 F4 G4 A4 C5 (D5)",
     price: 103990,
     oldPrice: 155990,
     notesCount: 13,
@@ -113,7 +138,7 @@ const products = [
   {
     slug: "d-kurd-10",
     name: "Ханг D Kurd 10",
-    scaleNotes: "D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4",
+    scaleNotes: "D3 / A3 Bb3 C4 D4 E4 F4 G4 A4 C5",
     price: 79990,
     oldPrice: 119990,
     notesCount: 10,
@@ -124,7 +149,7 @@ const products = [
   {
     slug: "d-kurd-12-4",
     name: "Ханг D Kurd 12+4",
-    scaleNotes: "D2 E2 F#2 G2 D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4 C5 D5",
+    scaleNotes: "(C3) D3 / (E3) (F3) (G3) A3 Bb3 C4 D4 E4 F4 G4 A4 C5 D5 E5",
     price: 127990,
     oldPrice: 191990,
     notesCount: 16,
@@ -135,7 +160,7 @@ const products = [
   {
     slug: "d-kurd-12-8",
     name: "Ханг D Kurd 12+8",
-    scaleNotes: "G1 A1 B1 C2 D2 E2 F#2 G2 D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4 C5 D5",
+    scaleNotes: "D3 / (E3) (F3) (G3) A3 Bb3 C4 D4 E4 F4 G4 A4 C5 D5 E5 (F5) (G5) (A5) (Bb5) (C6)",
     price: 159990,
     oldPrice: 239990,
     notesCount: 20,
@@ -146,7 +171,7 @@ const products = [
   {
     slug: "d-kurd-12",
     name: "Ханг D Kurd 12",
-    scaleNotes: "D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4 C5 D5",
+    scaleNotes: "D3 / A3 Bb3 C4 D4 E4 F4 G4 A4 C5 D5 E5",
     price: 95990,
     oldPrice: 143990,
     notesCount: 12,
@@ -155,11 +180,11 @@ const products = [
     audioSample: "/audio/D_Kurd_12.m4a",
   },
   {
-    // Отдельной записи строя на 11 нот нет — берём ближайшую (D Kurd 12) и обрезаем
-    // на одну верхнюю ноту; аудио оставляем от 12-нотного, т.к. отдельной записи нет.
+    // Ни записи, ни строя на 11 нот у mrpans нет — берём сверенный D Kurd 12 и
+    // обрезаем верхнюю ноту; аудио тоже от 12-нотного, отдельного нет.
     slug: "d-kurd-11",
     name: "Ханг D Kurd 11",
-    scaleNotes: "D3 / A3 A#3 C4 D4 E4 F4 G4 A4 A#4 C5",
+    scaleNotes: "D3 / A3 Bb3 C4 D4 E4 F4 G4 A4 C5 D5",
     price: 87990,
     oldPrice: 131990,
     notesCount: 11,
@@ -170,7 +195,7 @@ const products = [
   {
     slug: "d-kurd-17",
     name: "Ханг D Kurd 17",
-    scaleNotes: "D3 / D#3 E3 F3 F#3 G3 A3 A#3 C4 D4 E4 F4 G4 A4 A#4 C5 D5",
+    scaleNotes: "(Bb2) (C3) D3 / (F3) (G3) A3 Bb3 C4 D4 E4 F4 G4 A4 C5 D5 E5 F5",
     price: 135990,
     oldPrice: 203990,
     notesCount: 17,
@@ -181,7 +206,7 @@ const products = [
   {
     slug: "e-amara-13-7",
     name: "Ханг E Amara 13+7",
-    scaleNotes: "A1 B1 C#2 D2 E2 F#2 A2 E3 / F3 F#3 G3 B3 D4 E4 F#4 G4 A4 B4 D5 E5",
+    scaleNotes: "(C3) (D3) E3 / (F#3) (G3) (A3) B3 (C4) D4 E4 F#4 G4 A4 B4 (C5) D5 E5 F#5 G5 A5",
     price: 159990,
     oldPrice: 239990,
     notesCount: 20,
@@ -192,7 +217,7 @@ const products = [
   {
     slug: "e-amara-16",
     name: "Ханг E Amara 16",
-    scaleNotes: "E3 / F3 F#3 G3 G#3 A3 A#3 B3 D4 E4 F#4 G4 A4 B4 D5 E5",
+    scaleNotes: "(C3) (D3) E3 / (F#3) (G3) (A3) B3 D4 E4 F#4 G4 A4 B4 D5 E5 F#5",
     price: 127990,
     oldPrice: 191990,
     notesCount: 16,
@@ -203,7 +228,7 @@ const products = [
   {
     slug: "e-amara-17",
     name: "Ханг E Amara 17",
-    scaleNotes: "E3 / F3 F#3 G3 G#3 A3 A#3 B3 C4 D4 E4 F#4 G4 A4 B4 D5 E5",
+    scaleNotes: "(C3) (D3) E3 / (F#3) (G3) B3 D4 E4 F#4 G4 A4 B4 D5 E5 F#5 G5 A5",
     price: 135990,
     oldPrice: 203990,
     notesCount: 17,
@@ -214,7 +239,7 @@ const products = [
   {
     slug: "e-amara-19",
     name: "Ханг E Amara 19",
-    scaleNotes: "E3 / F3 F#3 G3 G#3 A3 A#3 B3 C4 C#4 D4 D#4 E4 F#4 G4 A4 B4 D5 E5",
+    scaleNotes: "(C3) (D3) E3 / (F#3) (G3) (A3) B3 (C4) D4 E4 F#4 G4 A4 B4 D5 E5 F#5 G5 A5",
     price: 151990,
     oldPrice: 227990,
     notesCount: 19,
@@ -225,7 +250,7 @@ const products = [
   {
     slug: "e-equinox-12",
     name: "Ханг E Equinox 12",
-    scaleNotes: "E3 / G3 B3 C4 D4 E4 F#4 G4 B4 C5 D5 E5",
+    scaleNotes: "E3 / G3 B3 C4 D4 E4 F#4 G4 B4 D5 E5 F#5",
     price: 95990,
     oldPrice: 143990,
     notesCount: 12,
@@ -236,7 +261,7 @@ const products = [
   {
     slug: "e-kurd-19",
     name: "Ханг E Kurd 19",
-    scaleNotes: "E3 / F3 F#3 G3 G#3 A3 A#3 B3 C4 C#4 D4 E4 F#4 G4 A4 B4 C5 D5 E5",
+    scaleNotes: "(C3) (D3) E3 / (G3) (A3) B3 C4 D4 E4 F#4 G4 A4 B4 D5 E5 F#5 (G5) (A5) (B5)",
     price: 151990,
     oldPrice: 227990,
     notesCount: 19,
@@ -245,9 +270,16 @@ const products = [
     audioSample: "/audio/E_Kurd_19.m4a",
   },
   {
+    // ⚠️ Единственный строй, которого нет ни в одном каталоге, — раскладка достроена.
+    // Прежние ноты были невозможны (G3 и A#3 в фа-диез миноре не существуют). Динг F#3 и
+    // нижние D3/E3 слышны в записи; верхние 16 — продолжение документированного ряда
+    // D Kurd (mrpans D Kurd 13 + продолжение звукоряда), транспонированного на большую
+    // терцию вверх. 16 верхних нот на деке не делает ни один известный мастер, так что
+    // раскладку стоит подтвердить у мастерской — возможно, инструмент 16-нотный
+    // (10 верхних + 6 нижних), и тогда notesCount и цену надо пересчитать.
     slug: "f-sharp-kurd-16-6",
     name: "Ханг F# Kurd 16+6",
-    scaleNotes: "D#2 E2 F#2 G#2 A#2 B2 F#3 / G3 G#3 A3 A#3 C#4 D4 E4 F#4 G#4 A4 B4 C#5 D5 E5 F#5",
+    scaleNotes: "(D3) (E3) F#3 / (G#3) (A3) (B3) C#4 D4 E4 F#4 G#4 A4 B4 C#5 E5 F#5 G#5 A5 B5 C#6 D6 (E6)",
     price: 175990,
     oldPrice: 263990,
     notesCount: 22,
@@ -256,32 +288,9 @@ const products = [
     audioSample: "/audio/F-sharp_Kurd_16+6.m4a",
   },
   {
-    slug: "f-sharp-low-pygmy-17",
-    name: "Ханг F# Low Pygmy 17",
-    scaleNotes: "F#2 / G2 G#2 A2 A#2 B2 C3 C#3 D3 D#3 E3 F#3 G#3 A#3 C#4 D#4 F#4",
-    price: 135990,
-    oldPrice: 203990,
-    notesCount: 17,
-    tuningHz: "440",
-    stockQty: 0,
-    audioSample: "/audio/F-sharp_Low_Pygmy_17.m4a",
-  },
-  {
-    slug: "f-sharp-low-pygmy-21",
-    name: "Ханг F# Low Pygmy 21",
-    scaleNotes:
-      "F#2 / G2 G#2 A2 A#2 B2 C3 C#3 D3 D#3 E3 F3 F#3 G3 G#3 A3 A#3 B3 C#4 D#4 F#4",
-    price: 167990,
-    oldPrice: 251990,
-    notesCount: 21,
-    tuningHz: "440",
-    stockQty: 0,
-    audioSample: "/audio/F-sharp_Low_Pygmy_21.m4a",
-  },
-  {
     slug: "f-sharp-pygmy-11-6",
     name: "Ханг F# Pygmy 11+6",
-    scaleNotes: "A#1 B1 C#2 A#2 B2 C#3 F#3 / G3 G#3 A3 A#3 B3 C#4 D4 B4 C#5 D5",
+    scaleNotes: "(D3) (E3) F#3 / G#3 A3 (B3) C#4 (D4) E4 F#4 G#4 A4 (B4) C#5 (D5) E5 F#5",
     price: 135990,
     oldPrice: 203990,
     notesCount: 17,
@@ -292,7 +301,7 @@ const products = [
   {
     slug: "f-sharp-pygmy-12-9",
     name: "Ханг F# Pygmy 12+9",
-    scaleNotes: "A#1 B1 C#2 A#2 B2 C#3 D#3 E3 F3 F#3 / G3 G#3 A3 A#3 B3 C4 C#4 D4 B4 C#5 D5",
+    scaleNotes: "(D3) (E3) F#3 / G#3 A3 (B3) C#4 (D4) E4 F#4 G#4 A4 (B4) C#5 (D5) E5 F#5 G#5 (A5) (B5) (C#6)",
     price: 167990,
     oldPrice: 251990,
     notesCount: 21,
@@ -303,7 +312,7 @@ const products = [
   {
     slug: "f-sharp-romanian-hijaz-13",
     name: "Ханг F# Romanian Hijaz 13",
-    scaleNotes: "F#3 / G3 G#3 A3 A#3 B3 C#4 D4 F4 B4 C#5 D5 F5",
+    scaleNotes: "F#3 / B3 C#4 D4 F4 F#4 G#4 A4 B4 C#5 D5 F5 F#5",
     price: 103990,
     oldPrice: 155990,
     notesCount: 13,
@@ -312,9 +321,12 @@ const products = [
     audioSample: "/audio/F-sharp_Romanian_Hijaz_13.m4a",
   },
   {
+    // ⚠️ F Kurd в каталогах не нашёлся. Верхние 9 нот — стандартный Kurd от динга F3
+    // (в записи слышны F3, Eb4, F4, Ab4, Bb4), нижние 6 достроены по раскладке
+    // mrpans B2 Kurd 9+5 и ждут сверки с мастерской.
     slug: "f-kurd-9-6",
     name: "Ханг F Kurd 9+6",
-    scaleNotes: "D2 D#2 F2 G2 A2 A#2 F3 / C4 C#4 D#4 F4 G4 G#4 A#4 C5",
+    scaleNotes: "F3 / (Ab3) (Bb3) C4 Db4 Eb4 F4 G4 Ab4 Bb4 C5 (Db5) (Eb5) (F5) (G5)",
     price: 119990,
     oldPrice: 179990,
     notesCount: 15,
@@ -323,9 +335,9 @@ const products = [
     audioSample: "/audio/F_Kurd_9+6.m4a",
   },
   {
-    slug: "f-low-pygmy-12",
-    name: "Ханг F Low Pygmy 12",
-    scaleNotes: "F2 / F#2 G2 G#2 A2 A#2 F3 G3 A3 C4 D4 F4",
+    slug: "f-pygmy-12",
+    name: "Ханг F Pygmy 12",
+    scaleNotes: "F3 / G3 Ab3 C4 Eb4 F4 G4 Ab4 C5 Eb5 F5 G5",
     price: 95990,
     oldPrice: 143990,
     notesCount: 12,
@@ -334,20 +346,9 @@ const products = [
     audioSample: "/audio/F_Low_Pygmy_12.m4a",
   },
   {
-    slug: "f-low-pygmy-17",
-    name: "Ханг F Low Pygmy 17",
-    scaleNotes: "F2 / F#2 G2 G#2 A2 A#2 B2 C3 C#3 D3 D#3 F3 G3 A3 C4 D4 F4",
-    price: 135990,
-    oldPrice: 203990,
-    notesCount: 17,
-    tuningHz: "440",
-    stockQty: 0,
-    audioSample: "/audio/F_Low_Pygmy_17.m4a",
-  },
-  {
-    slug: "f-pygmy-17",
-    name: "Ханг F Pygmy 17",
-    scaleNotes: "F3 / F#3 G3 G#3 A3 A#3 B3 C4 C#4 D4 D#4 E4 F4 F#4 A#4 C5 C#5",
+    slug: "f-pygmy-11-6",
+    name: "Ханг F Pygmy 11+6",
+    scaleNotes: "(C3) (Db3) (Eb3) F3 / G3 Ab3 (Bb3) C4 (Db4) Eb4 F4 G4 Ab4 C5 Db5 Eb5 (F5)",
     price: 135990,
     oldPrice: 203990,
     notesCount: 17,
@@ -382,6 +383,129 @@ async function findOrUploadPhoto(payload: Payload, filename: string, alt: string
     data: { alt },
     filePath: path.resolve(process.cwd(), "public/images/products", filename),
   });
+}
+
+/**
+ * Слаги, которые менялись уже после того, как каталог уехал на прод. Без этой карты
+ * синхронизация увидела бы «пропал старый товар, появился новый», удалила бы документ
+ * и создала другой — с новым id, оборвав ссылки из заказов и подписок на наличие.
+ */
+const RENAMED_SLUGS: Record<string, string> = {
+  // Дубли «Low Pygmy» убраны, уцелевшие переименованы по каталогу mrpans (см. шапку файла).
+  "f-pygmy-17": "f-pygmy-11-6",
+  "f-low-pygmy-12": "f-pygmy-12",
+};
+
+/**
+ * Поля, которые синхронизация переносит из этого файла в базу.
+ *
+ * stockQty и media сюда сознательно не входят: остаток — живые данные (списывается при
+ * оплате и правится в админке), а фото могли быть заменены вручную. Перетирать их
+ * значениями из сида нельзя. Фото новым товарам проставляются отдельно, при создании.
+ */
+const SYNCED_FIELDS = [
+  "name",
+  "scaleNotes",
+  "price",
+  "oldPrice",
+  "notesCount",
+  "tuningHz",
+  "audioSample",
+] as const;
+
+/**
+ * Приводит каталог в базе к тому, что описано в этом файле, ничего лишнего не ломая, —
+ * рабочий режим для прода, в отличие от runSeed, которая сносит products и media целиком.
+ *
+ * Что делает: переименовывает слаги по RENAMED_SLUGS, обновляет поля из SYNCED_FIELDS
+ * у совпавших по слагу товаров, создаёт недостающие (сразу с фото) и убирает те, которых
+ * в файле больше нет. Удаляет только когда на товар никто не ссылается: если он есть в
+ * заказе или в подписке на наличие, документ остаётся, но ему выставляется stockQty 0 —
+ * из каталога он пропадёт, а история заказа не порвётся.
+ *
+ * Идемпотентна: второй запуск подряд не меняет ничего.
+ */
+export async function syncProducts(payload: Payload) {
+  const existing = await payload.find({ collection: "products", limit: 1000 });
+  const bySlug = new Map(existing.docs.map((doc) => [doc.slug, doc]));
+
+  for (const [from, to] of Object.entries(RENAMED_SLUGS)) {
+    const doc = bySlug.get(from);
+    if (!doc || bySlug.has(to)) continue;
+    await payload.update({ collection: "products", id: doc.id, data: { slug: to } });
+    bySlug.delete(from);
+    bySlug.set(to, { ...doc, slug: to });
+    console.log(`Переименован слаг: ${from} -> ${to}`);
+  }
+
+  const [photo12, photo10] = await Promise.all(
+    PHOTOS.map((p) => findOrUploadPhoto(payload, p.filename, p.alt)),
+  );
+
+  let created = 0;
+  let updated = 0;
+
+  for (const product of products) {
+    const doc = bySlug.get(product.slug);
+
+    if (!doc) {
+      const photo = getUpperNotes(product.name) === 12 ? photo12 : photo10;
+      await payload.create({ collection: "products", data: { ...product, media: [photo.id] } });
+      created++;
+      console.log(`Создан: ${product.slug}`);
+      continue;
+    }
+
+    bySlug.delete(product.slug);
+
+    const patch: Record<string, unknown> = {};
+    for (const field of SYNCED_FIELDS) {
+      if (product[field] !== doc[field]) patch[field] = product[field];
+    }
+    if (Object.keys(patch).length === 0) continue;
+
+    await payload.update({ collection: "products", id: doc.id, data: patch });
+    updated++;
+    console.log(`Обновлён: ${product.slug} (${Object.keys(patch).join(", ")})`);
+  }
+
+  const deleted: string[] = [];
+  const hidden: string[] = [];
+
+  for (const doc of bySlug.values()) {
+    const [inOrders, inSubs] = await Promise.all([
+      payload.find({
+        collection: "orders",
+        where: { "items.product": { equals: doc.id } },
+        limit: 1,
+      }),
+      payload.find({
+        collection: "stock-subscriptions",
+        where: { product: { equals: doc.id } },
+        limit: 1,
+      }),
+    ]);
+
+    if (inOrders.totalDocs > 0 || inSubs.totalDocs > 0) {
+      if (doc.stockQty !== 0) {
+        await payload.update({ collection: "products", id: doc.id, data: { stockQty: 0 } });
+      }
+      hidden.push(doc.slug);
+      console.log(`Оставлен (есть ссылки), остаток обнулён: ${doc.slug}`);
+      continue;
+    }
+
+    await payload.delete({ collection: "products", id: doc.id });
+    deleted.push(doc.slug);
+    console.log(`Удалён: ${doc.slug}`);
+  }
+
+  const result = { created, updated, deleted, hidden, total: products.length };
+  console.log(
+    `Синхронизация завершена: создано ${created}, обновлено ${updated}, ` +
+      `удалено ${deleted.length}, скрыто ${hidden.length}. В файле товаров: ${products.length}.`,
+  );
+  return result;
 }
 
 /**
