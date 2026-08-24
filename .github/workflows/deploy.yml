@@ -69,7 +69,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: SEED,GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD
+          envs: SEED,GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMS_RU_API_ID,SMS_RU_FROM,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD
           script: |
             set -e
             mkdir -p /opt/omnia
@@ -97,6 +97,8 @@ jobs:
             SMTP_USER=${SMTP_USER}
             SMTP_PASSWORD=${SMTP_PASSWORD}
             SMTP_FROM=${SMTP_FROM}
+            SMS_RU_API_ID=${SMS_RU_API_ID}
+            SMS_RU_FROM=${SMS_RU_FROM}
             YOOKASSA_SHOP_ID=${YOOKASSA_SHOP_ID}
             YOOKASSA_SECRET_KEY=${YOOKASSA_SECRET_KEY}
             CDEK_ACCOUNT=${CDEK_ACCOUNT}
@@ -128,6 +130,12 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          # Без SMS_RU_API_ID sendSms в auth.ts уходит в ветку "не задан" и только пишет
+          # код в лог — на проде это значит, что войти нельзя ни по одному номеру.
+          SMS_RU_API_ID: ${{ secrets.SMS_RU_API_ID }}
+          # Необязательная: согласованное в кабинете SMS.ru имя отправителя (у нас "Omnia").
+          # Пустая — SMS уходят с общего номера, отправка при этом работает.
+          SMS_RU_FROM: ${{ secrets.SMS_RU_FROM }}
           YOOKASSA_SHOP_ID: ${{ secrets.YOOKASSA_SHOP_ID }}
           YOOKASSA_SECRET_KEY: ${{ secrets.YOOKASSA_SECRET_KEY }}
           CDEK_ACCOUNT: ${{ secrets.CDEK_ACCOUNT }}
