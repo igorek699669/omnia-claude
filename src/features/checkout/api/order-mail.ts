@@ -87,6 +87,11 @@ export async function sendPaidOrderEmail(orderId: number | string): Promise<void
     `Товары: ${formatPrice(itemsTotal)}`,
     `Доставка: ${deliveryLine} — ${formatPrice(delivery?.cost ?? 0)}`,
     `Итого оплачено: ${formatPrice(order.total)}`,
+    "",
+    // Продавец на НПД: кассы нет, чек формируется руками в «Мой налог» и уходит покупателю.
+    // Напоминание живёт в письме об оплате, потому что это единственное место, где продавец
+    // гарантированно видит факт расчёта в момент, когда чек и положено выдать.
+    `Чек: сформировать в «Мой налог» и отправить на ${order.customerEmail}`,
   ];
 
   await transporter.sendMail({
