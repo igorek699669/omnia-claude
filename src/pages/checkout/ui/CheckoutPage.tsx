@@ -36,7 +36,7 @@ type OrderValues = z.infer<typeof orderSchema>;
 
 export function CheckoutPage() {
   const { items } = useCart();
-  const { data: session } = useSession();
+  const { data: session, refetch: refetchSession } = useSession();
   const [showDelivery, setShowDelivery] = useState(false);
 
   // Справочник городов СДЭК первый раз грузится постранично и небыстро (см.
@@ -211,7 +211,12 @@ export function CheckoutPage() {
                     <PhoneConfirmDialog
                       phone={phone}
                       validate={() => orderForm.trigger("phone")}
-                      onConfirmed={() => setPhoneConfirmed(true)}
+                      onConfirmed={() => {
+                        setPhoneConfirmed(true);
+                        // Подтверждение заводит сессию на сервере — перечитываем, иначе
+                        // шапка до перезагрузки страницы показывает гостя.
+                        refetchSession();
+                      }}
                     />
                   )}
                 </div>

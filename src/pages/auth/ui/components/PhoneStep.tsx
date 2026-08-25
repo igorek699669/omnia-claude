@@ -2,11 +2,9 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import { z } from "zod";
 import { SectionTitle, ArrowButton, PhoneInput } from "@/shared/ui";
-import { authClient, errorMessage, normalizePhone, isValidRuPhone } from "@/shared/lib";
+import { normalizePhone, isValidRuPhone } from "@/shared/lib";
 
 const phoneSchema = z.object({
   phone: z
@@ -16,34 +14,24 @@ const phoneSchema = z.object({
 });
 type PhoneValues = z.infer<typeof phoneSchema>;
 
-export function PhoneStep({ onSent }: { onSent: (phone: string) => void }) {
+export function PhoneStep({
+  onSubmit,
+  isPending,
+}: {
+  /** Номер приходит уже в E.164 — маска нужна только человеку в поле. */
+  onSubmit: (phone: string) => void;
+  isPending: boolean;
+}) {
   const form = useForm<PhoneValues>({
     resolver: zodResolver(phoneSchema),
     defaultValues: { phone: "" },
   });
 
-  const { mutate: sendOtp, isPending: isSendingOtp } = useMutation({
-    mutationFn: async (masked: string) => {
-      // Наружу номер всегда уходит в E.164 — маска нужна только человеку в поле.
-      const phone = normalizePhone(masked);
-      const { error } = await authClient.phoneNumber.sendOtp({ phoneNumber: phone });
-      if (error) throw error;
-      return phone;
-    },
-    onSuccess: (phone) => {
-      toast.success("Код отправлен по SMS");
-      onSent(phone);
-    },
-    onError: (error) => {
-      toast.error(errorMessage(error, "Не получилось отправить код — попробуйте ещё раз"));
-    },
-  });
-
   return (
-    <form onSubmit={form.handleSubmit((values) => sendOtp(values.phone))} noValidate>
+    <form onSubmit={form.handleSubmit((values) => onSubmit(normalizePhone(values.phone)))} noValidate>
       <SectionTitle>Вход или регистрация</SectionTitle>
       <p className="mt-4 text-ink-600">
-        Укажите номер телефона — пришлём на него код в SMS. Пароль не нужен.
+        Укажите номер телефона — подтвердим его бесплатным звонком. Пароль и код не нужны.
       </p>
       <div className="mt-8">
         <Controller
@@ -62,8 +50,8 @@ export function PhoneStep({ onSent }: { onSent: (phone: string) => void }) {
         />
       </div>
       <div className="mt-6">
-        <ArrowButton type="submit" disabled={isSendingOtp}>
-          {isSendingOtp ? "Отправляем…" : "Получить код"}
+        <ArrowButton type="submit" disabled={isPending}>
+          {isPending ? "Готовим звонок…" : "Продолжить"}
         </ArrowButton>
       </div>
     </form>
