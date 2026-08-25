@@ -12,6 +12,7 @@ import {
 import { formatPrice } from "@/shared/lib";
 import { Tag, HandpanArt, AudioPlayerBar } from "@/shared/ui";
 import { AddToCartSection } from "./components/AddToCartSection";
+import { CustomOrderBlock } from "./components/CustomOrderBlock";
 
 export async function ProductPage({ slug }: { slug: string }) {
   const product = await getProductBySlug(slug);
@@ -76,6 +77,8 @@ export async function ProductPage({ slug }: { slug: string }) {
           </div>
 
           <AddToCartSection product={product} />
+
+          {!product.inStock && <CustomOrderBlock />}
 
           <p className="mt-6 text-sm text-ink-600">
             Доставка СДЭК по всей России — трек-номер появится
