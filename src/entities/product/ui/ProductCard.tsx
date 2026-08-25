@@ -20,7 +20,7 @@ export function ProductCard({
       {/* Верхний паддинг 20px — снаружи aspect-ratio блока, а не паддингом/inset внутри него:
           иначе object-cover пришлось бы сильнее обрезать фото по высоте, чтобы всё равно
           заполнить уменьшенный бокс (см. отступ по бокам ниже — та же причина). */}
-      <div className={`bg-white pt-5 ${product.inStock ? "" : "grayscale"}`}>
+      <div className="bg-white pt-5">
         <div className="relative aspect-[4/3] overflow-hidden">
           {!product.inStock && (
             <span className="absolute left-3.5 top-3.5 z-10 rounded-full bg-ink-900/85 px-3.5 py-1.5 text-[13px] font-semibold text-white">
