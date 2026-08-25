@@ -1,6 +1,6 @@
 "use server";
 
-import { getAllCdekCities, getCdekPvzPoints, calculateCdekTariff, deriveShipmentPackages } from "@/shared/lib";
+import { suggestCdekCities, getCdekPvzPoints, calculateCdekTariff, deriveShipmentPackages } from "@/shared/lib";
 import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
 import { CITY_SEARCH_MIN_CHARS } from "../model/types";
 import { TOP_RU_CITIES } from "../model/topCities";
@@ -10,38 +10,24 @@ function normalizeCityName(text: string): string {
   return text.trim().toLowerCase().replace(/ё/g, "е");
 }
 
-// Первая загрузка полного справочника городов — постраничная (см. getAllCdekCities) и
-// поэтому небыстрая. Дергаем её заранее, как только пользователь попал на оформление
-// заказа, а не в момент, когда он уже открыл выбор доставки и начал печатать — тогда
-// к этому моменту кеш (в памяти процесса, TTL 12ч) уже почти наверняка тёплый.
-export async function warmUpCityCache(): Promise<void> {
-  await getAllCdekCities();
-}
-
-// Живой фильтр СДЭК (/location/cities?city=...) матчит только точные/полные названия —
-// на неполном вводе отдаёт пустой список. Поэтому справочник городов тянем целиком
-// (см. getAllCdekCities — кешируется в памяти процесса) и ищем подстроку сами: так
-// подсказки работают от 2 букв, а результат сразу приходит с настоящим code.
+// Живой фильтр СДЭК (/location/cities?city=...) матчит только полные названия, поэтому
+// подсказки берём с /location/suggest/cities (см. suggestCdekCities) — он понимает
+// неполный ввод и сразу отдаёт настоящий code, резолвить город по строке не нужно.
 export async function searchCitySuggestions(query: string): Promise<CdekCityMatch[]> {
   const q = normalizeCityName(query);
   if (q.length < CITY_SEARCH_MIN_CHARS) return [];
 
-  const cities = await getAllCdekCities();
-  const matches: { city: CdekCityMatch; index: number; isTop: boolean }[] = [];
-  for (const city of cities) {
-    const index = normalizeCityName(city.city).indexOf(q);
-    if (index === -1) continue;
-    matches.push({ city, index, isTop: TOP_RU_CITIES.has(normalizeCityName(city.city)) });
-  }
+  const cities = await suggestCdekCities(q);
 
-  // Города из топ-50 по населению — всегда выше остальных совпадений (мелкие тёзки и
-  // посёлки менее релевантны для покупателя). Дальше как раньше: совпадения с начала
-  // названия («Бря» → «Брянск») — выше тех, где строка встретилась в середине; при
-  // равенстве — короче название вперёд (обычно оно и нужнее).
-  matches.sort(
-    (a, b) => Number(b.isTop) - Number(a.isTop) || a.index - b.index || a.city.city.length - b.city.city.length,
-  );
-  return matches.slice(0, 8).map((m) => m.city);
+  // Города из топ-50 по населению — всегда выше остальных совпадений: СДЭК ранжирует
+  // выдачу по-своему, и рядом с «Брянском» легко всплывает посёлок «Брянка», который
+  // покупателю почти наверняка не нужен.
+  const ranked = cities.map((city) => ({
+    city,
+    isTop: TOP_RU_CITIES.has(normalizeCityName(city.city)),
+  }));
+  ranked.sort((a, b) => Number(b.isTop) - Number(a.isTop));
+  return ranked.slice(0, 8).map((m) => m.city);
 }
 
 export async function getPvzPointsByCity(cityCode: number): Promise<Pvz[]> {

@@ -91,36 +91,40 @@ async function cdekFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
-const CITY_PAGE_SIZE = 1000;
-// Предохранитель от бесконечного цикла, если СДЭК когда-нибудь перестанет отдавать короткую последнюю страницу.
-const CITY_MAX_PAGES = 200;
-
-async function fetchAllCdekCities(): Promise<CdekCityMatch[]> {
-  const all: CdekCityMatch[] = [];
-  for (let page = 0; page < CITY_MAX_PAGES; page++) {
-    // have_cdekpvz=true — иначе в справочник попадает вообще каждый населённый пункт РФ
-    // (хутора, деревни), а не только те, где реально есть сеть ПВЗ. Без фильтра в подсказках
-    // всплывают омонимы вроде «Брянск» в Дагестане (реальный хутор, но без единого ПВЗ) —
-    // выбор такого пункта ломает загрузку карты, потому что точек выдачи для него просто нет.
-    const batch = await cdekFetch<CdekCityMatch[]>(
-      `/location/cities?size=${CITY_PAGE_SIZE}&page=${page}&country_codes=RU&have_cdekpvz=true`,
-    );
-    all.push(...batch);
-    if (batch.length < CITY_PAGE_SIZE) break;
-  }
-  return all;
+interface CdekCitySuggestion {
+  code: number;
+  /** Полное название с иерархией: «Брянск, городской округ Брянск, Брянская область, Россия». */
+  full_name: string;
 }
 
-// Живой фильтр /location/cities?city=... матчит, судя по всему, только точные/начинающиеся
-// с полного слова названия — на неполном вводе или опечатке отдаёт пустой список (проверено
-// эмпирически). Поэтому вместо него тянем справочник целиком и ищем подстроку сами — так
-// подсказки работают от 3 букв независимо от качества их фильтра.
-//
-// Результат кешируем через Data Cache Next.js (а не в переменной модуля): справочник почти
-// не меняется, а serverless-инстансов на проде несколько и они пересоздаются на каждый
-// деплой — общая персистентная память нужна, чтобы полная постраничная выгрузка не гонялась
-// заново на каждом из них.
-export const getAllCdekCities = unstable_cache(fetchAllCdekCities, ["cdek-all-cities"], {
+/**
+ * Подсказки городов по неполному вводу — /location/suggest/cities.
+ *
+ * Не путать с /location/cities?city=...: тот матчит только полное название («Брянск» →
+ * есть, «бря» → пусто, проверено эмпирически). Раньше из-за этого справочник тянулся
+ * целиком и фильтровался у нас, но фильтра по наличию ПВЗ у /location/cities нет
+ * (`have_cdekpvz` СДЭК молча игнорирует), так что «целиком» — это 135 тысяч населённых
+ * пунктов и ~48 МБ JSON. В Data Cache такая запись не влезает (лимит 2 МБ на запись),
+ * Next её тихо отбрасывал, и вся постраничная выгрузка повторялась на каждый ввод.
+ *
+ * suggest отдаёт десяток релевантных вариантов и сразу с настоящим code — кешировать
+ * есть смысл уже поштучно, по строке запроса (unstable_cache включает аргументы в ключ).
+ */
+async function fetchCdekCitySuggestions(query: string): Promise<CdekCityMatch[]> {
+  const items = await cdekFetch<CdekCitySuggestion[]>(
+    `/location/suggest/cities?country_code=RU&name=${encodeURIComponent(query)}`,
+  );
+  return items.map(({ code, full_name }) => {
+    // «Город, [район,] [регион,] Россия» — регион идёт предпоследним сегментом, а у
+    // городов федерального значения его нет вовсе («Москва, Россия»).
+    const parts = full_name.split(",").map((part) => part.trim());
+    return { code, city: parts[0], region: parts.length > 2 ? parts[parts.length - 2] : undefined };
+  });
+}
+
+// Кешируем через Data Cache Next.js (а не в переменной модуля): справочник СДЭК почти не
+// меняется, а serverless-инстансов на проде несколько и они пересоздаются на каждый деплой.
+export const suggestCdekCities = unstable_cache(fetchCdekCitySuggestions, ["cdek-city-suggest"], {
   revalidate: 60 * 60 * 24,
 });
 

@@ -28,7 +28,7 @@ export { QueryProvider } from "./query-provider";
 export { createYookassaPayment, getYookassaPayment } from "./yookassa";
 export type { YookassaPayment } from "./yookassa";
 export {
-  getAllCdekCities,
+  suggestCdekCities,
   getCdekPvzPoints,
   calculateCdekTariff,
   createCdekOrder,

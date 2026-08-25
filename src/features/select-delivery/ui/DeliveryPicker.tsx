@@ -40,8 +40,8 @@ export function DeliveryPicker({
   const [address, setAddress] = useState("");
   const [courierTariff, setCourierTariff] = useState<CdekTariff | null>(null);
 
-  // Подсказки городов: справочник СДЭК тянется и фильтруется на сервере (см. actions.ts
-  // searchCitySuggestions) — оттуда сразу приходит настоящий code, резолвить его отдельно не нужно.
+  // Подсказки городов идут в СДЭК через сервер (см. actions.ts searchCitySuggestions) —
+  // оттуда сразу приходит настоящий code, резолвить его отдельно не нужно.
   const {
     mutate: searchCities,
     data: citySuggestions,
