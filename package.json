@@ -34,6 +34,7 @@
     "@radix-ui/react-tabs": "^1.1.17",
     "@tanstack/react-query": "^5.101.2",
     "better-auth": "^1.6.23",
+    "embla-carousel-react": "^8.6.0",
     "graphql": "^16.14.2",
     "next": "^16.2.10",
     "nodemailer": "^9.0.3",

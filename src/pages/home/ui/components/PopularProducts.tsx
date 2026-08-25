@@ -3,9 +3,11 @@ import Link from "next/link";
 import { getProducts, ProductCard, ProductCardSkeleton } from "@/entities/product";
 import { AddToCartButton } from "@/features/cart";
 import { NotifyMeButton } from "@/features/notify-me";
-import { Tag, SectionTitle, ArrowLink } from "@/shared/ui";
+import { Tag, SectionTitle, ArrowLink, Slider } from "@/shared/ui";
 
 const VISIBLE_COUNT = 3;
+/** До xl три карточки в ряд не помещаются — там витрина листается, на xl это ровный ряд. */
+const SLIDE_WIDTH = "basis-[86%] md:basis-1/2 xl:basis-1/3";
 
 /**
  * Заголовок секции — статика, поэтому рендерится сразу, а витрина из Payload
@@ -65,7 +67,7 @@ async function PopularGrid() {
 
   return (
     <>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <Slider label="Популярные инструменты" slideClassName={SLIDE_WIDTH}>
         {products.map((p) => (
           <ProductCard
             key={p.id}
@@ -79,7 +81,7 @@ async function PopularGrid() {
             }
           />
         ))}
-      </div>
+      </Slider>
       {hasMore && (
         <div className="mt-12 flex justify-center">
           <ArrowLink href="/catalog">Показать все инструменты</ArrowLink>
