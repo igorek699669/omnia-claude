@@ -11,7 +11,7 @@ import { useSession, signOut, formatPhone, CONTACT_PHONE, CONTACT_PHONE_HREF } f
 const nav = [
   { href: "/catalog", label: "Каталог" },
   // { href: "/#sound", label: "Подбор звука" }, // временно скрыт, вернуть позже
-  { href: "/delivery", label: "Доставка" },
+  { href: "/delivery", label: "Доставка и оплата" },
   { href: "/#faq", label: "Вопросы" },
 ];
 
