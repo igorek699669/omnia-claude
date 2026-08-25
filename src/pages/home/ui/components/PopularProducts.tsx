@@ -68,10 +68,11 @@ async function PopularGrid() {
   return (
     <>
       <Slider label="Популярные инструменты" slideClassName={SLIDE_WIDTH}>
-        {products.map((p) => (
+        {products.map((p, i) => (
           <ProductCard
             key={p.id}
             product={p}
+            priority={i === 0}
             cartAction={
               p.inStock ? (
                 <AddToCartButton key={p.id} product={p} />

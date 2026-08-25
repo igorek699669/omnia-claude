@@ -18,10 +18,13 @@ export function ProductGallery({
   media,
   sizes = CARD_IMAGE_SIZES,
   fit = "cover",
+  priority = false,
 }: {
   media: ProductMedia[];
   sizes?: string;
   fit?: "cover" | "contain";
+  /** Ставится, только если галерея — LCP-элемент страницы; грузится вперёд первый кадр. */
+  priority?: boolean;
 }) {
   const [active, setActive] = useState(0);
 
@@ -34,6 +37,7 @@ export function ProductGallery({
           alt={item.alt}
           fill
           sizes={sizes}
+          priority={priority && i === 0}
           className={`${fit === "cover" ? "object-cover" : "object-contain"} transition-opacity duration-400 ${
             i === active ? "opacity-100" : "pointer-events-none opacity-0"
           }`}

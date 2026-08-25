@@ -9,9 +9,12 @@ import { AudioPlayerChip, HandpanArt } from "@/shared/ui";
 export function ProductCard({
   product,
   cartAction,
+  priority = false,
 }: {
   product: Product;
   cartAction?: React.ReactNode;
+  /** Первая карточка витрины оказывается LCP-элементом — её фото грузим без ленивости. */
+  priority?: boolean;
 }) {
   const media = product.media;
 
@@ -29,13 +32,14 @@ export function ProductCard({
           )}
           <div className="absolute inset-x-6 inset-y-0">
             {media.length > 1 ? (
-              <ProductGallery media={media} />
+              <ProductGallery media={media} priority={priority} />
             ) : media[0] ? (
               <Image
                 src={media[0].url}
                 alt={media[0].alt}
                 fill
                 sizes={CARD_IMAGE_SIZES}
+                priority={priority}
                 className="object-cover"
               />
             ) : (
