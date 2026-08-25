@@ -9,6 +9,8 @@ import {
   CONTACT_MAX_URL,
 } from "@/shared/lib";
 
+const [emailLocalPart, emailDomain] = CONTACT_EMAIL.split("@");
+
 export function Footer() {
   return (
     <footer className="mt-12 rounded-t-card bg-ink-900 text-paper-50">
@@ -43,8 +45,11 @@ export function Footer() {
               {CONTACT_PHONE}
             </a>
             <p className="mt-3">
-              <a href={CONTACT_EMAIL_HREF} className="text-[15px] transition-colors hover:text-brand">
-                {CONTACT_EMAIL}
+              {/* Почта — одно длинное «слово»: в узкой колонке на мобиле она вылезала за край.
+                  <wbr/> после @ даёт красивую точку переноса, break-words — страховка для совсем узких экранов. */}
+              <a href={CONTACT_EMAIL_HREF} className="text-[15px] break-words transition-colors hover:text-brand">
+                {emailLocalPart}@<wbr />
+                {emailDomain}
               </a>
             </p>
             <p className="mt-5 text-[13px] text-paper-50/50">Мы на связи в соцсетях</p>

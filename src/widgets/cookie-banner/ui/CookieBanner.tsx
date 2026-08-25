@@ -20,11 +20,13 @@ export function CookieBanner() {
 
   return (
     // pointer-events-none на обёртке: она растянута на всю ширину экрана и без этого
-    // прозрачными полями по бокам карточки перехватывала бы клики по виджету связи (z-40).
+    // прозрачными полями по бокам карточки перехватывала бы клики по виджету связи.
+    // z-30 — сознательно ниже виджета связи (z-40): на узких экранах карточка заходит на него,
+    // и перекрывать связь с магазином баннер про cookie не должен. Диалоги (z-50) выше обоих.
     <div
       role="region"
       aria-label="Согласие на использование cookie"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-5 pb-5 md:px-8"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-5 pb-5 md:px-8"
     >
       <div className="pointer-events-auto mx-auto flex max-w-[820px] flex-col items-start gap-4 rounded-card border border-ink-900/10 bg-white p-6 shadow-[0_24px_64px_-24px_rgba(28,20,16,0.35)] sm:flex-row sm:items-center">
         <p className="flex-1 text-sm text-ink-600">
