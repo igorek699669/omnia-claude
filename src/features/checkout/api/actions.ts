@@ -5,7 +5,14 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { auth } from "@/auth";
 import { checkoutInputSchema, type CheckoutInput, type CheckoutResult } from "../model/types";
-import { createYookassaPayment, CONSENT_TEXT_VERSION } from "@/shared/lib";
+import {
+  createYookassaPayment,
+  calculateCdekTariff,
+  findCdekPvz,
+  deriveShipmentPackages,
+  CONSENT_TEXT_VERSION,
+} from "@/shared/lib";
+import type { CdekTariff } from "@/shared/lib";
 
 interface ProductDoc {
   id: number | string;
@@ -48,7 +55,57 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     subtotal += doc.price * item.qty;
   }
 
-  const total = subtotal + delivery.cost;
+  // Пункт выдачи обязан лежать в том городе, по которому считается тариф: это два независимых
+  // поля из браузера, и без сверки дешёвый город рядом с отправителем прекрасно уживается
+  // с пунктом выдачи в другом конце страны. При курьерской доставке сверять нечего — адрес
+  // и так уходит в СДЭК вместе с кодом города.
+  if (delivery.type === "pvz") {
+    if (!delivery.pvzCode) {
+      return { error: "Не выбран пункт выдачи" };
+    }
+    try {
+      const pvz = await findCdekPvz(delivery.pvzCode);
+      if (!pvz) {
+        return { error: "Пункт выдачи не найден — выберите способ доставки заново" };
+      }
+      // Отклоняем только доказанное несовпадение. Если города в ответе СДЭК не оказалось,
+      // заказ проходит: тариф всё равно пересчитан ниже, а рубить продажу из-за того, что
+      // мы чего-то не узнали, нельзя. Строчка в логах — чтобы это не осталось незамеченным.
+      if (pvz.cityCode === null) {
+        console.warn(`[createOrderPayment] СДЭК не вернул город для ПВЗ ${delivery.pvzCode} — сверка пропущена`);
+      } else if (pvz.cityCode !== delivery.cityCode) {
+        return { error: "Пункт выдачи не совпадает с городом — выберите способ доставки заново" };
+      }
+    } catch (err) {
+      console.error("[createOrderPayment] CDEK pickup point lookup failed:", err);
+      return { error: "Не удалось проверить пункт выдачи. Попробуйте ещё раз." };
+    }
+  }
+
+  // Доставку пересчитываем здесь заново, по той же причине, по которой цены товаров берутся
+  // из Payload: cost и tariffCode приходят из браузера, и подменённый запрос иначе оформил бы
+  // заказ с доставкой за 0 ₽ — счёт от СДЭК всё равно пришёл бы мастерской. Город и способ
+  // берём из запроса (их покупатель и правда выбирает), а сумму и тариф — только свои.
+  let tariff: CdekTariff;
+  try {
+    tariff = await calculateCdekTariff({
+      cityCode: delivery.cityCode,
+      type: delivery.type,
+      packages: deriveShipmentPackages(items),
+    });
+  } catch (err) {
+    console.error("[createOrderPayment] CDEK tariff recalculation failed:", err);
+    return { error: "Не удалось рассчитать доставку. Попробуйте ещё раз." };
+  }
+
+  // Разошлось с тем, что покупатель видел на чекауте, — списывать другую сумму молча нельзя,
+  // просим выбрать доставку заново. У честного покупателя не срабатывает: тариф не меняется
+  // за время оформления. Допуск в рубль — на округление на стороне СДЭК.
+  if (Math.abs(tariff.cost - delivery.cost) > 1) {
+    return { error: "Стоимость доставки изменилась — выберите способ доставки заново" };
+  }
+
+  const total = subtotal + tariff.cost;
 
   let customerId: string | undefined;
   try {
@@ -65,7 +122,9 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       customerName: `${customer.firstName} ${customer.lastName}`.trim(),
       customerEmail: customer.email,
       customerPhone: customer.phone,
-      delivery,
+      // Сумма и тариф — серверные: по tariffCode из заказа потом регистрируется отправление,
+      // и он обязан быть тем, по которому мы сами посчитали цену.
+      delivery: { ...delivery, cost: tariff.cost, tariffCode: tariff.tariffCode },
       items: orderItems,
       total,
       status: "pending",

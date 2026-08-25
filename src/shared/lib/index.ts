@@ -30,6 +30,7 @@ export type { YookassaPayment } from "./yookassa";
 export {
   suggestCdekCities,
   getCdekPvzPoints,
+  findCdekPvz,
   calculateCdekTariff,
   createCdekOrder,
   getCdekOrderNumber,

@@ -158,6 +158,31 @@ export async function getCdekPvzPoints(cityCode: number): Promise<CdekPvz[]> {
     }));
 }
 
+/**
+ * Пункт выдачи по его коду — ровно в том объёме, в котором он нужен чекауту.
+ *
+ * Зачем: код ПВЗ и код города приходят из браузера двумя независимыми полями, а тариф
+ * считается по городу. Без сверки можно назвать город рядом с отправителем (дёшево), а
+ * пункт выдачи выбрать во Владивостоке — отправление зарегистрируется по delivery_point,
+ * и реальный счёт от СДЭК придёт мастерской.
+ *
+ * Три исхода различаются намеренно:
+ *   null              — пункта с таким кодом у СДЭК нет, код выдуман;
+ *   { cityCode: null} — пункт есть, но города в ответе не оказалось;
+ *   { cityCode: N }   — можно сверять.
+ * Средний случай существует потому, что `city_code` в ответе /deliverypoints не удалось
+ * подтвердить эмпирически (песочница СДЭК лежала). Вызывающий на нём не должен отклонять
+ * заказ: неизвестность — не доказательство подмены.
+ */
+export async function findCdekPvz(pvzCode: string): Promise<{ cityCode: number | null } | null> {
+  const points = await cdekFetch<{ location?: { city_code?: number } }[]>(
+    `/deliverypoints?code=${encodeURIComponent(pvzCode)}`,
+  );
+  const point = points[0];
+  if (!point) return null;
+  return { cityCode: point.location?.city_code ?? null };
+}
+
 export interface CdekTariff {
   /** Код выбранного тарифа — при регистрации отправления нужен ровно тот, по которому посчитали цену покупателю. */
   tariffCode: number;
