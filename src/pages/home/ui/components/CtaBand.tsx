@@ -1,4 +1,7 @@
+"use client";
+
 import { SectionTitle, ArrowButton } from "@/shared/ui";
+import { pingContactWidget } from "@/widgets/contact-widget";
 
 export function CtaBand() {
   return (
@@ -9,7 +12,8 @@ export function CtaBand() {
           Поможем выбрать строй, расскажем про уход и подберём инструмент под вашу практику —
           без спешки и навязывания.
         </p>
-        <ArrowButton>Задать вопрос</ArrowButton>
+        {/* Отдельной формы обратной связи нет: кнопка подсвечивает плавающий виджет связи в углу экрана. */}
+        <ArrowButton onClick={pingContactWidget}>Задать вопрос</ArrowButton>
       </div>
     </section>
   );

@@ -7,6 +7,7 @@ import {
   CONTACT_TELEGRAM_URL,
   CONTACT_WHATSAPP_URL,
 } from "@/shared/lib";
+import { onContactWidgetPing } from "../model/attention";
 
 /**
  * dx/dy — смещение от главной кнопки при раскрытии (дуга слева-сверху, безопасная для правого нижнего угла).
@@ -23,7 +24,20 @@ const links = [
 /** Плавающий виджет связи — фиксирован в правом нижнем углу поверх любого контента. */
 export function ContactWidget() {
   const [open, setOpen] = useState(false);
+  const [attention, setAttention] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // Кнопки на страницах («Задать вопрос» в CTA-блоке) просят виджет мигнуть — чтобы пользователь его заметил.
+  useEffect(
+    () =>
+      onContactWidgetPing(() => {
+        setOpen(false);
+        // Снимаем класс перед повторным навешиванием: иначе второй клик подряд не перезапустит анимацию.
+        setAttention(false);
+        requestAnimationFrame(() => setAttention(true));
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -46,6 +60,8 @@ export function ContactWidget() {
   return (
     <div ref={rootRef} className="fixed bottom-5 right-4 z-40 md:bottom-7 md:right-7">
       <div className="relative size-14">
+        {attention && <PointerArrow />}
+
         {links.map(({ label, href, external, icon, dx, dy }, i) => (
           <a
             key={icon}
@@ -72,7 +88,10 @@ export function ContactWidget() {
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Закрыть контакты" : "Написать нам"}
           aria-expanded={open}
-          className={`relative z-10 grid size-14 cursor-pointer place-items-center rounded-full bg-brand text-white shadow-[0_12px_28px_-8px_rgba(28,20,16,0.35)] transition-colors hover:bg-brand-dark ${open ? "" : "animate-widget-pulse"}`}
+          className={`relative z-10 grid size-14 cursor-pointer place-items-center rounded-full bg-brand text-white shadow-[0_12px_28px_-8px_rgba(28,20,16,0.35)] transition-colors hover:bg-brand-dark ${attention ? "animate-widget-attention" : open ? "" : "animate-widget-pulse"}`}
+          onAnimationEnd={(e) => {
+            if (e.animationName.includes("contact-widget-attention")) setAttention(false);
+          }}
         >
           <span className={`transition-transform duration-300 ${open ? "rotate-90" : ""}`}>
             {open ? <CloseIcon /> : <MessageIcon />}
@@ -80,6 +99,38 @@ export function ContactWidget() {
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Указательная стрелка, которая на пару секунд подрисовывается слева-сверху от кнопки.
+ * Остриё (82;70 в системе координат svg) специально уводим за нижний край блока — оно должно смотреть
+ * в центр кнопки, а не в пустоту рядом с ней.
+ */
+function PointerArrow() {
+  return (
+    <svg
+      aria-hidden
+      width="96"
+      height="88"
+      viewBox="0 0 96 88"
+      fill="none"
+      className="animate-widget-arrow pointer-events-none absolute bottom-13 right-2 text-brand drop-shadow-[0_4px_10px_rgba(255,89,0,0.35)]"
+    >
+      <path
+        d="M8 14C44 2 80 14 82 70"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M89.5 55.9 82 70l-8.5-13.6"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
