@@ -15,6 +15,10 @@ function errorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
+// Текст СДЭК-ошибки покупателю не показываем: при недоступности контура оттуда прилетает
+// HTML страницы 504 целиком, а в проде Server Action и вовсе отдаёт редактированный digest.
+const CITY_SEARCH_ERROR = "Не удалось загрузить подсказки городов. Попробуйте ещё раз";
+
 export function DeliveryPicker({
   items,
   onApply,
@@ -48,6 +52,7 @@ export function DeliveryPicker({
     isPending: isSearchingCities,
   } = useMutation({
     mutationFn: (query: string) => searchCitySuggestions(query),
+    onError: (error) => toast.error(CITY_SEARCH_ERROR),
   });
 
   // Отдельная мутация для вкладки «Курьером» — тот же источник, но своё состояние
@@ -58,6 +63,7 @@ export function DeliveryPicker({
     isPending: isSearchingCourierCities,
   } = useMutation({
     mutationFn: (query: string) => searchCitySuggestions(query),
+    onError: (error) => toast.error(CITY_SEARCH_ERROR),
   });
 
   const {
