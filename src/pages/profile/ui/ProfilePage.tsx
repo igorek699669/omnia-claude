@@ -2,10 +2,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { getOrdersByCustomer, ORDER_STATUS_LABELS } from "@/entities/order";
+import { getOrdersByCustomer, ORDER_STATUS_LABELS, isAwaitingPayment } from "@/entities/order";
 import type { Order, OrderItem } from "@/entities/order";
 import { formatPrice, formatDate } from "@/shared/lib";
 import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
+import { OrdersLiveRefresh } from "./components/OrdersLiveRefresh";
 
 export async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -13,8 +14,11 @@ export async function ProfilePage() {
 
   const orders = await getOrdersByCustomer(session.user.id);
 
+  const awaitingPayment = orders.some((order) => isAwaitingPayment(order));
+
   return (
     <section className="mx-auto max-w-[900px] px-5 py-16 md:px-12">
+      <OrdersLiveRefresh awaitingPayment={awaitingPayment} />
       <Tag>Личный кабинет</Tag>
       <SectionTitle className="mt-5">Мои заказы</SectionTitle>
 
