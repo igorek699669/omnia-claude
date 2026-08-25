@@ -26,29 +26,28 @@ export function CookieBanner() {
     <div
       role="region"
       aria-label="Согласие на использование cookie"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-5 pb-5 md:px-8"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4 pb-4 md:px-8"
     >
-      <div className="pointer-events-auto mx-auto flex max-w-[820px] flex-col items-start gap-4 rounded-card border border-ink-900/10 bg-white p-6 shadow-[0_24px_64px_-24px_rgba(28,20,16,0.35)] sm:flex-row sm:items-center">
-        <p className="flex-1 text-sm text-ink-600">
-          Мы используем файлы cookie, необходимые для работы корзины и авторизации.
-          С вашего согласия — также для аналитики посещений. Подробнее —{" "}
+      <div className="pointer-events-auto mx-auto flex max-w-[560px] flex-col items-start gap-3 rounded-[22px] border border-ink-900/10 bg-white p-4 shadow-[0_18px_48px_-20px_rgba(28,20,16,0.35)] sm:flex-row sm:items-center">
+        <p className="flex-1 text-[13px] leading-relaxed text-ink-600">
+          Мы используем cookie для работы корзины и авторизации, с вашего согласия — для аналитики.{" "}
           <Link href="/cookie-policy" className="text-ink-900 underline underline-offset-2 hover:text-brand-dark">
-            политика cookie
+            Политика cookie
           </Link>
           .
         </p>
-        <div className="flex shrink-0 gap-3">
+        <div className="flex shrink-0 gap-2">
           <button
             type="button"
             onClick={() => choose("necessary")}
-            className="rounded-full border border-ink-900/20 px-5 py-2.5 text-sm font-medium transition-colors hover:border-brand hover:text-brand-dark"
+            className="rounded-full border border-ink-900/20 px-3.5 py-1.5 text-[13px] font-medium transition-colors hover:border-brand hover:text-brand-dark"
           >
-            Только необходимые
+            Только нужные
           </button>
           <button
             type="button"
             onClick={() => choose("all")}
-            className="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-dark"
+            className="rounded-full bg-brand px-3.5 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-brand-dark"
           >
             Принять все
           </button>
