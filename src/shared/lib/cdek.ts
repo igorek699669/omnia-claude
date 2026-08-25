@@ -227,7 +227,7 @@ export interface CreateCdekOrderParams {
  * для дорогого инструмента нельзя — при утере СДЭК возместит только объявленное.
  */
 export async function createCdekOrder(params: CreateCdekOrderParams): Promise<string> {
-  // Один кофр на инструмент (см. deriveShipmentPackages), но вложения СДЭК требует
+  // Одна коробка на инструмент (см. deriveShipmentPackages), но вложения СДЭК требует
   // перечислить внутри места. Кладём весь состав заказа в первое место: дробить позиции
   // по коробкам смысла нет — вес и габариты у всех мест одинаковые.
   const cdekItems = params.items.map((item) => ({

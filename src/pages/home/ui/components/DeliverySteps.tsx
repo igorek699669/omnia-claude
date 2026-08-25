@@ -1,26 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { SectionTitle } from "@/shared/ui";
+
+/** Одно и то же фото показывается в узком мобильном блоке и в широком десктопном — отсюда две ширины. */
+const STEP_IMAGE_SIZES = "(min-width: 1024px) 45vw, 100vw";
 
 const steps = [
   {
     title: "Бережно собираем",
-    text: "Кладём инструмент в закрытый твёрдый кофр — он входит в стоимость.",
-    caption: "Инструмент укладывается в жёсткий кофр",
-    bg: "radial-gradient(circle at 40% 35%, #4a3a2c 0%, #2c211a 60%, #191009 100%)",
+    text: "Убираем инструмент в защитный тканевый чехол.",
+    caption: "Инструмент в защитном чехле",
+    image: "/images/delivery/cover.jpg",
   },
   {
     title: "Надёжно упаковываем",
-    text: "Дополнительный слой защиты: плотный короб и амортизация по контуру.",
-    caption: "Короб и амортизация по контуру",
-    bg: "radial-gradient(circle at 55% 40%, #8a6f4d 0%, #5c4630 55%, #332416 100%)",
+    text: "Дополнительный слой защиты: пенопластовый ложемент внутри плотного короба.",
+    caption: "Уложен в короб с пенопластовым ложементом",
+    image: "/images/delivery/packed.jpg",
   },
   {
     title: "Отправляем удобным для вас способом",
     text: "СДЭК до двери или пункта выдачи. Трек-номер и статус — в личном кабинете.",
-    caption: "Передача в СДЭК: трек-номер — в личном кабинете",
-    bg: "linear-gradient(160deg, #3a2d21 0%, #191009 70%)",
+    caption: "Короб готов к передаче в СДЭК",
+    image: "/images/delivery/box.jpg",
   },
 ];
 
@@ -40,14 +44,12 @@ export function DeliverySteps() {
                 {/* Десктоп: кликабельный шаг; мобилка: статичный блок с картинкой */}
                 <button
                   onClick={() => setActive(i)}
-                  className={`grid w-full cursor-default grid-cols-[auto_1fr] gap-5 text-left transition-opacity lg:cursor-pointer ${
-                    i === active ? "" : "lg:opacity-55 lg:hover:opacity-100"
-                  }`}
+                  className={`grid w-full cursor-default grid-cols-[auto_1fr] gap-5 text-left transition-opacity lg:cursor-pointer ${i === active ? "" : "lg:opacity-55 lg:hover:opacity-100"
+                    }`}
                 >
                   <span
-                    className={`grid size-10 place-items-center rounded-full border font-display text-[15px] font-medium transition-colors ${
-                      i === active ? "border-brand bg-brand" : "border-paper-50/30"
-                    }`}
+                    className={`grid size-10 place-items-center rounded-full border font-display text-[15px] font-medium transition-colors ${i === active ? "border-brand bg-brand" : "border-paper-50/30"
+                      }`}
                   >
                     0{i + 1}
                   </span>
@@ -56,10 +58,8 @@ export function DeliverySteps() {
                     <span className="block text-sm text-paper-50/65">{step.text}</span>
                   </span>
                 </button>
-                <div
-                  className="relative mt-3.5 aspect-[16/10] overflow-hidden rounded-2xl lg:hidden"
-                  style={{ background: step.bg }}
-                >
+                <div className="relative mt-3.5 aspect-[16/10] overflow-hidden rounded-2xl bg-[#191009] lg:hidden">
+                  <Image src={step.image} alt={step.caption} fill sizes={STEP_IMAGE_SIZES} className="object-cover" />
                   <Caption>{step.caption}</Caption>
                 </div>
               </div>
@@ -72,8 +72,8 @@ export function DeliverySteps() {
             <div
               key={step.title}
               className={`absolute inset-0 transition-opacity duration-450 ${i === active ? "opacity-100" : "opacity-0"}`}
-              style={{ background: step.bg }}
             >
+              <Image src={step.image} alt={step.caption} fill sizes={STEP_IMAGE_SIZES} className="object-cover" />
               <Caption>{step.caption}</Caption>
             </div>
           ))}
