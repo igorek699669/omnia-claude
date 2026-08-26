@@ -10,6 +10,7 @@ interface NotifyOrderDoc {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  cdekNumber?: string | null;
   delivery?: {
     label?: string | null;
     address?: string | null;
@@ -202,6 +203,50 @@ export async function sendCustomerOrderEmail(orderId: number | string): Promise<
     // Ответ покупателя должен уходить продавцу, а не в noreply-ящик из SMTP_FROM.
     replyTo: sellerEmail(),
     subject: `Заказ №${order.id} оплачен — Omnia`,
+    text: lines.join("\n"),
+    html: toHtml(lines),
+  });
+}
+
+/**
+ * Письмо покупателю с трек-номером СДЭК.
+ *
+ * Отдельным письмом, а не в подтверждении заказа: накладную СДЭК присваивает асинхронно,
+ * обычно через несколько часов после регистрации отправления, — на момент оплаты её ещё нет.
+ * В подтверждении заказа покупателю обещано, что номер появится, так что письмо закрывает
+ * это обещание, а не просто дублирует личный кабинет.
+ *
+ * Зовётся один раз — из досверки, в тот момент, когда номер впервые узнан.
+ */
+export async function sendTrackNumberEmail(orderId: number | string): Promise<void> {
+  if (!process.env.SMTP_HOST) {
+    console.warn(`[order-mail] SMTP не настроен — трек по заказу ${orderId} не отправлен`);
+    return;
+  }
+
+  const { order, deliveryLine } = await loadOrderSummary(orderId);
+  if (!order.cdekNumber) return;
+
+  const siteUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
+  const lines = [
+    `${order.customerName}, ваш заказ №${order.id} передан в доставку.`,
+    "",
+    `Трек-номер СДЭК: ${order.cdekNumber}`,
+    "Отследить: https://www.cdek.ru/ru/tracking",
+    "",
+    `Куда едет: ${deliveryLine}`,
+    "",
+    `Статус заказа всегда виден в личном кабинете: ${siteUrl}/profile`,
+    "",
+    `Вопросы — ответом на это письмо или на ${sellerEmail()}, ${CONTACT_PHONE}`,
+  ];
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: order.customerEmail,
+    replyTo: sellerEmail(),
+    subject: `Заказ №${order.id} передан в доставку — трек ${order.cdekNumber}`,
     text: lines.join("\n"),
     html: toHtml(lines),
   });

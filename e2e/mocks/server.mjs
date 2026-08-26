@@ -523,7 +523,11 @@ const SMTP_EOL = "\r\n";
 function parseEmail(message) {
   const [head, ...rest] = message.data.split("\r\n\r\n");
   const headers = {};
-  for (const line of head.split("\r\n")) {
+  // Длинный заголовок MIME сворачивает на несколько строк: продолжение начинается с пробела
+  // и двоеточия не содержит. Без разворачивания тема обрезалась бы на первом фрагменте —
+  // «Заказ №12 переда» вместо «Заказ №12 передан в доставку — трек ...».
+  const unfolded = head.replace(/\r\n[ \t]+/g, " ");
+  for (const line of unfolded.split("\r\n")) {
     const colon = line.indexOf(":");
     if (colon > 0) headers[line.slice(0, colon).toLowerCase()] = line.slice(colon + 1).trim();
   }
@@ -540,14 +544,19 @@ function parseEmail(message) {
 
 /** Заголовки уходят в MIME-кодировке (=?UTF-8?B?...?=) — иначе кириллицу не сравнить. */
 function decodeHeader(value) {
-  return value.replace(/=\?[Uu][Tt][Ff]-8\?([BbQq])\?([^?]*)\?=/g, (_, kind, text) =>
-    kind.toLowerCase() === "b"
-      ? Buffer.from(text, "base64").toString("utf8")
-      : Buffer.from(
-          text.replace(/_/g, " ").replace(/=([0-9A-F]{2})/gi, (__, hex) => String.fromCharCode(parseInt(hex, 16))),
-          "binary",
-        ).toString("utf8"),
-  );
+  // Пробел между двумя соседними кодированными словами — след сворачивания строки, а не
+  // часть текста (RFC 2047). Не убрать его — и слово, разрезанное переносом, склеится
+  // с дыркой: «переда н в доставку».
+  return value
+    .replace(/\?=\s+=\?/g, "?==?")
+    .replace(/=\?[Uu][Tt][Ff]-8\?([BbQq])\?([^?]*)\?=/g, (_, kind, text) =>
+      kind.toLowerCase() === "b"
+        ? Buffer.from(text, "base64").toString("utf8")
+        : Buffer.from(
+            text.replace(/_/g, " ").replace(/=([0-9A-F]{2})/gi, (__, hex) => String.fromCharCode(parseInt(hex, 16))),
+            "binary",
+          ).toString("utf8"),
+    );
 }
 
 /**
