@@ -10,6 +10,7 @@ import {
   calculateCdekTariff,
   findCdekPvz,
   deriveShipmentPackages,
+  clientIp,
   CONSENT_TEXT_VERSION,
 } from "@/shared/lib";
 import type { CdekTariff } from "@/shared/lib";
@@ -143,7 +144,7 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
         offer: consents.offer,
         marketing: consents.marketing,
         textVersion: CONSENT_TEXT_VERSION,
-        ip: requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? requestHeaders.get("x-real-ip") ?? undefined,
+        ip: clientIp(requestHeaders) ?? undefined,
         userAgent: requestHeaders.get("user-agent") ?? undefined,
       },
     });
