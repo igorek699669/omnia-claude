@@ -11,6 +11,7 @@ import {
 } from "@/entities/product";
 import { formatPrice } from "@/shared/lib";
 import { Tag, HandpanArt, AudioPlayerBar } from "@/shared/ui";
+import { productJsonLd } from "../seo";
 import { AddToCartSection } from "./components/AddToCartSection";
 import { CustomOrderBlock } from "./components/CustomOrderBlock";
 
@@ -24,6 +25,9 @@ export async function ProductPage({ slug }: { slug: string }) {
 
   return (
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
+      {/* Разметка Product для поисковиков — цена и наличие попадают прямо в сниппет выдачи. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: productJsonLd(product) }} />
+
       <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="relative">
           <div className="relative aspect-square overflow-hidden rounded-card bg-white">

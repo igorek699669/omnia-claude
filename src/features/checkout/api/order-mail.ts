@@ -1,7 +1,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import nodemailer from "nodemailer";
-import { formatPrice, formatDate, CONTACT_EMAIL, CONTACT_PHONE } from "@/shared/lib";
+import { formatPrice, formatDate, siteUrl, CONTACT_EMAIL, CONTACT_PHONE } from "@/shared/lib";
 
 interface NotifyOrderDoc {
   id: number | string;
@@ -175,7 +175,7 @@ export async function sendCustomerOrderEmail(orderId: number | string): Promise<
   }
 
   const { order, itemsTotal, rows, deliveryLine } = await loadOrderSummary(orderId);
-  const siteUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
 
   const lines = [
     `${order.customerName}, спасибо за заказ!`,
@@ -191,7 +191,7 @@ export async function sendCustomerOrderEmail(orderId: number | string): Promise<
     "",
     "Что дальше",
     "Мы упакуем инструмент в чехол и короб с ложементом и передадим в СДЭК.",
-    `Статус заказа и трек-номер появятся в личном кабинете: ${siteUrl}/profile`,
+    `Статус заказа и трек-номер появятся в личном кабинете: ${siteUrl()}/profile`,
     "Чек пришлём отдельным письмом — он формируется в приложении «Мой налог».",
     "",
     `Если нужно что-то уточнить — ответьте на это письмо или напишите: ${sellerEmail()}, ${CONTACT_PHONE}`,
@@ -227,7 +227,7 @@ export async function sendTrackNumberEmail(orderId: number | string): Promise<vo
   const { order, deliveryLine } = await loadOrderSummary(orderId);
   if (!order.cdekNumber) return;
 
-  const siteUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
 
   const lines = [
     `${order.customerName}, ваш заказ №${order.id} передан в доставку.`,
@@ -237,7 +237,7 @@ export async function sendTrackNumberEmail(orderId: number | string): Promise<vo
     "",
     `Куда едет: ${deliveryLine}`,
     "",
-    `Статус заказа всегда виден в личном кабинете: ${siteUrl}/profile`,
+    `Статус заказа всегда виден в личном кабинете: ${siteUrl()}/profile`,
     "",
     `Вопросы — ответом на это письмо или на ${sellerEmail()}, ${CONTACT_PHONE}`,
   ];

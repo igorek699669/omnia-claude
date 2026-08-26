@@ -5,7 +5,7 @@ import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
 import { ContactWidget } from "@/widgets/contact-widget";
 import { CookieBanner } from "@/widgets/cookie-banner";
-import { QueryProvider } from "@/shared/lib";
+import { QueryProvider, siteUrl, DEFAULT_OG_IMAGE } from "@/shared/lib";
 import "./globals.css";
 
 const jost = Jost({
@@ -21,9 +21,24 @@ const golos = Golos_Text({
 });
 
 export const metadata: Metadata = {
-  title: "Omnia — ханги ручной работы из нержавеющей стали",
+  // Без базы относительные пути в openGraph и canonical остаются относительными, а
+  // соцсети и поисковики их не резолвят — картинка и канонический адрес просто теряются.
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: "Omnia — ханги ручной работы из нержавеющей стали",
+    // Страницы задают только своё имя: «Каталог» превращается в «Каталог — Omnia».
+    template: "%s — Omnia",
+  },
   description:
     "Мастерская хангов: ручная настройка, подбор звука под вашу практику, доставка по всей России.",
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    siteName: "Omnia",
+    // У товаров вместо неё подставляется их собственный кадр — см. generateProductMetadata.
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

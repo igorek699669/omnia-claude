@@ -25,6 +25,8 @@ export { authClient, useSession, signOut } from "./auth-client";
 export { errorMessage } from "./auth-errors";
 export { normalizePhone, isValidRuPhone, formatPhone } from "./phone";
 export { clientIp } from "./request-ip";
+export { siteUrl } from "./site-url";
+export { DEFAULT_OG_IMAGE } from "./seo";
 export { QueryProvider } from "./query-provider";
 export { createYookassaPayment, getYookassaPayment } from "./yookassa";
 export type { YookassaPayment } from "./yookassa";

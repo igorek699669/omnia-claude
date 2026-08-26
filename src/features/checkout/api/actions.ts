@@ -12,6 +12,7 @@ import {
   findCdekPvz,
   deriveShipmentPackages,
   clientIp,
+  siteUrl,
   CONSENT_TEXT_VERSION,
 } from "@/shared/lib";
 import type { CdekTariff } from "@/shared/lib";
@@ -171,14 +172,12 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     return { error: "Не удалось сохранить согласия. Попробуйте ещё раз." };
   }
 
-  const siteUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
-
   try {
     const payment = await createYookassaPayment({
       idempotenceKey: String(order.id),
       amount: total,
       description: `Заказ №${order.id} — Omnia`,
-      returnUrl: `${siteUrl}/checkout/success?orderId=${order.id}`,
+      returnUrl: `${siteUrl()}/checkout/success?orderId=${order.id}`,
       metadata: { orderId: String(order.id) },
     });
 

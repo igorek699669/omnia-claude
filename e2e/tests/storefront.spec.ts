@@ -55,6 +55,53 @@ test.describe("витрина", () => {
     await expect(page.getByRole("button", { name: /наличи/i })).toBeVisible();
   });
 
+  test("карточка товара отдаёт метаданные и разметку для поиска", async ({ page, seed }) => {
+    const product = seed.products.find((p) => p.stockQty > 0)!;
+    await page.goto(`/product/${product.slug}`);
+
+    // Заголовок собирается по шаблону из корневого layout.
+    await expect(page).toHaveTitle(`${product.name} — Omnia`);
+
+    const canonical = page.locator('link[rel="canonical"]');
+    await expect(canonical).toHaveAttribute("href", new RegExp(`/product/${product.slug}$`));
+
+    // Превью ссылки: без absolute-адреса соцсети картинку не подхватят.
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /^https?:\/\//);
+
+    // Разметка Product — то, из чего выдача берёт цену и наличие.
+    const raw = await page.locator('script[type="application/ld+json"]').first().textContent();
+    const jsonLd = JSON.parse(raw!);
+    expect(jsonLd["@type"]).toBe("Product");
+    expect(jsonLd.name).toBe(product.name);
+    expect(jsonLd.offers.price).toBe(product.price);
+    expect(jsonLd.offers.priceCurrency).toBe("RUB");
+    expect(jsonLd.offers.availability).toBe("https://schema.org/InStock");
+    expect(jsonLd.offers.url).toMatch(new RegExp(`/product/${product.slug}$`));
+  });
+
+  test("распроданный инструмент помечен в разметке как отсутствующий", async ({ page, seed }) => {
+    const soldOut = seed.products.find((p) => p.stockQty === 0)!;
+    await page.goto(`/product/${soldOut.slug}`);
+
+    const raw = await page.locator('script[type="application/ld+json"]').first().textContent();
+    expect(JSON.parse(raw!).offers.availability).toBe("https://schema.org/OutOfStock");
+  });
+
+  test("карта сайта перечисляет товары и не выдаёт личные страницы", async ({ page, seed }) => {
+    const response = await page.goto("/sitemap.xml");
+    expect(response!.status()).toBe(200);
+
+    const xml = await response!.text();
+    for (const product of seed.products) {
+      expect(xml, `в карте сайта должен быть ${product.slug}`).toContain(`/product/${product.slug}`);
+    }
+    expect(xml).toContain("/catalog");
+    // Корзина, чекаут, кабинет и вход — личные страницы, им в выдаче делать нечего.
+    for (const path of ["/cart", "/checkout", "/profile", "/auth"]) {
+      expect(xml, `${path} не должен попадать в карту сайта`).not.toContain(`${path}<`);
+    }
+  });
+
   test("несуществующий товар показывает «нет такого», а не пустую страницу", async ({ page }) => {
     await page.goto("/product/no-such-handpan");
 
