@@ -2,8 +2,10 @@
 
 import { headers } from "next/headers";
 import { auth, takeGeneratedOtp } from "@/auth";
+import { clientIp } from "@/shared/lib";
 import { startCallCheck, getCallCheckStatus, CHECK_CONFIRMED } from "./sms-ru";
 import { createTicket, readTicket } from "./ticket";
+import { takePhoneCallAttempt } from "./rate-limit";
 
 const PHONE_RE = /^\+7\d{10}$/;
 
@@ -27,6 +29,14 @@ export interface ConfirmResult {
  */
 export async function startPhoneCall(phone: string): Promise<StartResult> {
   if (!PHONE_RE.test(phone)) return { error: "Некорректный номер телефона" };
+
+  // Лимит до обращения к SMS.ru: проверка там платная, и отказать нужно раньше, чем
+  // она заведётся (см. rate-limit.ts).
+  const verdict = takePhoneCallAttempt(phone, clientIp(await headers()));
+  if (!verdict.allowed) {
+    const minutes = Math.max(1, Math.ceil((verdict.retryAfterMs ?? 0) / 60_000));
+    return { error: `Слишком много попыток. Попробуйте через ${minutes} мин.` };
+  }
 
   try {
     const { checkId, callPhone, callPhonePretty } = await startCallCheck(phone);
