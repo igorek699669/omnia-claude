@@ -33,6 +33,18 @@ async function placeOrder(
   return { id: order.id, paymentId: order.paymentId!, total: order.total };
 }
 
+/** Накладную проставляет досверка при рендере кабинета — ждём, пока она окажется в заказе. */
+async function waitForTrackNumber(shop: Shop, orderId: number, timeoutMs = 20_000): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  let order = await shop.order(orderId);
+  while (!order.cdekNumber && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    order = await shop.order(orderId);
+  }
+  expect(order.cdekNumber, `по заказу ${orderId} должна была появиться накладная`).toBeTruthy();
+  return order.cdekNumber!;
+}
+
 test.describe("оплата заказа", () => {
   test("оплата списывает остаток, регистрирует отправление и рассылает письма", async ({
     page,
@@ -188,5 +200,45 @@ test.describe("оплата заказа", () => {
     // И продавец всё равно узнаёт о заказе — иначе сбой доставки стал бы потерей продажи.
     const emails = await mocks.waitForEmails(2);
     expect(emails.some((e) => e.to.some((address) => address.includes("seller@omnia.test")))).toBe(true);
+  });
+
+  test("накладная, пришедшая позже, подтягивается и уходит письмом", async ({
+    page,
+    seed,
+    shop,
+    mocks,
+    storefront,
+    phone,
+  }) => {
+    const product = seed.products.find((p) => p.slug === "e2e-kurd-10")!;
+
+    // СДЭК присваивает накладную асинхронно: на момент регистрации отправления её обычно
+    // ещё нет, и разовая попытка внутри registerCdekShipment возвращает пусто.
+    await mocks.fail("cdek-number");
+
+    const placed = await placeOrder(storefront, shop, product, phone);
+    await storefront.payAtCheckout();
+
+    const paid = await shop.waitForOrderStatus(placed.id, "paid");
+    expect(paid.cdekUuid, "отправление зарегистрировано").toBeTruthy();
+    expect(paid.cdekNumber, "а номера ещё нет").toBeFalsy();
+    await mocks.waitForEmails(2);
+
+    // Через несколько часов СДЭК номер присвоил.
+    await mocks.fail("cdek-number", false);
+
+    // Отдельного планировщика в проекте нет — номер подтягивает личный кабинет при заходе.
+    await page.goto("/profile");
+    await waitForAppReady(page);
+
+    const tracked = await waitForTrackNumber(shop, placed.id);
+    await expect(page.getByText(tracked)).toBeVisible({ timeout: 30_000 });
+
+    // Третье письмо — покупателю: в подтверждении заказа ему обещали, что трек появится.
+    const emails = await mocks.waitForEmails(3);
+    const trackEmail = emails.find((e) => e.subject.includes("передан в доставку"));
+    expect(trackEmail, "покупатель должен получить письмо с трек-номером").toBeTruthy();
+    expect(trackEmail!.to.some((address) => address.includes("buyer@omnia.test"))).toBe(true);
+    expect(trackEmail!.body).toContain(tracked);
   });
 });
