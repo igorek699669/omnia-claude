@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { auth } from "@/auth";
 import { checkoutInputSchema, type CheckoutInput, type CheckoutResult } from "../model/types";
+import { reservedQtyByProduct } from "./stock";
 import {
   createYookassaPayment,
   calculateCdekTariff,
@@ -39,6 +40,21 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
 
   const payload = await getPayload({ config });
 
+  // Инструменты штучные, поэтому «в наличии» — это не stockQty, а stockQty за вычетом того,
+  // что держат чужие незакрытые заказы. Иначе двое покупателей спокойно доходят до оплаты
+  // одного и того же ханга, и второму придётся возвращать деньги.
+  //
+  // Сбой этого запроса намеренно срывает заказ, а не пропускает его: продать в обход
+  // проверки хуже, чем не продать. Отказ при этом громкий — первый же тестовый заказ
+  // покажет, если запрос составлен неверно.
+  let reserved: Map<string, number>;
+  try {
+    reserved = await reservedQtyByProduct(payload);
+  } catch (err) {
+    console.error("[createOrderPayment] не удалось посчитать резерв по незакрытым заказам:", err);
+    return { error: "Не удалось проверить наличие. Попробуйте ещё раз." };
+  }
+
   // Цену и наличие всегда берём из Payload — клиентским данным (localStorage-корзина) не доверяем.
   const orderItems: { product: string | number; qty: number; price: number }[] = [];
   let subtotal = 0;
@@ -49,7 +65,8 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     } catch {
       doc = null;
     }
-    if (!doc || (doc.stockQty ?? 0) < item.qty) {
+    const available = doc ? (doc.stockQty ?? 0) - (reserved.get(String(doc.id)) ?? 0) : 0;
+    if (!doc || available < item.qty) {
       return { error: `Товар «${doc?.name ?? item.productId}» больше недоступен в нужном количестве` };
     }
     orderItems.push({ product: doc.id, qty: item.qty, price: doc.price });

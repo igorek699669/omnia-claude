@@ -4,6 +4,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { getOrdersByCustomer, ORDER_STATUS_LABELS, isAwaitingPayment } from "@/entities/order";
 import type { Order, OrderItem } from "@/entities/order";
+import { reconcileCustomerOrders } from "@/features/checkout/server";
 import { formatPrice, formatDate } from "@/shared/lib";
 import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
 import { OrdersLiveRefresh } from "./components/OrdersLiveRefresh";
@@ -11,6 +12,11 @@ import { OrdersLiveRefresh } from "./components/OrdersLiveRefresh";
 export async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/auth");
+
+  // До того как показывать заказы — спросить у ЮKassa про незакрытые. Если вебхук не дошёл,
+  // в базе лежит «Ожидает оплаты» по уже оплаченному заказу, и обновление страницы этого не
+  // чинит: неверны сами данные, а не их свежесть.
+  await reconcileCustomerOrders(session.user.id);
 
   const orders = await getOrdersByCustomer(session.user.id);
 

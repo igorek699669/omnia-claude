@@ -2,18 +2,12 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getYookassaPayment } from "@/shared/lib";
-import { registerCdekShipment, sendPaidOrderEmail, sendCustomerOrderEmail } from "@/features/checkout/server";
+import { finalizePaidOrder } from "@/features/checkout/server";
 
 interface OrderDoc {
   id: number | string;
   status: string;
   total: number;
-  items: { product: number | string; qty: number }[];
-}
-
-interface ProductStockDoc {
-  id: number | string;
-  stockQty?: number | null;
 }
 
 export async function POST(request: Request) {
@@ -50,54 +44,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // Заказ уже в терминальном статусе — повторная доставка того же события ЮKassa не должна
-  // ничего менять (идемпотентность).
-  if (order.status === "paid" || order.status === "cancelled") {
-    return NextResponse.json({ ok: true });
-  }
-
   if (payment.status === "succeeded") {
     const expected = Number(order.total).toFixed(2);
     if (payment.amount.value !== expected) {
       return NextResponse.json({ error: "amount mismatch" }, { status: 400 });
     }
-    for (const item of order.items) {
-      const product = (await payload.findByID({
-        collection: "products",
-        id: item.product,
-      })) as ProductStockDoc;
-      const nextQty = Math.max(0, (product.stockQty ?? 0) - item.qty);
-      await payload.update({ collection: "products", id: item.product, data: { stockQty: nextQty } });
-    }
-    await payload.update({ collection: "orders", id: order.id, data: { status: "paid" } });
 
-    // Сбой на стороне СДЭК не должен ронять обработку вебхука: деньги уже приняты, остаток
-    // списан, заказ оплачен — ответь мы ошибкой, ЮKassa начала бы ретраить событие и
-    // прогонять всё это заново. Отправление в этом случае придётся завести вручную.
+    // Всё остальное — в finalizePaidOrder: тот же путь нужен сверке, когда вебхук не дошёл,
+    // и разъезжаться этим двум веткам нельзя. Идемпотентность там же — повторная доставка
+    // того же события ничего не меняет.
     try {
-      await registerCdekShipment(order.id);
+      await finalizePaidOrder(order.id);
     } catch (err) {
-      console.error(`[cdek] не удалось зарегистрировать отправление по заказу ${order.id}:`, err);
-    }
-
-    // Уведомление продавцу (пока нет CRM) — по той же причине не роняет вебхук: заказ уже
-    // оплачен и лежит в Payload, письмо всего лишь дублирует его на почту.
-    try {
-      await sendPaidOrderEmail(order.id);
-    } catch (err) {
-      console.error(`[order-mail] не удалось отправить письмо продавцу по заказу ${order.id}:`, err);
-    }
-
-    // Подтверждение покупателю — отдельным try, а не вместе с письмом продавцу: сбой одного
-    // адресата не должен лишать письма второго. Для покупателя это единственное подтверждение
-    // покупки на руках, продавец же в крайнем случае увидит заказ в админке.
-    try {
-      await sendCustomerOrderEmail(order.id);
-    } catch (err) {
-      console.error(`[order-mail] не удалось отправить письмо покупателю по заказу ${order.id}:`, err);
+      // Отвечаем ошибкой сознательно: пусть ЮKassa повторит событие. Заказ, дошедший до
+      // терминального статуса, повтор не тронет, а недоведённый — доведёт.
+      console.error(`[webhook] не удалось финализировать заказ ${order.id}:`, err);
+      return NextResponse.json({ error: "finalization failed" }, { status: 502 });
     }
   } else if (payment.status === "canceled") {
-    await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });
+    // Оплаченный заказ не отменяем: у ЮKassa это разные платежи, а у нас один заказ.
+    if (order.status === "pending") {
+      await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });
+    }
   }
 
   return NextResponse.json({ ok: true });

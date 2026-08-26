@@ -8,3 +8,6 @@
  */
 export { registerCdekShipment, syncCdekOrderNumber } from "./api/shipment";
 export { sendPaidOrderEmail, sendCustomerOrderEmail } from "./api/order-mail";
+export { finalizePaidOrder } from "./api/finalize";
+export type { FinalizeResult } from "./api/finalize";
+export { reconcileCustomerOrders } from "./api/reconcile";

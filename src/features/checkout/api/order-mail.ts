@@ -101,7 +101,10 @@ async function loadOrderSummary(orderId: number | string): Promise<OrderSummary>
  *
  * Бросает наружу: решение, ронять ли на этом обработку, принимает вызывающий (вебхук — не роняет).
  */
-export async function sendPaidOrderEmail(orderId: number | string): Promise<void> {
+export async function sendPaidOrderEmail(
+  orderId: number | string,
+  options: { shortages?: string[] } = {},
+): Promise<void> {
   if (!process.env.SMTP_HOST) {
     console.warn(`[order-mail] SMTP не настроен — письмо продавцу по заказу ${orderId} не отправлено`);
     return;
@@ -109,7 +112,19 @@ export async function sendPaidOrderEmail(orderId: number | string): Promise<void
 
   const { order, itemsTotal, rows, deliveryLine } = await loadOrderSummary(orderId);
 
+  // Товара не хватило на момент оплаты — самое важное в письме, поэтому первой строкой.
+  // Возврат автоматически не делается: решение (сделать новый инструмент или вернуть
+  // деньги) за продавцом, см. комментарий в finalize.ts.
+  const shortageLines = options.shortages?.length
+    ? [
+        `!! ВНИМАНИЕ: на момент оплаты не хватило товара: ${options.shortages.join(", ")}.`,
+        "Заказ оплачен. Свяжитесь с покупателем — договориться о сроке или вернуть деньги.",
+        "",
+      ]
+    : [];
+
   const lines = [
+    ...shortageLines,
     `Заказ №${order.id}`,
     "",
     `Покупатель: ${order.customerName}`,
@@ -134,7 +149,9 @@ export async function sendPaidOrderEmail(orderId: number | string): Promise<void
     to: sellerEmail(),
     // Покупатель отвечает на письмо продавцу напрямую — reply-to избавляет от копипаста адреса.
     replyTo: order.customerEmail,
-    subject: `Оплачен заказ №${order.id} — ${formatPrice(order.total)}`,
+    subject: options.shortages?.length
+      ? `!! Оплачен заказ №${order.id}, не хватило товара — ${formatPrice(order.total)}`
+      : `Оплачен заказ №${order.id} — ${formatPrice(order.total)}`,
     text: lines.join("\n"),
     html: toHtml(lines),
   });

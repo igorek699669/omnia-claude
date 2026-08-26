@@ -13,7 +13,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
  * приходит через секунды после оплаты, так что получаса хватает с запасом; всё, что висит
  * дольше, — брошенная на странице оплаты корзина.
  */
-const PAYMENT_SETTLE_WINDOW_MS = 30 * 60 * 1000;
+export const PAYMENT_SETTLE_WINDOW_MS = 30 * 60 * 1000;
 
 /**
  * Заказ, оплата которого прямо сейчас может закрыться вебхуком. По этому признаку профиль
