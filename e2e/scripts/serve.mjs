@@ -129,6 +129,30 @@ async function seedCatalog() {
 }
 
 /**
+ * Прогрев роутов до того, как Playwright начнёт тесты.
+ *
+ * В dev-режиме Next компилирует страницу при первом обращении, и на /checkout это больше
+ * десяти секунд. Без прогрева цену платит первый же тест, который туда зайдёт, — а ожидания
+ * в тестах рассчитаны на 15 секунд, так что он падал через раз. Флак доставался разным
+ * тестам в зависимости от порядка запуска и выглядел как поломка их логики.
+ *
+ * Ошибки глушим: прогрев — оптимизация, а не проверка. Если страница не открылась, об этом
+ * куда внятнее скажет сам тест.
+ */
+async function warmUpRoutes() {
+  const routes = ["/", "/catalog", "/cart", "/checkout", "/auth", "/profile"];
+  for (const route of routes) {
+    try {
+      const res = await fetch(`${APP_URL}${route}`);
+      await res.text();
+    } catch {
+      // не открылось — не беда, тест скажет об этом яснее
+    }
+  }
+  console.log(`[e2e] роуты прогреты: ${routes.length}`);
+}
+
+/**
  * Порт готовности. Playwright ждёт именно его, а тесты забирают отсюда состав каталога,
  * чтобы не хардкодить id и цены в двух местах.
  */
@@ -160,7 +184,9 @@ try {
   await migrateAuth();
   startApp();
   await waitForSchema();
-  announceReady(await seedCatalog());
+  const products = await seedCatalog();
+  await warmUpRoutes();
+  announceReady(products);
 } catch (err) {
   console.error("[e2e] подготовка не удалась:", err);
   shutdown();
