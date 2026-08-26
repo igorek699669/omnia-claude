@@ -14,6 +14,14 @@ interface CreatePaymentParams {
   metadata?: Record<string, string>;
 }
 
+/**
+ * Боевой адрес ЮKassa. Переопределяется только в E2E (e2e/mocks) — там вместо настоящего
+ * API отвечает локальная заглушка, иначе прогон пайплайна создавал бы реальные платежи.
+ */
+function apiUrl(): string {
+  return process.env.YOOKASSA_API_URL ?? "https://api.yookassa.ru/v3";
+}
+
 function authHeader(): string {
   const shopId = process.env.YOOKASSA_SHOP_ID;
   const secretKey = process.env.YOOKASSA_SECRET_KEY;
@@ -24,7 +32,7 @@ function authHeader(): string {
 }
 
 export async function createYookassaPayment(params: CreatePaymentParams): Promise<YookassaPayment> {
-  const res = await fetch("https://api.yookassa.ru/v3/payments", {
+  const res = await fetch(`${apiUrl()}/payments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -50,7 +58,7 @@ export async function createYookassaPayment(params: CreatePaymentParams): Promis
  * события — перезапросить платёж по id своим секретным ключом и доверять только этому ответу.
  */
 export async function getYookassaPayment(paymentId: string): Promise<YookassaPayment> {
-  const res = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
+  const res = await fetch(`${apiUrl()}/payments/${paymentId}`, {
     headers: { Authorization: authHeader() },
   });
   if (!res.ok) {

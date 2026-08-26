@@ -9,3 +9,10 @@ payload/payload-types.ts
 /media
 *.log
 .claude/scheduled_tasks.lock
+
+# Каталог сборки E2E-прогона (см. e2e/scripts/config.mjs)
+.next-e2e/
+
+# Отчёты Playwright
+/test-results/
+/playwright-report/

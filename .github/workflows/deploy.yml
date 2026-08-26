@@ -24,7 +24,13 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
+  # Ворота перед выкаткой: push в main деплоит на прод сразу, поэтому сборка образа
+  # начинается только после зелёных E2E (.github/workflows/e2e.yml).
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+
   build-and-push:
+    needs: e2e
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -1,0 +1,63 @@
+name: E2E
+
+# Переиспользуемый прогон: вызывается и из Deploy (перед сборкой образа), и из CI на
+# пул-реквестах — чтобы проверка была ровно одна и не разъезжалась между ветками.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      # Настоящий Postgres: E2E поднимает приложение целиком, схему Payload накатывает
+      # drizzle push, а таблицы Better Auth — их CLI (см. e2e/scripts/serve.mjs).
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      # Секретов здесь нет намеренно: SMS.ru, ЮKassa и СДЭК подменяются локальными
+      # заглушками (e2e/mocks), так что прогон ничего не стоит и ни от кого не зависит.
+      E2E_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/omnia_e2e
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Проверка типов
+        run: npx tsc --noEmit
+
+      - name: Установка браузера Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E
+        run: npm run test:e2e
+
+      - name: Отчёт Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

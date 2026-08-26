@@ -1,0 +1,11 @@
+name: CI
+
+# Тот же прогон, что и перед деплоем, но на пул-реквестах — чтобы поломка находилась до
+# слияния в main, а не в момент выкатки на прод.
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e:
+    uses: ./.github/workflows/e2e.yml

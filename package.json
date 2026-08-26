@@ -7,6 +7,9 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fsd": "steiger ./src",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "auth:migrate": "better-auth migrate",
     "payload": "cross-env PAYLOAD_CONFIG_PATH=payload/payload.config.ts payload",
     "payload:migrate": "cross-env PAYLOAD_CONFIG_PATH=payload/payload.config.ts payload migrate",
@@ -52,6 +55,7 @@
   "devDependencies": {
     "@better-auth/cli": "^1.4.21",
     "@feature-sliced/steiger-plugin": "^0.7.0",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.20.1",
     "@types/nodemailer": "^8.0.1",
