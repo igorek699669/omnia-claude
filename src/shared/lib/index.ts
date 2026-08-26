@@ -19,7 +19,7 @@ export {
   SELLER_RESPONSE_TIME,
   CONSENT_TEXT_VERSION,
 } from "./legal";
-export { hasAnalyticsConsent } from "./cookie-consent";
+export { hasAnalyticsConsent, setCookieConsent, COOKIE_CONSENT_EVENT } from "./cookie-consent";
 export type { CookieConsent } from "./cookie-consent";
 export { authClient, useSession, signOut } from "./auth-client";
 export { errorMessage } from "./auth-errors";
@@ -27,6 +27,7 @@ export { normalizePhone, isValidRuPhone, formatPhone } from "./phone";
 export { clientIp } from "./request-ip";
 export { siteUrl } from "./site-url";
 export { DEFAULT_OG_IMAGE } from "./seo";
+export { METRIKA_ID, ym } from "./metrika";
 export { QueryProvider } from "./query-provider";
 export { createYookassaPayment, getYookassaPayment } from "./yookassa";
 export type { YookassaPayment } from "./yookassa";

@@ -5,6 +5,7 @@ import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
 import { ContactWidget } from "@/widgets/contact-widget";
 import { CookieBanner } from "@/widgets/cookie-banner";
+import { YandexMetrika } from "@/widgets/analytics";
 import { QueryProvider, siteUrl, DEFAULT_OG_IMAGE } from "@/shared/lib";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <ContactWidget />
           <CookieBanner />
+          <YandexMetrika />
           <Toaster
             position="top-center"
             toastOptions={{

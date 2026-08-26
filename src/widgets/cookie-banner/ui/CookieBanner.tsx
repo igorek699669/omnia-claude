@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { COOKIE_CONSENT_KEY, type CookieConsent } from "@/shared/lib";
+import { COOKIE_CONSENT_KEY, setCookieConsent, type CookieConsent } from "@/shared/lib";
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -12,7 +12,9 @@ export function CookieBanner() {
   }, []);
 
   function choose(consent: CookieConsent) {
-    window.localStorage.setItem(COOKIE_CONSENT_KEY, consent);
+    // Через setCookieConsent, а не напрямую в localStorage: она заодно оповещает Метрику,
+    // и та подключается сразу, а не со следующей загрузки страницы.
+    setCookieConsent(consent);
     setVisible(false);
   }
 
