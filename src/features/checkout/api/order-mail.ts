@@ -1,7 +1,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import nodemailer from "nodemailer";
-import { formatPrice, CONTACT_EMAIL } from "@/shared/lib";
+import { formatPrice, formatDate, CONTACT_EMAIL, CONTACT_PHONE } from "@/shared/lib";
 
 interface NotifyOrderDoc {
   id: number | string;
@@ -39,20 +39,36 @@ function escapeHtml(value: string): string {
 }
 
 /**
- * Письмо продавцу об оплаченном заказе — временная замена CRM.
- *
- * Зовётся из вебхука ЮKassa после перевода заказа в "paid": до оплаты уведомлять не о чем,
- * брошенные на странице оплаты заказы засоряли бы почту. Все данные берутся из Payload,
- * а не из вебхука — тело вебхука недоверенное, и заказ к этому моменту уже сохранён.
- *
- * Бросает наружу: решение, ронять ли на этом обработку, принимает вызывающий (вебхук — не роняет).
+ * Один и тот же текст письма уходит и plain text, и HTML: почтовые клиенты выбирают сами.
+ * Ссылки в HTML-версии делаем кликабельными — иначе покупатель не дойдёт до личного кабинета.
  */
-export async function sendPaidOrderEmail(orderId: number | string): Promise<void> {
-  if (!process.env.SMTP_HOST) {
-    console.warn(`[order-mail] SMTP не настроен — письмо по заказу ${orderId} не отправлено`);
-    return;
-  }
+function toHtml(lines: string[]): string {
+  return lines
+    .map((line) => {
+      if (!line) return "<br>";
+      const escaped = escapeHtml(line).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+      return `<p style="margin:0 0 6px">${escaped}</p>`;
+    })
+    .join("");
+}
 
+/** Адрес продавца для уведомлений и для ответов покупателя. */
+function sellerEmail(): string {
+  return process.env.ORDER_NOTIFY_EMAIL ?? CONTACT_EMAIL;
+}
+
+interface OrderSummary {
+  order: NotifyOrderDoc;
+  itemsTotal: number;
+  rows: { name: string; qty: number; sum: number }[];
+  deliveryLine: string;
+}
+
+/**
+ * Заказ и его состав в том виде, в каком его показывают оба письма. Данные берутся из
+ * Payload, а не из вебхука: тело вебхука недоверенное, и заказ к этому моменту уже сохранён.
+ */
+async function loadOrderSummary(orderId: number | string): Promise<OrderSummary> {
   const payload = await getPayload({ config });
   // depth: 1 — нужны названия товаров, дальше связи не разворачиваем.
   const order = (await payload.findByID({
@@ -74,6 +90,25 @@ export async function sendPaidOrderEmail(orderId: number | string): Promise<void
         .join(" · ")
     : "не указана";
 
+  return { order, itemsTotal, rows, deliveryLine };
+}
+
+/**
+ * Письмо продавцу об оплаченном заказе — временная замена CRM.
+ *
+ * Зовётся из вебхука ЮKassa после перевода заказа в "paid": до оплаты уведомлять не о чем,
+ * брошенные на странице оплаты заказы засоряли бы почту.
+ *
+ * Бросает наружу: решение, ронять ли на этом обработку, принимает вызывающий (вебхук — не роняет).
+ */
+export async function sendPaidOrderEmail(orderId: number | string): Promise<void> {
+  if (!process.env.SMTP_HOST) {
+    console.warn(`[order-mail] SMTP не настроен — письмо продавцу по заказу ${orderId} не отправлено`);
+    return;
+  }
+
+  const { order, itemsTotal, rows, deliveryLine } = await loadOrderSummary(orderId);
+
   const lines = [
     `Заказ №${order.id}`,
     "",
@@ -85,7 +120,7 @@ export async function sendPaidOrderEmail(orderId: number | string): Promise<void
     ...rows.map((r) => `— ${r.name} × ${r.qty} — ${formatPrice(r.sum)}`),
     "",
     `Товары: ${formatPrice(itemsTotal)}`,
-    `Доставка: ${deliveryLine} — ${formatPrice(delivery?.cost ?? 0)}`,
+    `Доставка: ${deliveryLine} — ${formatPrice(order.delivery?.cost ?? 0)}`,
     `Итого оплачено: ${formatPrice(order.total)}`,
     "",
     // Продавец на НПД: кассы нет, чек формируется руками в «Мой налог» и уходит покупателю.
@@ -96,13 +131,61 @@ export async function sendPaidOrderEmail(orderId: number | string): Promise<void
 
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
-    to: process.env.ORDER_NOTIFY_EMAIL ?? CONTACT_EMAIL,
+    to: sellerEmail(),
     // Покупатель отвечает на письмо продавцу напрямую — reply-to избавляет от копипаста адреса.
     replyTo: order.customerEmail,
     subject: `Оплачен заказ №${order.id} — ${formatPrice(order.total)}`,
     text: lines.join("\n"),
-    html: lines
-      .map((line) => (line ? `<p style="margin:0 0 6px">${escapeHtml(line)}</p>` : "<br>"))
-      .join(""),
+    html: toHtml(lines),
+  });
+}
+
+/**
+ * Подтверждение заказа покупателю — то единственное, что остаётся у него на руках после оплаты.
+ *
+ * Зовётся из того же вебхука, что и письмо продавцу, и так же не должно ронять обработку:
+ * деньги уже приняты, заказ сохранён, а неотправленное письмо чинится повторной отправкой.
+ *
+ * Про чек сказано отдельно и намеренно: продавец на НПД пробивает его руками в «Мой налог»
+ * (см. п. 4 оферты), так что чек придёт не сразу и не этим письмом — без объяснения покупатель
+ * решит, что его забыли.
+ */
+export async function sendCustomerOrderEmail(orderId: number | string): Promise<void> {
+  if (!process.env.SMTP_HOST) {
+    console.warn(`[order-mail] SMTP не настроен — письмо покупателю по заказу ${orderId} не отправлено`);
+    return;
+  }
+
+  const { order, itemsTotal, rows, deliveryLine } = await loadOrderSummary(orderId);
+  const siteUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
+  const lines = [
+    `${order.customerName}, спасибо за заказ!`,
+    "",
+    `Заказ №${order.id} от ${formatDate(order.createdAt)} оплачен.`,
+    "",
+    "Состав:",
+    ...rows.map((r) => `— ${r.name} × ${r.qty} — ${formatPrice(r.sum)}`),
+    "",
+    `Товары: ${formatPrice(itemsTotal)}`,
+    `Доставка: ${deliveryLine} — ${formatPrice(order.delivery?.cost ?? 0)}`,
+    `Итого оплачено: ${formatPrice(order.total)}`,
+    "",
+    "Что дальше",
+    "Мы упакуем инструмент в чехол и короб с ложементом и передадим в СДЭК.",
+    `Статус заказа и трек-номер появятся в личном кабинете: ${siteUrl}/profile`,
+    "Чек пришлём отдельным письмом — он формируется в приложении «Мой налог».",
+    "",
+    `Если нужно что-то уточнить — ответьте на это письмо или напишите: ${sellerEmail()}, ${CONTACT_PHONE}`,
+  ];
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: order.customerEmail,
+    // Ответ покупателя должен уходить продавцу, а не в noreply-ящик из SMTP_FROM.
+    replyTo: sellerEmail(),
+    subject: `Заказ №${order.id} оплачен — Omnia`,
+    text: lines.join("\n"),
+    html: toHtml(lines),
   });
 }

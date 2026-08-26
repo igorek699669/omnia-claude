@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getYookassaPayment } from "@/shared/lib";
-import { registerCdekShipment, sendPaidOrderEmail } from "@/features/checkout/server";
+import { registerCdekShipment, sendPaidOrderEmail, sendCustomerOrderEmail } from "@/features/checkout/server";
 
 interface OrderDoc {
   id: number | string;
@@ -85,7 +85,16 @@ export async function POST(request: Request) {
     try {
       await sendPaidOrderEmail(order.id);
     } catch (err) {
-      console.error(`[order-mail] не удалось отправить письмо по заказу ${order.id}:`, err);
+      console.error(`[order-mail] не удалось отправить письмо продавцу по заказу ${order.id}:`, err);
+    }
+
+    // Подтверждение покупателю — отдельным try, а не вместе с письмом продавцу: сбой одного
+    // адресата не должен лишать письма второго. Для покупателя это единственное подтверждение
+    // покупки на руках, продавец же в крайнем случае увидит заказ в админке.
+    try {
+      await sendCustomerOrderEmail(order.id);
+    } catch (err) {
+      console.error(`[order-mail] не удалось отправить письмо покупателю по заказу ${order.id}:`, err);
     }
   } else if (payment.status === "canceled") {
     await payload.update({ collection: "orders", id: order.id, data: { status: "cancelled" } });
