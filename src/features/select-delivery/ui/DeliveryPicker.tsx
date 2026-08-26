@@ -52,7 +52,7 @@ export function DeliveryPicker({
     isPending: isSearchingCities,
   } = useMutation({
     mutationFn: (query: string) => searchCitySuggestions(query),
-    onError: (error) => toast.error(CITY_SEARCH_ERROR),
+    onError: () => toast.error(CITY_SEARCH_ERROR),
   });
 
   // Отдельная мутация для вкладки «Курьером» — тот же источник, но своё состояние
@@ -63,7 +63,7 @@ export function DeliveryPicker({
     isPending: isSearchingCourierCities,
   } = useMutation({
     mutationFn: (query: string) => searchCitySuggestions(query),
-    onError: (error) => toast.error(CITY_SEARCH_ERROR),
+    onError: () => toast.error(CITY_SEARCH_ERROR),
   });
 
   const {

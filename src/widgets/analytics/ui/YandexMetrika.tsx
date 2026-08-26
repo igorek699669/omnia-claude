@@ -1,28 +1,9 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
-import { METRIKA_ID, ym, hasAnalyticsConsent, COOKIE_CONSENT_EVENT } from "@/shared/lib";
-
-/**
- * Согласие живёт в localStorage — это внешнее по отношению к React хранилище, поэтому
- * читаем его через useSyncExternalStore, а не копируем в состояние эффектом. Заодно это
- * снимает расхождение разметки: на сервере снимок всегда false, счётчика там нет.
- *
- * Функция вынесена из компонента, чтобы ссылка была стабильной и подписка не пересоздавалась
- * на каждый рендер.
- */
-function subscribeToConsent(onChange: () => void): () => void {
-  // Своё событие — про выбор в этой вкладке (localStorage о нём не сообщает),
-  // storage — про выбор в соседней.
-  window.addEventListener(COOKIE_CONSENT_EVENT, onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener(COOKIE_CONSENT_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
+import { METRIKA_ID, ym, hasAnalyticsConsent, useCookieConsent } from "@/shared/lib";
 
 /**
  * Счётчик Яндекс.Метрики.
@@ -36,7 +17,7 @@ function subscribeToConsent(onChange: () => void): () => void {
  * вызовы, поэтому цели, отправленные сразу после инициализации, не теряются.
  */
 export function YandexMetrika() {
-  const allowed = useSyncExternalStore(subscribeToConsent, hasAnalyticsConsent, () => false);
+  const allowed = useCookieConsent(hasAnalyticsConsent);
   const pathname = usePathname();
 
   useEffect(() => {

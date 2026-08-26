@@ -46,6 +46,11 @@ jobs:
       - name: Проверка типов
         run: npx tsc --noEmit
 
+      # --max-warnings=0: без него предупреждения копятся молча, а гейт остаётся зелёным.
+      # Локально `npm run lint` мягче — в разработке недописанный код предупреждений даёт.
+      - name: Линт
+        run: npm run lint -- --max-warnings=0
+
       - name: Установка браузера Playwright
         run: npx playwright install --with-deps chromium
 

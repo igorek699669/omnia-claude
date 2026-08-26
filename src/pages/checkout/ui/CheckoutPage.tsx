@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
-import { formatPrice, CHECKOUT_SELECTION_KEY, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
+import { formatPrice, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
 import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt } from "@/shared/ui";
 import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
 import { PhoneConfirmDialog } from "./components/PhoneConfirmDialog";
@@ -39,15 +39,7 @@ export function CheckoutPage() {
   const { data: session, refetch: refetchSession } = useSession();
   const [showDelivery, setShowDelivery] = useState(false);
 
-  const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(CHECKOUT_SELECTION_KEY);
-      if (raw) setSelectedIds(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
-  }, []);
+  const selectedIds = useCart((s) => s.selectedIds);
 
   const orderItems = selectedIds ? items.filter((i) => selectedIds.includes(i.productId)) : items;
 
@@ -64,18 +56,26 @@ export function CheckoutPage() {
     },
   });
 
-  const [phoneConfirmed, setPhoneConfirmed] = useState(false);
+  // Вошедшему номер подставляется из сессии и считается подтверждённым сразу, поэтому
+  // отдельным состоянием хранится только подтверждение звонком здесь и сейчас — остальное
+  // выводится. Иначе пришлось бы синхронизировать состояние с сессией эффектом.
+  const [confirmedByCall, setConfirmedByCall] = useState(false);
+  const sessionPhone = (session?.user as { phoneNumber?: string } | undefined)?.phoneNumber;
+  const phoneConfirmed = confirmedByCall || Boolean(sessionPhone);
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
-    const sessionPhone = (session?.user as { phoneNumber?: string } | undefined)?.phoneNumber;
-    if (sessionPhone) {
-      orderForm.setValue("phone", formatPhone(sessionPhone));
-      setPhoneConfirmed(true);
-    }
-  }, [session, orderForm]);
+    // Форма — внешнее по отношению к React состояние, её синхронизация эффектом уместна.
+    if (sessionPhone) orderForm.setValue("phone", formatPhone(sessionPhone));
+  }, [sessionPhone, orderForm]);
 
+  // watch() здесь намеренно, несмотря на предупреждение линта: именно он заставляет React
+  // Compiler отказаться от оптимизации этого компонента. Замена на useWatch снимает
+  // предупреждение, но тогда компилятор мемоизирует чтения formState — а это Proxy, на
+  // котором React Hook Form строит подписку, — и на форме перестают появляться ошибки
+  // валидации. Ловится E2E «без согласий, доставки и подтверждённого телефона заказ не уходит».
+  // eslint-disable-next-line react-hooks/incompatible-library
   const phone = orderForm.watch("phone");
   const subtotal = cartTotal(orderItems);
   const total = subtotal + (delivery?.cost ?? 0);
@@ -202,7 +202,7 @@ export function CheckoutPage() {
                       phone={phone}
                       validate={() => orderForm.trigger("phone")}
                       onConfirmed={() => {
-                        setPhoneConfirmed(true);
+                        setConfirmedByCall(true);
                         // Подтверждение заводит сессию на сервере — перечитываем, иначе
                         // шапка до перезагрузки страницы показывает гостя.
                         refetchSession();

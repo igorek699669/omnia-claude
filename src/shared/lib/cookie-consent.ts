@@ -1,24 +1,43 @@
+"use client";
+
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { COOKIE_CONSENT_KEY } from "./storage-keys";
 
 export type CookieConsent = "all" | "necessary";
 
-/**
- * Событие о том, что человек только что выбрал вариант в баннере.
- *
- * Нужно, потому что localStorage о своих изменениях в той же вкладке не сообщает (событие
- * storage прилетает только соседним). Без него Метрика подключилась бы лишь на следующей
- * загрузке страницы, и первый визит — тот самый, где видно, откуда человек пришёл, —
- * терялся бы целиком.
- */
-export const COOKIE_CONSENT_EVENT = "omnia:cookie-consent";
-
-export function hasAnalyticsConsent(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(COOKIE_CONSENT_KEY) === "all";
+interface CookieConsentState {
+  /** null — человек ещё не отвечал, надо показать баннер. */
+  consent: CookieConsent | null;
+  /** false, пока выбор не поднят из localStorage: до этого решать нечего. */
+  hydrated: boolean;
+  choose: (consent: CookieConsent) => void;
 }
 
-/** Записать выбор и сразу сообщить о нём тем, кто его ждёт. */
-export function setCookieConsent(consent: CookieConsent): void {
-  window.localStorage.setItem(COOKIE_CONSENT_KEY, consent);
-  window.dispatchEvent(new CustomEvent(COOKIE_CONSENT_EVENT));
+/**
+ * Выбор по cookie. Через Zustand, как и корзина: он уже умеет и подписку, и сохранение,
+ * и согласованность между вкладками — писать это руками поверх localStorage незачем.
+ *
+ * hydrated нужен из-за персиста: на сервере и на первом клиентском рендере состояние пустое,
+ * и без флага баннер моргал бы на каждой загрузке у тех, кто уже ответил.
+ */
+export const useCookieConsent = create<CookieConsentState>()(
+  persist(
+    (set) => ({
+      consent: null,
+      hydrated: false,
+      choose: (consent) => set({ consent }),
+    }),
+    {
+      name: COOKIE_CONSENT_KEY,
+      // Сохраняем только сам выбор: hydrated — про текущую загрузку страницы, не про данные.
+      partialize: (state) => ({ consent: state.consent }),
+      onRehydrateStorage: () => (state) => state && (state.hydrated = true),
+    },
+  ),
+);
+
+/** Разрешена ли аналитика. Отдельная функция — читателей двое, а условие одно. */
+export function hasAnalyticsConsent(state: CookieConsentState): boolean {
+  return state.consent === "all";
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useId, useState, type KeyboardEvent } from "react";
 
 export interface ComboboxProps<T> {
   value: string;
@@ -57,6 +57,8 @@ export function Combobox<T>({
     setActiveIndex(-1);
   }
 
+  const listboxId = useId();
+
   const isOpen =
     !disabled && isFocused && !isSuppressed && value.trim().length >= minChars && (items.length > 0 || isLoading);
 
@@ -104,12 +106,16 @@ export function Combobox<T>({
           placeholder={placeholder}
           role="combobox"
           aria-expanded={isOpen}
+          // Роль combobox обязана указывать на свой список, иначе скринридер не свяжет
+          // поле с подсказками и не объявит их появление.
+          aria-controls={listboxId}
           aria-autocomplete="list"
         />
       </div>
 
       {isOpen && (
         <ul
+          id={listboxId}
           role="listbox"
           className="absolute inset-x-0 top-full z-10 mt-2 max-h-64 overflow-auto rounded-2xl border border-ink-900/12 bg-white p-1.5 shadow-[0_16px_40px_-16px_rgba(28,20,16,0.35)]"
         >

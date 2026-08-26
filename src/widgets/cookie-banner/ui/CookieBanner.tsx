@@ -1,24 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { COOKIE_CONSENT_KEY, setCookieConsent, type CookieConsent } from "@/shared/lib";
+import { useCookieConsent } from "@/shared/lib";
 
 export function CookieBanner() {
-  const [visible, setVisible] = useState(false);
+  const consent = useCookieConsent((s) => s.consent);
+  const hydrated = useCookieConsent((s) => s.hydrated);
+  const choose = useCookieConsent((s) => s.choose);
 
-  useEffect(() => {
-    if (!window.localStorage.getItem(COOKIE_CONSENT_KEY)) setVisible(true);
-  }, []);
-
-  function choose(consent: CookieConsent) {
-    // Через setCookieConsent, а не напрямую в localStorage: она заодно оповещает Метрику,
-    // и та подключается сразу, а не со следующей загрузки страницы.
-    setCookieConsent(consent);
-    setVisible(false);
-  }
-
-  if (!visible) return null;
+  // Пока выбор не поднят из localStorage, баннера нет: иначе он моргал бы на каждой
+  // загрузке у тех, кто уже ответил.
+  if (!hydrated || consent !== null) return null;
 
   return (
     // pointer-events-none на обёртке: она растянута на всю ширину экрана и без этого

@@ -36,8 +36,11 @@ function useAudioPlayer(src: string | undefined, preload: "none" | "metadata" = 
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
+    // Значение ref фиксируем при запуске эффекта: к моменту очистки audioRef.current уже
+    // может указывать на другой узел, и тогда синглтон остался бы висеть на снятом плеере.
+    const audio = audioRef.current;
     return () => {
-      if (activeAudio === audioRef.current) activeAudio = null;
+      if (activeAudio === audio) activeAudio = null;
     };
   }, []);
 

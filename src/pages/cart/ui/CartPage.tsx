@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
-import { formatPrice, CHECKOUT_SELECTION_KEY } from "@/shared/lib";
+import { formatPrice } from "@/shared/lib";
 import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt } from "@/shared/ui";
 
 export function CartPage() {
-  const { items, setQty, remove } = useCart();
+  const { items, setQty, remove, select } = useCart();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const seenIds = useRef<Set<string>>(new Set());
 
@@ -175,7 +175,7 @@ export function CartPage() {
                 className="w-full justify-center sm:w-auto lg:w-full"
                 onClick={() => {
                   try {
-                    sessionStorage.setItem(CHECKOUT_SELECTION_KEY, JSON.stringify([...selected]));
+                    select([...selected]);
                   } catch {
                     // ignore
                   }
