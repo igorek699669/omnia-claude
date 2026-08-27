@@ -5,8 +5,8 @@ export const SELLER_LEGAL_NAME = "Абраменков Игорь Сергеев
 export const SELLER_TAX_STATUS = "самозанятый, плательщик НПД";
 export const SELLER_INN = "325403915385";
 export const SELLER_CLAIMS_ADDRESS = "г. Брянск, ул. Котовского, д. 8, кв. 156";
-export const SELLER_WORK_HOURS = "Пн–Сб, 10:00–19:00 (МСК)";
-export const SELLER_RESPONSE_TIME = "в течение 10 рабочих дней";
+export const SELLER_WORK_HOURS = "Пн–Пт, 10:00–19:00 (МСК)";
+export const SELLER_RESPONSE_TIME = "в течение 5 рабочих дней";
 
 // Версия текста согласий, которую фиксируем в логе при оформлении заказа — растёт при
 // изменении формулировок чекбоксов на чекауте, чтобы можно было доказать, что именно
