@@ -57,7 +57,9 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
   }
 
   // Цену и наличие всегда берём из Payload — клиентским данным (localStorage-корзина) не доверяем.
-  const orderItems: { product: string | number; qty: number; price: number }[] = [];
+  // product именно number: ProductDoc.id объявлен `number | string` ради независимости от БД,
+  // но на Postgres id всегда числовой, и связь в коллекции orders ждёт число.
+  const orderItems: { product: number; qty: number; price: number }[] = [];
   let subtotal = 0;
   for (const item of items) {
     let doc: ProductDoc | null = null;
@@ -70,7 +72,7 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     if (!doc || available < item.qty) {
       return { error: `Товар «${doc?.name ?? item.productId}» больше недоступен в нужном количестве` };
     }
-    orderItems.push({ product: doc.id, qty: item.qty, price: doc.price });
+    orderItems.push({ product: Number(doc.id), qty: item.qty, price: doc.price });
     subtotal += doc.price * item.qty;
   }
 

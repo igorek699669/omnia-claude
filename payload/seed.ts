@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { getPayload, type Payload } from "payload";
 import config from "./payload.config";
 
@@ -46,7 +45,20 @@ import config from "./payload.config";
  *
  * Запуск: npm run payload:seed (старые товары при этом удаляются).
  */
-const products = [
+type SeedProduct = {
+  slug: string;
+  name: string;
+  scaleNotes: string;
+  price: number;
+  oldPrice: number;
+  notesCount: number;
+  /** Литеральный тип, а не string: у поля в коллекции это select, и payload.create ждёт именно его. */
+  tuningHz: "440" | "432";
+  stockQty: number;
+  audioSample: string;
+};
+
+const products: SeedProduct[] = [
   {
     slug: "a-hijaz-14",
     name: "Ханг A Hijaz 14",
@@ -584,14 +596,43 @@ export async function runSeed(payload: Payload) {
   }
 }
 
-// Только при прямом запуске (`npm run payload:seed`) — при импорте runSeed из другого
-// модуля (например, из временного dev-роута) сама себя не вызывает и process не завершает.
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  getPayload({ config })
-    .then(runSeed)
-    .then(() => process.exit(0))
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
+/**
+ * Точка входа шага миграции: `npm run deploy:migrate` в контейнере migrate на проде и
+ * `npm run payload:push` / `npm run payload:seed` локально.
+ *
+ * Схему БД скрипт синхронизирует всегда — её накатывает сам getPayload (drizzle push,
+ * см. комментарий про push в payload.config.ts). Что делать с каталогом сверх этого,
+ * задаёт переменная SEED:
+ *
+ *   не задана — ничего: обычный деплой обновляет только схему, товары не трогает.
+ *   sync      — привести каталог к описанному здесь: обновить поля, создать недостающее,
+ *               убрать лишнее. Остатки и фото не трогает, товар со ссылками из заказов не
+ *               удаляет. Основной рабочий режим для прода.
+ *   photos    — только проставить фото товарам без media, ничего больше не меняя.
+ *   1         — ⚠️ полный пересид: удаляет ВСЕ products и media. Только для пустой базы —
+ *               там, где есть заказы, удаление упрётся в NOT NULL на orders_items.product_id
+ *               и откатится.
+ */
+const mode = process.env.SEED ?? "";
+
+try {
+  const payload = await getPayload({ config });
+
+  if (mode === "") {
+    console.log("Схема синхронизирована. SEED не задан — каталог не трогаем.");
+  } else if (mode === "sync") {
+    await syncProducts(payload);
+  } else if (mode === "photos") {
+    await attachProductPhotos(payload);
+  } else if (mode === "1") {
+    await runSeed(payload);
+  } else {
+    console.error(`Неизвестный режим SEED=${mode}. Допустимо: sync, photos, 1.`);
+    process.exit(1);
+  }
+
+  process.exit(0);
+} catch (err) {
+  console.error(err);
+  process.exit(1);
 }

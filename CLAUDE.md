@@ -90,7 +90,20 @@ npm run test:e2e   # E2E-прогон (нужен запущенный Postgres,
 
 `npm run auth:migrate` после смены плагина auth уже прогнан — он добавил в таблицу `user` колонки `phoneNumber`/`phoneNumberVerified`. Повторять нужно только на новой БД.
 
-⚠️ `npm run payload:seed` (как и `payload migrate`/CLI) падает: собственный tsx-загрузчик Payload грузит конфиг через `require`, а `@payloadcms/richtext-lexical` содержит top-level await — `ERR_REQUIRE_ASYNC_MODULE`. Проверено на 3.86: лексикал проекту не нужен (полей `richText` нет ни в одной коллекции), но без него загрузчик спотыкается уже на относительных импортах (`Cannot find module './collections/Users'`), и явные расширения не помогают. Из конфига это не лечится — смотреть в сторону версии 3.88 отдельным заходом. Пока баг не починили — сидировать через уже запущенный `next dev`: временный `POST`-роут, импортирующий `runSeed` из `payload/seed.ts` (она принимает готовый `payload` и не завершает процесс), curl/`Invoke-WebRequest` на него, затем роут удалить — внутри процесса Next `next/env` резолвится нормально.
+CLI Payload (`payload migrate`, `generate:types`, `run`) раньше падал с `ERR_REQUIRE_ASYNC_MODULE` — это **починено** файлом `payload/package.json` с единственным полем `{"type":"module"}`. Причина была не в лексикале как таковом: в корневом `package.json` нет `"type": "module"`, поэтому tsx грузил `payload.config.ts` как CJS и делал `require()` на `@payloadcms/richtext-lexical`, а там top-level await, который Node из CJS подключить не даёт. Отдельный `package.json` переводит папку в ESM. **Не удалять этот файл** — без него ломаются все команды `payload:*`.
+
+Схема и каталог — один скрипт `payload/seed.ts` с режимом в переменной `SEED`. Схему (drizzle push) он синхронизирует всегда, каталог — только если `SEED` задан:
+
+```bash
+npm run payload:push               # только схема БД под текущие коллекции
+SEED=sync npm run payload:push     # + привести каталог к payload/seed.ts, не трогая остатки и фото
+SEED=photos npm run payload:push   # + проставить фото товарам без media
+npm run payload:seed               # ⚠️ полный пересид: удаляет ВСЕ products и media (то же, что SEED=1)
+```
+
+На проде то же самое делает `npm run deploy:migrate` в контейнере `migrate` — он добавляет к этому `better-auth migrate` и `NODE_ENV=development` (без него drizzle push не отработает). Отдельного shell-скрипта под это нет и не нужно: вся логика режимов живёт в самом `seed.ts`.
+
+⚠️ Побочный эффект локального `next dev`: Payload генерирует `payload/payload-types.ts` (файл в `.gitignore`). В CI его нет, локально он есть — следите, чтобы `npm run build` был зелёным именно с ним.
 
 ## Тесты
 
@@ -105,7 +118,7 @@ npm run test:e2e:report   # отчёт последнего прогона
 
 Как устроено (`e2e/`):
 
-- `scripts/serve.mjs` — поднимает прогон: пересоздаёт базу `omnia_e2e`, накатывает таблицы Better Auth, запускает `next dev` со своим `distDir` (`.next-e2e`, иначе Next не даёт запустить второй dev-сервер рядом с рабочим), ждёт drizzle push и заводит каталог через настоящий REST Payload под админом. Готовность объявляется отдельным портом — Playwright ждёт именно его, чтобы тесты не начались на пустом каталоге. Схема поднимается через `next dev` по той же причине, что и в `docker/migrate.sh`: push не работает при `NODE_ENV=production`.
+- `scripts/serve.mjs` — поднимает прогон: пересоздаёт базу `omnia_e2e`, накатывает таблицы Better Auth, запускает `next dev` со своим `distDir` (`.next-e2e`, иначе Next не даёт запустить второй dev-сервер рядом с рабочим), ждёт drizzle push и заводит каталог через настоящий REST Payload под админом. Готовность объявляется отдельным портом — Playwright ждёт именно его, чтобы тесты не начались на пустом каталоге. Схему здесь накатывает сам `next dev` (push срабатывает при подключении, раз `NODE_ENV !== "production"`), поэтому отдельный шаг `payload:push`, как в деплое, прогону не нужен.
 - `mocks/server.mjs` — настоящий HTTP-сервер вместо SMS.ru, ЮKassa и СДЭК плюс SMTP-приёмник писем. Приложение ходит в него по сети теми же запросами, что и в бой, — подменены только базовые адреса (`SMS_RU_API_URL`, `YOOKASSA_API_URL`, `CDEK_API_URL`). Внутри процесса приложения не мокается ничего. Боевые песочницы не годятся: звонок в SMS.ru в пайплайне некому совершить и он платный, а форму ЮKassa некому нажать.
 - `fixtures.ts` — шаги покупателя (корзина, чекаут, подтверждение телефона, выбор ПВЗ), доступ к заглушкам и чтение результата через REST Payload. `waitForAppReady` ждёт гидратацию: до неё ввод в форму просто теряется.
 - `tests/` — витрина, корзина, вход по звонку, оформление, оплата, защита денег и данных.

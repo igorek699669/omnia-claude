@@ -1,3 +1,11 @@
+/**
+ * Рядом лежит payload/package.json с единственным полем {"type":"module"} — без него CLI
+ * Payload (`payload migrate`, `generate:types`, `run`) падает с ERR_REQUIRE_ASYNC_MODULE.
+ * Причина: в корневом package.json нет "type": "module", поэтому tsx грузит этот конфиг
+ * как CJS и делает require() на @payloadcms/richtext-lexical, а там top-level await,
+ * который Node из CJS не даёт подключить. Отдельный package.json переводит папку в ESM.
+ * Удалять его нельзя, даже если кажется лишним.
+ */
 import path from "node:path";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
@@ -28,13 +36,15 @@ export default buildConfig({
     // Отдельная схема — не смешивать с таблицами Better Auth (user/session/account в public).
     schemaName: "payload",
     // По умолчанию и так true (push !== false), но оставлено явно: схема синхронизируется
-    // через drizzle push, а не закоммиченные файлы миграций — CLI `payload migrate`/
-    // `migrate:create` сейчас сломан (upstream-баг tsx-загрузчика Payload —
-    // ERR_REQUIRE_ASYNC_MODULE/ERR_REQUIRE_ESM, воспроизводится и на Windows, и в Linux,
-    // см. payloadcms/payload#16378). push срабатывает только при NODE_ENV !== "production"
-    // (см. @payloadcms/db-postgres/dist/connect.js) — поэтому шаг миграции в деплое
-    // (docker/migrate.sh) поднимает `next dev` на секунду, а не прод-сервер. Раз это
-    // соло-проект на ранней стадии — push без журнала миграций приемлемый компромисс.
+    // через drizzle push, а не закоммиченные файлы миграций. Для соло-проекта на ранней
+    // стадии это осознанный компромисс — не выдумывать журнал миграций там, где схема
+    // ещё меняется каждую неделю. `payload migrate:create`/`migrate` при этом рабочие
+    // (см. payload/package.json), так что перейти на них можно в любой момент: понадобится
+    // migrationDir на payload/migrations, push: false и CREATE SCHEMA payload первым шагом —
+    // сгенерированная миграция саму схему не создаёт, в отличие от push.
+    // push срабатывает только при NODE_ENV !== "production" (см. connect.js в
+    // @payloadcms/db-postgres) — поэтому в деплое его запускает отдельный шаг
+    // (`npm run deploy:migrate` в контейнере migrate), а не прод-сервер.
     push: true,
   }),
   typescript: {

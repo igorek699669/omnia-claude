@@ -115,7 +115,7 @@ jobs:
             # (у него profiles: ["tools"]), и запускается старый закешированный образ.
             docker compose -f docker-compose.prod.yml --profile tools pull
             # SEED передаём только при ручном запуске с выбранным режимом: обычный push
-            # в main каталог не трогает (SEED пустой -> роут /api/dev-seed отвечает 404).
+            # в main каталог не трогает (SEED пустой -> deploy:migrate обновит только схему).
             docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED="$SEED" migrate
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f

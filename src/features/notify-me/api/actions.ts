@@ -50,7 +50,7 @@ export async function subscribeToRestock(
 
     await payload.create({
       collection: "stock-subscriptions",
-      data: { product: product.id, email: parsed.data.email },
+      data: { product: Number(product.id), email: parsed.data.email },
     });
 
     return { ok: true };

@@ -40,7 +40,10 @@ services:
       - omnia-caddy-config:/config
 
   # Отдельный тег из стадии "builder" — там есть devDependencies и CLI Better Auth/Payload,
-  # которых нет в финальном рантайм-образе ("latest").
+  # которых нет в финальном рантайм-образе ("latest"): в него кладётся только
+  # .next/standalone, а туда Next трассирует лишь то, что импортит сервер, — ни bin.js
+  # payload, ни tsx, ни @better-auth/cli, ни исходников payload/*.ts там нет. Поэтому
+  # шаг миграции нельзя сложить в контейнер app, и этот сервис никуда не денется.
   # Запуск: docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
   migrate:
     image: ghcr.io/igorek699669/omnia-claude:migrate
@@ -51,7 +54,11 @@ services:
       - .env.local
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-omnia}
-    entrypoint: ["sh", "docker/migrate.sh"]
+    # Таблицы Better Auth + схема Payload, а при заданном SEED ещё и каталог.
+    # NODE_ENV=development внутри скрипта обязателен: drizzle push отрабатывает только
+    # вне продакшена (см. connect.js в @payloadcms/db-postgres), а образ builder-стадии
+    # в остальном ничем от прода не отличается.
+    entrypoint: ["npm", "run", "deploy:migrate"]
     profiles: ["tools"]
     # Тот же том, что у app: при SEED=1 сид грузит файлы в media-коллекцию Payload,
     # и без общего тома они осели бы в слое разового контейнера (--rm) — в БД записи
