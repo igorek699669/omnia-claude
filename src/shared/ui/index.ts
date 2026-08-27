@@ -15,7 +15,33 @@ export { LegalLinks } from "./LegalLinks";
 export { LegalBlock } from "./LegalBlock";
 export { Slider } from "./Slider";
 export { Skeleton } from "./Skeleton";
-export { Spinner } from "./Spinner";
+
 export { ErrorState } from "./ErrorState";
 export { HandpanArt } from "./assets/HandpanArt";
+export {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BellIcon,
+  CartIcon,
+  ChatIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  FiltersIcon,
+  MailIcon,
+  MaxIcon,
+  MenuIcon,
+  MinusIcon,
+  PauseIcon,
+  PlayIcon,
+  PlusIcon,
+  PointerArrowIcon,
+  SearchIcon,
+  Spinner,
+  TelegramIcon,
+  TrashIcon,
+  UserIcon,
+  WhatsAppIcon,
+} from "./assets/icons";
 export { AudioPlayerChip, AudioPlayerBar } from "./AudioPlayer";
+export { MessengerLinks, MESSENGERS } from "./MessengerLinks";

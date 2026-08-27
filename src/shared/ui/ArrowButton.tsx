@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { ArrowRightIcon } from "./assets/icons";
 
 const base =
   "inline-flex items-center gap-3.5 rounded-full font-medium transition-colors cursor-pointer";
@@ -16,10 +17,7 @@ function Arrow({ variant }: { variant: keyof typeof variants }) {
         variant === "primary" ? "bg-white/20" : "bg-brand text-white"
       }`}
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 12h14" />
-        <path d="m12 5 7 7-7 7" />
-      </svg>
+      <ArrowRightIcon size={16} />
     </span>
   );
 }

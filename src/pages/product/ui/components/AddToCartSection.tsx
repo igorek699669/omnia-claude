@@ -4,7 +4,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useCart } from "@/features/cart";
 import { NotifyMeButton } from "@/features/notify-me";
-import { ArrowButton } from "@/shared/ui";
+import { ArrowButton, MessengerLinks } from "@/shared/ui";
 import type { Product } from "@/entities/product";
 
 export function AddToCartSection({ product }: { product: Product }) {
@@ -32,6 +32,7 @@ export function AddToCartSection({ product }: { product: Product }) {
           Добавить в корзину
         </ArrowButton>
       )}
+      {product.inStock && <MessengerLinks size="lg" />}
     </div>
   );
 }

@@ -1,28 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PauseIcon, PlayIcon } from "./assets/icons";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function PlayIcon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M8 5v14l11-7z" />
-    </svg>
-  );
-}
-
-function PauseIcon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
-    </svg>
-  );
 }
 
 // Модульный синглтон: на странице одновременно играет только одна запись строя —

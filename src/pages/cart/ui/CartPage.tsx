@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice } from "@/shared/lib";
-import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt } from "@/shared/ui";
+import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt, TrashIcon } from "@/shared/ui";
 
 export function CartPage() {
   const { items, setQty, remove, select } = useCart();
@@ -135,7 +135,7 @@ export function CartPage() {
                         aria-label={`Убрать «${item.name}» из корзины`}
                         className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-ink-900/15 text-ink-600 transition-colors hover:border-brand hover:text-brand-dark"
                       >
-                        <TrashIcon />
+                        <TrashIcon size={16} strokeWidth={1.8} />
                       </button>
                     </div>
                     <span className="font-display text-lg font-semibold sm:w-28 sm:text-right">
@@ -202,16 +202,5 @@ function QtyBtn({ children, onClick }: { children: React.ReactNode; onClick: () 
     >
       {children}
     </button>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 6h18" />
-      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6" />
-    </svg>
   );
 }

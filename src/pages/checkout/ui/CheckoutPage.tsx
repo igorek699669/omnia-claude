@@ -10,7 +10,7 @@ import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
 import { formatPrice, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
-import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt } from "@/shared/ui";
+import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt, CheckIcon } from "@/shared/ui";
 import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
 import { PhoneConfirmDialog } from "./components/PhoneConfirmDialog";
 
@@ -192,9 +192,7 @@ export function CheckoutPage() {
                   />
                   {phoneConfirmed ? (
                     <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-dark">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
+                      <CheckIcon size={14} strokeWidth={3} />
                       Подтверждён
                     </span>
                   ) : (

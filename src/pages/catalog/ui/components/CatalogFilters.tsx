@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReadonlyURLSearchParams } from "next/navigation";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/shared/ui";
+import { Dialog, DialogClose, DialogContent, DialogTitle, CloseIcon, FiltersIcon } from "@/shared/ui";
 import { useBreakpoints } from "@/shared/lib";
 
 const inputClass =
@@ -270,7 +270,7 @@ function MobileFilters({
         aria-label="Фильтры"
         className="relative inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-ink-900/20 px-4 py-3 text-sm font-medium transition-colors hover:border-brand hover:text-brand-dark sm:px-5"
       >
-        <FilterIcon />
+        <FiltersIcon size={16} />
         <span className="hidden sm:inline">Фильтры</span>
         {activeCount > 0 && (
           <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-brand text-[11px] font-semibold text-white ring-2 ring-paper-50">
@@ -286,9 +286,7 @@ function MobileFilters({
               aria-label="Закрыть"
               className="grid size-10.5 cursor-pointer place-items-center rounded-full border border-ink-900/15"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
+              <CloseIcon size={18} />
             </button>
           </DialogClose>
         </div>
@@ -313,13 +311,5 @@ function MobileFilters({
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 6h16M7 12h10M10 18h4" />
-    </svg>
   );
 }

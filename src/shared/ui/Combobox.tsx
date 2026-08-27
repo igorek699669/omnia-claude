@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState, type KeyboardEvent } from "react";
+import { SearchIcon } from "./assets/icons";
 
 export interface ComboboxProps<T> {
   value: string;
@@ -18,14 +19,7 @@ export interface ComboboxProps<T> {
   className?: string;
 }
 
-function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink-600" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
+
 
 export function Combobox<T>({
   value,
@@ -88,7 +82,7 @@ export function Combobox<T>({
   return (
     <div className={`relative ${className}`}>
       <div className="flex items-center gap-3 rounded-input border border-ink-900/18 bg-white px-5 py-3.5">
-        <SearchIcon />
+        <SearchIcon size={16} className="shrink-0 text-ink-600" />
         <input
           value={value}
           onChange={(e) => {

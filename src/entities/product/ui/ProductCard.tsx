@@ -4,7 +4,7 @@ import type { Product } from "../model/types";
 import { HANDPAN_DIAMETER_CM, HANDPAN_RIM_CM, HANDPAN_WEIGHT_GRAMS } from "../model/constants";
 import { ProductGallery, CARD_IMAGE_SIZES } from "./ProductGallery";
 import { formatPrice } from "@/shared/lib";
-import { AudioPlayerChip, HandpanArt } from "@/shared/ui";
+import { AudioPlayerChip, HandpanArt, MessengerLinks } from "@/shared/ui";
 
 export function ProductCard({
   product,
@@ -27,7 +27,7 @@ export function ProductCard({
         <div className="relative aspect-[4/3] overflow-hidden">
           {!product.inStock && (
             <span className="absolute left-3.5 top-3.5 z-10 rounded-full bg-ink-900/85 px-3.5 py-1.5 text-[13px] font-semibold text-white">
-              Нет в наличии
+              Под заказ
             </span>
           )}
           <div className="absolute inset-x-6 inset-y-0">
@@ -84,6 +84,8 @@ export function ProductCard({
           </Link>
           {cartAction}
         </div>
+
+        <MessengerLinks className="pt-3.5" />
       </div>
     </article>
   );

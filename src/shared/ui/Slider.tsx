@@ -1,6 +1,7 @@
 "use client";
 
 import useEmblaCarousel from "embla-carousel-react";
+import { ArrowRightIcon } from "./assets/icons";
 import { Children, useCallback, useEffect, useState, type ReactNode } from "react";
 
 type EmblaOptions = NonNullable<Parameters<typeof useEmblaCarousel>[0]>;
@@ -116,21 +117,7 @@ function SliderArrow({
       aria-label={direction === "prev" ? "Назад" : "Вперёд"}
       className="hidden size-11 cursor-pointer place-items-center rounded-full border border-ink-900/15 transition-colors hover:border-brand hover:text-brand-dark disabled:cursor-default disabled:opacity-30 disabled:hover:border-ink-900/15 disabled:hover:text-ink-900 md:grid"
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={direction === "prev" ? "rotate-180" : undefined}
-        aria-hidden
-      >
-        <path d="M5 12h14" />
-        <path d="m12 5 7 7-7 7" />
-      </svg>
+      <ArrowRightIcon size={18} className={direction === "prev" ? "rotate-180" : undefined} />
     </button>
   );
 }

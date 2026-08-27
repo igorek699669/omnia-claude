@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { subscribeToRestock } from "../api/actions";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogClose } from "@/shared/ui";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogClose, BellIcon } from "@/shared/ui";
 import type { Product } from "@/entities/product";
 
 const emailSchema = z.object({
@@ -48,7 +48,7 @@ export function NotifyMeButton({
             aria-label={`Уведомить о наличии «${product.name}»`}
             className="grid size-12 shrink-0 cursor-pointer place-items-center rounded-full border border-ink-900/20 text-ink-900 transition-colors hover:border-brand hover:text-brand-dark"
           >
-            <BellIcon />
+            <BellIcon size={18} strokeWidth={1.8} />
           </button>
         ) : (
           <button
@@ -98,14 +98,5 @@ export function NotifyMeButton({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
   );
 }

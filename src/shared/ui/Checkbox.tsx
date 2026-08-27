@@ -2,6 +2,7 @@
 
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import type { ComponentProps } from "react";
+import { CheckIcon, MinusIcon } from "./assets/icons";
 
 export function Checkbox({
   className = "",
@@ -13,24 +14,16 @@ export function Checkbox({
       {...props}
     >
       <RadixCheckbox.Indicator className="text-white">
-        {props.checked === "indeterminate" ? <MinusIcon /> : <CheckIcon />}
+        {props.checked === "indeterminate" ? (
+          <MinusIcon size={12} strokeWidth={3} />
+        ) : (
+          <CheckIcon size={12} strokeWidth={3} />
+        )}
       </RadixCheckbox.Indicator>
     </RadixCheckbox.Root>
   );
 }
 
-function CheckIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
-}
 
-function MinusIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-      <path d="M5 12h14" />
-    </svg>
-  );
-}
+
+

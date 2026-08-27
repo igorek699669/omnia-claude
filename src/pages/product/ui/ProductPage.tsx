@@ -59,7 +59,7 @@ export async function ProductPage({ slug }: { slug: string }) {
         </div>
 
         <div>
-          <Tag>{product.inStock ? "В наличии" : "Нет в наличии"}</Tag>
+          <Tag>{product.inStock ? "В наличии" : "Под заказ"}</Tag>
           <h1 className="mt-5 font-display text-[clamp(36px,4vw,56px)] font-medium leading-[1.05] tracking-tight">
             {product.name}
           </h1>

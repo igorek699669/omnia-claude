@@ -2,6 +2,7 @@
 
 import * as RadixAccordion from "@radix-ui/react-accordion";
 import type { ComponentProps, ReactNode } from "react";
+import { PlusIcon } from "./assets/icons";
 
 export const Accordion = RadixAccordion.Root;
 
@@ -25,7 +26,7 @@ export function AccordionTrigger({
       >
         {children}
         <span className="grid size-10 shrink-0 place-items-center rounded-full border border-ink-900/20 transition-transform group-data-[state=open]:rotate-45">
-          <PlusIcon />
+          <PlusIcon size={16} />
         </span>
       </RadixAccordion.Trigger>
     </RadixAccordion.Header>
@@ -47,10 +48,4 @@ export function AccordionContent({
   );
 }
 
-function PlusIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
+

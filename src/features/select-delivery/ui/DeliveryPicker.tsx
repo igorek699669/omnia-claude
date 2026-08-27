@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { SectionTitle, Tabs, TabsList, TabsTrigger, TabsContent, Backdrop, LegalLinks, Combobox } from "@/shared/ui";
+import { SectionTitle, Tabs, TabsList, TabsTrigger, TabsContent, Backdrop, LegalLinks, Combobox, ArrowLeftIcon } from "@/shared/ui";
 import { formatPrice, DELIVERY_PROVIDER_LABELS } from "@/shared/lib";
 import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
 import { searchCitySuggestions, getPvzPointsByCity, calculateDeliveryCost } from "../api/actions";
@@ -181,10 +181,7 @@ export function DeliveryPicker({
           onClick={onBack}
           className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="m12 19-7-7 7-7" />
-            <path d="M19 12H5" />
-          </svg>
+          <ArrowLeftIcon size={16} />
           Назад к оформлению
         </button>
 
