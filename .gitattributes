@@ -1,0 +1,16 @@
+# В репозитории уживались файлы с LF и с CRLF: правка такого файла на Windows
+# переводила его целиком и раздувала дифф до перезаписи всего файла.
+# Теперь в индексе всегда LF, и в рабочей копии тоже — независимо от ОС.
+* text=auto eol=lf
+
+# Бинарники не трогать: аудио, шрифты и картинки не текст.
+*.m4a binary
+*.mp3 binary
+*.webp binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.svg text eol=lf
+*.ico binary
+*.woff binary
+*.woff2 binary
