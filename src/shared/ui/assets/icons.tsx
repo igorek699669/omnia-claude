@@ -155,6 +155,15 @@ export function MailIcon({ size = 24, ...rest }: IconProps) {
   );
 }
 
+/** Трубка — кнопка набора номера. */
+export function PhoneIcon({ size = 24, ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} {...outline} {...rest}>
+      <path d="M7.5 3.5h-2A2.5 2.5 0 0 0 3 6c0 8.28 6.72 15 15 15a2.5 2.5 0 0 0 2.5-2.5v-2l-4.5-2-2 2.5a15.6 15.6 0 0 1-6-6L10.5 9l-3-5.5z" />
+    </svg>
+  );
+}
+
 /** Пузырь с многоточием — главная кнопка виджета связи. */
 export function ChatIcon({ size = 24, ...rest }: IconProps) {
   return (

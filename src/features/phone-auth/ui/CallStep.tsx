@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@/shared/ui";
+import { PhoneIcon, Spinner } from "@/shared/ui";
 import { formatPhone } from "@/shared/lib";
 import type { PendingCall } from "./use-call-check";
 
@@ -14,8 +14,8 @@ function formatCountdown(seconds: number): string {
  * Экран ожидания звонка: покупатель звонит с подтверждаемого номера на выданный SMS.ru,
  * звонок сбрасывается, и опрос в useCallCheck ловит подтверждение.
  *
- * Кнопка — ссылка tel:, на мобильном она открывает набор номера; на десктопе покупатель
- * просто видит номер и набирает его на телефоне, поэтому номер продублирован текстом.
+ * Кнопка «Позвонить» — ссылка tel:, на мобильном она открывает набор номера; на десктопе
+ * покупатель набирает номер на телефоне, поэтому номер показан текстом рядом с кнопкой.
  */
 export function CallStep({
   phone,
@@ -34,12 +34,18 @@ export function CallStep({
         Отвечать не нужно — мы сбросим звонок и сразу вас впустим. Звонок бесплатный.
       </p>
 
-      <a
-        href={`tel:${call.callPhone}`}
-        className="mt-6 flex items-center justify-center rounded-input border border-ink-900/18 bg-white px-5 py-5 font-display text-3xl font-medium tracking-tight text-ink-900 transition-colors hover:border-brand"
-      >
-        {call.callPhonePretty}
-      </a>
+      <div className="mt-6 flex flex-col items-center gap-4 rounded-input border border-ink-900/18 bg-white px-5 py-5">
+        <span className="font-display text-3xl font-medium tracking-tight text-ink-900">
+          {call.callPhonePretty}
+        </span>
+        <a
+          href={`tel:${call.callPhone}`}
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-dark"
+        >
+          <PhoneIcon size={16} />
+          Позвонить
+        </a>
+      </div>
 
       <div
         role="status"

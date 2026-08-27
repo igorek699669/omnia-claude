@@ -33,6 +33,7 @@ export {
   MenuIcon,
   MinusIcon,
   PauseIcon,
+  PhoneIcon,
   PlayIcon,
   PlusIcon,
   PointerArrowIcon,
