@@ -39,8 +39,7 @@ interface TokenCache {
 let tokenCache: TokenCache | null = null;
 
 function apiUrl(): string {
-  // Пока сознательно тестовый контур даже в проде — см. CDEK_API_URL в .env.example.
-  return process.env.CDEK_API_URL ?? "https://api.edu.cdek.ru/v2";
+  return process.env.CDEK_API_URL || "https://api.edu.cdek.ru/v2";
 }
 
 async function getCdekToken(): Promise<string> {

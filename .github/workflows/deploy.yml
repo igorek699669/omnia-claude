@@ -106,8 +106,14 @@ jobs:
             SMS_RU_API_ID=${SMS_RU_API_ID}
             YOOKASSA_SHOP_ID=${YOOKASSA_SHOP_ID}
             YOOKASSA_SECRET_KEY=${YOOKASSA_SECRET_KEY}
+            # Боевой контур и код пункта приёма зашиты здесь, а не в Secrets/Variables:
+            # ни то ни другое не секрет, а прод всегда на боевом договоре — локально
+            # остаётся edu-контур (дефолт в src/shared/lib/cdek.ts). BRK16 — офис СДЭК,
+            # куда мастерская сама сдаёт груз: оба используемых тарифа «от склада».
+            CDEK_API_URL=https://api.cdek.ru/v2
             CDEK_ACCOUNT=${CDEK_ACCOUNT}
             CDEK_SECURE_PASSWORD=${CDEK_SECURE_PASSWORD}
+            CDEK_SHIPMENT_POINT=BRK16
             EOF
 
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
