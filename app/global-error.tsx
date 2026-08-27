@@ -19,7 +19,7 @@ export default function GlobalError({
         <main className="mx-auto flex min-h-screen max-w-[720px] items-center justify-center px-5 py-16">
           <div className="w-full rounded-card bg-white p-8 text-center md:p-12">
             <h1 className="text-balance font-display text-[32px] font-medium leading-[1.08] tracking-tight">
-              Сайт не загрузился
+              Сайт недоступен
             </h1>
             <p className="mx-auto mt-4 max-w-[46ch] text-ink-600">
               Произошёл сбой при загрузке страницы. Попробуйте обновить — обычно это помогает.

@@ -36,8 +36,6 @@ export function PopularProducts() {
 }
 
 async function PopularGrid() {
-  // Витрина — одна из секций главной, а не вся страница: если Payload недоступен,
-  // показываем сообщение вместо карточек, но остальная главная остаётся рабочей.
   let allProducts;
   try {
     allProducts = await getProducts();
@@ -52,7 +50,6 @@ async function PopularGrid() {
     );
   }
 
-  // Товары без остатка — в конец списка, чтобы на витрине сначала показывались доступные.
   const sorted = [...allProducts].sort((a, b) => Number(!a.inStock) - Number(!b.inStock));
   const products = sorted.slice(0, VISIBLE_COUNT);
   const hasMore = allProducts.length > VISIBLE_COUNT;

@@ -38,7 +38,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   }));
 
-  // Каталог недоступен — отдаём хотя бы статические адреса: пустая карта хуже неполной.
   let productEntries: MetadataRoute.Sitemap = [];
   try {
     const products = await getProducts();
