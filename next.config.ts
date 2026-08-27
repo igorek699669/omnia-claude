@@ -4,6 +4,9 @@ import { withPayload } from "@payloadcms/next/withPayload";
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
+  // Next по умолчанию представляется заголовком X-Powered-By. Пользы от него нет, а
+  // сканеру он экономит первый шаг — какой фреймворк и что под него искать.
+  poweredByHeader: false,
   // Каталог сборки — переменной, чтобы E2E-прогон (e2e/scripts/serve.mjs) поднимал свой
   // next dev рядом с рабочим: Next отказывается запускать второй dev-сервер на тот же
   // distDir («Another next dev server is already running»), а лок лежит внутри него.
