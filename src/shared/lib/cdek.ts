@@ -16,6 +16,14 @@ const COURIER_DELIVERY_MODE = 3;
 // Единственный склад продавца — Брянск (код города СДЭК, см. /v2/location/cities?city=Брянск).
 const SENDER_CITY_CODE = 220;
 
+/**
+ * Страница отслеживания на сайте СДЭК. Публичная: номера накладной достаточно, вход не нужен.
+ * Отдельная функция, а не строка в разметке, — тот же адрес нужен и в письме с треком.
+ */
+export function cdekTrackingUrl(cdekNumber: string): string {
+  return `https://www.cdek.ru/ru/tracking?order_id=${encodeURIComponent(cdekNumber)}`;
+}
+
 export interface CdekPvz {
   code: string;
   city: string;

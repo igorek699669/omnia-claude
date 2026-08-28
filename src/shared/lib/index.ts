@@ -38,6 +38,7 @@ export {
   calculateCdekTariff,
   createCdekOrder,
   getCdekOrderNumber,
+  cdekTrackingUrl,
 } from "./cdek";
 export type { CdekPvz, CdekCityMatch, CdekTariff, CdekOrderItem, CreateCdekOrderParams } from "./cdek";
 export { deriveShipmentPackages, PACKAGE_WEIGHT_GRAMS, PACKAGE_BOX_CM } from "./shipment-package";

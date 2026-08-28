@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { getOrdersByCustomer, ORDER_STATUS_LABELS, isAwaitingPayment } from "@/entities/order";
 import type { Order, OrderItem } from "@/entities/order";
 import { reconcileCustomerOrders } from "@/features/checkout/server";
-import { formatPrice, formatDate } from "@/shared/lib";
+import { formatPrice, formatDate, cdekTrackingUrl } from "@/shared/lib";
 import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
 import { OrdersLiveRefresh } from "./components/OrdersLiveRefresh";
 
@@ -13,9 +13,6 @@ export async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/auth");
 
-  // До того как показывать заказы — спросить у ЮKassa про незакрытые. Если вебхук не дошёл,
-  // в базе лежит «Ожидает оплаты» по уже оплаченному заказу, и обновление страницы этого не
-  // чинит: неверны сами данные, а не их свежесть.
   await reconcileCustomerOrders(session.user.id);
 
   const orders = await getOrdersByCustomer(session.user.id);
@@ -126,9 +123,6 @@ function OrderItemRow({ item }: { item: OrderItem }) {
 }
 
 function TrackNumber({ order }: { order: Order }) {
-  // Накладную СДЭК присваивает асинхронно, уже после оплаты, поэтому у только что
-  // оплаченного заказа номера ещё нет — показываем это явно, а не прячем блок:
-  // иначе покупатель не понимает, ждать ему трек или он потерялся.
   const awaitingNumber = order.status === "paid" || order.status === "shipped";
   if (!order.cdekNumber && !awaitingNumber) return null;
 
@@ -136,7 +130,14 @@ function TrackNumber({ order }: { order: Order }) {
     <div className="mt-5 border-t border-ink-900/10 pt-5 text-[15px]">
       <span className="text-ink-600">Трек-номер СДЭК: </span>
       {order.cdekNumber ? (
-        <b className="tracking-wide">{order.cdekNumber}</b>
+        <a
+          href={cdekTrackingUrl(order.cdekNumber)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold tracking-wide underline underline-offset-2 transition-colors hover:text-brand-dark"
+        >
+          {order.cdekNumber}
+        </a>
       ) : (
         <span className="text-ink-600">формируется, появится в течение дня</span>
       )}
