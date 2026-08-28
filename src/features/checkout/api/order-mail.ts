@@ -1,7 +1,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import nodemailer from "nodemailer";
-import { formatPrice, formatDate, siteUrl, CONTACT_EMAIL, CONTACT_PHONE } from "@/shared/lib";
+import { formatPrice, formatDate, siteUrl, cdekTrackingUrl, CONTACT_EMAIL, CONTACT_PHONE } from "@/shared/lib";
 
 interface NotifyOrderDoc {
   id: number | string;
@@ -216,6 +216,10 @@ export async function sendCustomerOrderEmail(orderId: number | string): Promise<
  * В подтверждении заказа покупателю обещано, что номер появится, так что письмо закрывает
  * это обещание, а не просто дублирует личный кабинет.
  *
+ * Про «передан в доставку» здесь не пишем: накладная оформляется по факту оплаты, а
+ * инструмент к этому моменту ещё у мастерской — его везут в пункт приёма СДЭК позже.
+ * Письмо о реальной передаче можно будет слать только по вебхуку статуса от СДЭК.
+ *
  * Зовётся один раз — из досверки, в тот момент, когда номер впервые узнан.
  */
 export async function sendTrackNumberEmail(orderId: number | string): Promise<void> {
@@ -227,13 +231,14 @@ export async function sendTrackNumberEmail(orderId: number | string): Promise<vo
   const { order, deliveryLine } = await loadOrderSummary(orderId);
   if (!order.cdekNumber) return;
 
-
-
   const lines = [
-    `${order.customerName}, ваш заказ №${order.id} передан в доставку.`,
+    `${order.customerName}, по вашему заказу №${order.id} оформлена накладная СДЭК.`,
     "",
-    `Трек-номер СДЭК: ${order.cdekNumber}`,
-    "Отследить: https://www.cdek.ru/ru/tracking",
+    `Трек-номер: ${order.cdekNumber}`,
+    `Отследить: ${cdekTrackingUrl(order.cdekNumber)}`,
+    "",
+    "Инструмент сейчас у нас: мы упакуем его и передадим в пункт приёма СДЭК — тогда по треку",
+    "и появится первый статус.",
     "",
     `Куда едет: ${deliveryLine}`,
     "",
@@ -246,7 +251,7 @@ export async function sendTrackNumberEmail(orderId: number | string): Promise<vo
     from: process.env.SMTP_FROM,
     to: order.customerEmail,
     replyTo: sellerEmail(),
-    subject: `Заказ №${order.id} передан в доставку — трек ${order.cdekNumber}`,
+    subject: `Заказ №${order.id}: трек-номер СДЭК ${order.cdekNumber}`,
     text: lines.join("\n"),
     html: toHtml(lines),
   });

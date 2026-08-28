@@ -237,7 +237,7 @@ test.describe("оплата заказа", () => {
 
     // Третье письмо — покупателю: в подтверждении заказа ему обещали, что трек появится.
     const emails = await mocks.waitForEmails(3);
-    const trackEmail = emails.find((e) => e.subject.includes("передан в доставку"));
+    const trackEmail = emails.find((e) => e.subject.includes("трек-номер СДЭК"));
     expect(trackEmail, "покупатель должен получить письмо с трек-номером").toBeTruthy();
     expect(trackEmail!.to.some((address) => address.includes("buyer@omnia.test"))).toBe(true);
     expect(trackEmail!.body).toContain(tracked);
