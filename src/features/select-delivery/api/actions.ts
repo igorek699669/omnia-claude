@@ -1,5 +1,7 @@
 "use server";
 
+import { getPayload } from "payload";
+import config from "@payload-config";
 import { suggestCdekCities, getCdekPvzPoints, calculateCdekTariff, deriveShipmentPackages } from "@/shared/lib";
 import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
 import { CITY_SEARCH_MIN_CHARS } from "../model/types";
@@ -62,5 +64,32 @@ export async function calculateDeliveryCost(input: CalculateDeliveryCostInput): 
     cityCode: input.cityCode,
     type: input.type,
     packages,
+    declaredValue: await declaredValueOf(input.items),
   });
+}
+
+/**
+ * Объявленная стоимость вложения — сумма товаров по ценам из Payload.
+ *
+ * Именно она уходит в страховой сбор СДЭК, то есть влияет на деньги, поэтому цену берём
+ * из базы, а не из корзины в браузере: из неё сюда приходят только id и количество.
+ * Так же поступает и чекаут при финальном пересчёте, и суммы совпадают.
+ *
+ * Товара с таким id может уже не быть — считаем его нулём и молчим: наличие и цену
+ * проверит createOrderPayment, а расчёт доставки не место для отказа в заказе.
+ */
+async function declaredValueOf(items: CalculateDeliveryCostInput["items"]): Promise<number> {
+  const payload = await getPayload({ config });
+  let total = 0;
+  for (const item of items) {
+    try {
+      const doc = (await payload.findByID({ collection: "products", id: item.productId })) as {
+        price?: number | null;
+      };
+      total += (doc.price ?? 0) * item.qty;
+    } catch {
+      // товара нет — вклад в объявленную стоимость нулевой
+    }
+  }
+  return total;
 }

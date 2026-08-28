@@ -1,5 +1,5 @@
 import { test, expect, waitForAppReady } from "../fixtures";
-import { expectedTariff } from "../mocks/cdek-fixtures.mjs";
+import { expectedTariff, expectedDeliveryCost } from "../mocks/cdek-fixtures.mjs";
 
 /**
  * Оформление заказа — место, где сходятся деньги, персональные данные и доставка.
@@ -30,6 +30,9 @@ test.describe("оформление заказа", () => {
   }) => {
     const product = seed.products.find((p) => p.slug === "e2e-kurd-10")!;
     const tariff = expectedTariff(MOSCOW, "pvz", 1);
+    // Доставка = тариф + страховка объявленной стоимости: инструмент дорогой, и страховой
+    // сбор СДЭК платит покупатель, а не мастерская.
+    const deliveryCost = expectedDeliveryCost(MOSCOW, "pvz", 1, product.price);
 
     await storefront.addToCart(product.slug);
     await storefront.goToCheckout();
@@ -40,7 +43,7 @@ test.describe("оформление заказа", () => {
     await storefront.submitOrder();
 
     // Касса получила ровно ту сумму, которую посчитал сервер.
-    const total = product.price + tariff.delivery_sum;
+    const total = product.price + deliveryCost;
     await expect(page.getByTestId("payment-amount")).toHaveText(`${total.toFixed(2)} RUB`);
 
     const order = await shop.lastOrder();
@@ -60,7 +63,7 @@ test.describe("оформление заказа", () => {
     expect(order.delivery.type).toBe("pvz");
     expect(order.delivery.pvzCode).toBe("MSK1");
     expect(order.delivery.cityCode).toBe(MOSCOW);
-    expect(order.delivery.cost).toBe(tariff.delivery_sum);
+    expect(order.delivery.cost).toBe(deliveryCost);
     expect(order.delivery.tariffCode).toBe(tariff.tariff_code);
 
     // Платёж создан с id заказа в метаданных — по нему вебхук найдёт заказ обратно.
@@ -108,6 +111,7 @@ test.describe("оформление заказа", () => {
   }) => {
     const product = seed.products.find((p) => p.slug === "e2e-kurd-10")!;
     const tariff = expectedTariff(MOSCOW, "courier", 2);
+    const deliveryCost = expectedDeliveryCost(MOSCOW, "courier", 2, product.price * 2);
 
     await storefront.addToCart(product.slug);
 
@@ -126,14 +130,16 @@ test.describe("оформление заказа", () => {
 
     const order = await shop.lastOrder();
     expect(order.items[0].qty).toBe(2);
-    expect(order.total).toBe(product.price * 2 + tariff.delivery_sum);
+    expect(order.total).toBe(product.price * 2 + deliveryCost);
     expect(order.delivery.type).toBe("courier");
     expect(order.delivery.tariffCode).toBe(tariff.tariff_code);
     // Город обязан быть внутри адреса: иначе по строке «улица, дом» доставку не собрать.
     expect(order.delivery.address).toContain("Москва");
 
-    // В СДЭК ушло два места с реальными весом и габаритами упакованного ханга.
-    const calls = (await mocks.requests()).filter((r) => r.kind === "cdek-tariff");
+    // В СДЭК ушло два места с реальными весом и габаритами упакованного ханга. Смотрим
+    // расчёт по конкретному тарифу: список тарифов кешируется по направлению и на второй
+    // такой же город запроса уже не будет, а этот уходит на каждый расчёт.
+    const calls = (await mocks.requests()).filter((r) => r.kind === "cdek-tariff-priced");
     const last = calls.at(-1) as unknown as { packages: { weight: number; length: number }[] };
     expect(last.packages).toHaveLength(2);
     expect(last.packages[0].weight).toBe(8400);

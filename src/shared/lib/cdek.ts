@@ -182,17 +182,11 @@ export async function findCdekPvz(pvzCode: string): Promise<{ cityCode: number |
   return { cityCode: point.location?.city_code ?? null };
 }
 
-export interface CdekTariff {
-  /** Код выбранного тарифа — при регистрации отправления нужен ровно тот, по которому посчитали цену покупателю. */
-  tariffCode: number;
-  cost: number;
-}
-
-export async function calculateCdekTariff(params: {
-  cityCode: number;
-  type: "pvz" | "courier";
-  packages: PackageBox[];
-}): Promise<CdekTariff> {
+async function fetchCheapestTariffCode(
+  cityCode: number,
+  mode: number,
+  packages: { weight: number; length: number; width: number; height: number }[],
+): Promise<number> {
   const result = await cdekFetch<{
     tariff_codes: { tariff_code: number; delivery_mode: number; delivery_sum: number }[];
   }>("/calculator/tarifflist", {
@@ -200,23 +194,78 @@ export async function calculateCdekTariff(params: {
     body: JSON.stringify({
       type: 1,
       from_location: { code: SENDER_CITY_CODE },
-      to_location: { code: params.cityCode },
-      packages: params.packages.map((p) => ({
-        weight: p.weightGrams,
-        length: p.boxCm.length,
-        width: p.boxCm.width,
-        height: p.boxCm.height,
-      })),
+      to_location: { code: cityCode },
+      packages,
     }),
   });
 
-  const wantedMode = params.type === "pvz" ? PVZ_DELIVERY_MODE : COURIER_DELIVERY_MODE;
-  const matching = result.tariff_codes.filter((t) => t.delivery_mode === wantedMode);
+  const matching = result.tariff_codes.filter((t) => t.delivery_mode === mode);
   if (matching.length === 0) {
     throw new Error("СДЭК: нет доступных тарифов для этого направления");
   }
-  const cheapest = matching.reduce((min, t) => (t.delivery_sum < min.delivery_sum ? t : min));
-  return { tariffCode: cheapest.tariff_code, cost: cheapest.delivery_sum };
+  return matching.reduce((min, t) => (t.delivery_sum < min.delivery_sum ? t : min)).tariff_code;
+}
+
+// Кеш — Data Cache Next.js, как у справочника городов: инстансов на проде несколько, и
+// переменная модуля грелась бы у каждого заново. Аргументы входят в ключ, так что города
+// и режимы не перепутаются.
+const cheapestTariffCode = unstable_cache(fetchCheapestTariffCode, ["cdek-cheapest-tariff"], {
+  revalidate: 60 * 60 * 24,
+});
+
+export interface CdekTariff {
+  /** Код выбранного тарифа — при регистрации отправления нужен ровно тот, по которому посчитали цену. */
+  tariffCode: number;
+  /** Итог к оплате покупателем: доставка вместе со страховкой объявленной стоимости. */
+  cost: number;
+}
+
+/**
+ * Стоимость доставки для покупателя.
+ *
+ * Считает /calculator/tariff, а не /calculator/tarifflist: список тарифов не принимает
+ * услуг вовсе, поэтому объявленная стоимость в его ответ не попадает. А отправление
+ * регистрируется с реальной ценой инструмента в items.cost (занижать нельзя — при утере
+ * СДЭК возместит только объявленное), и страховой сбор с неё СДЭК выставляет мастерской.
+ * Пока расчёт шёл по списку, этот сбор просто не доезжал до чека покупателя.
+ */
+export async function calculateCdekTariff(params: {
+  cityCode: number;
+  type: "pvz" | "courier";
+  packages: PackageBox[];
+  /** Объявленная стоимость вложения в рублях — сумма товаров заказа (без доставки). */
+  declaredValue: number;
+}): Promise<CdekTariff> {
+  const packages = params.packages.map((p) => ({
+    weight: p.weightGrams,
+    length: p.boxCm.length,
+    width: p.boxCm.width,
+    height: p.boxCm.height,
+  }));
+
+  const mode = params.type === "pvz" ? PVZ_DELIVERY_MODE : COURIER_DELIVERY_MODE;
+  const tariffCode = await cheapestTariffCode(params.cityCode, mode, packages);
+
+  const priced = await cdekFetch<{ total_sum?: number; delivery_sum?: number }>("/calculator/tariff", {
+    method: "POST",
+    body: JSON.stringify({
+      type: 1,
+      tariff_code: tariffCode,
+      from_location: { code: SENDER_CITY_CODE },
+      to_location: { code: params.cityCode },
+      packages,
+      // parameter у услуг СДЭК всегда строка, даже когда это число.
+      services: [{ code: "INSURANCE", parameter: String(Math.round(params.declaredValue)) }],
+    }),
+  });
+
+  // total_sum — доставка вместе с услугами; delivery_sum в том же ответе идёт без страховки
+  // и берётся только на случай неожиданного формата ответа.
+  const cost = priced.total_sum ?? priced.delivery_sum;
+  if (typeof cost !== "number") {
+    throw new Error("СДЭК: расчёт тарифа не вернул сумму доставки");
+  }
+  return { tariffCode, cost };
 }
 
 export interface CdekOrderItem {

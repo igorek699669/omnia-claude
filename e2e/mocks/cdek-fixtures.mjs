@@ -46,9 +46,23 @@ export function tariffsFor(cityCode, packagesCount) {
   ];
 }
 
+/**
+ * Страховой сбор с объявленной стоимости — 0,5%, как в тарифах СДЭК на страхование.
+ * Точное значение неважно: тесты проверяют, что сбор вообще доезжает до чека покупателя,
+ * а не пропадает между расчётом тарифа и регистрацией отправления.
+ */
+export function insuranceFee(declaredValue) {
+  return Math.round(declaredValue * 0.005);
+}
+
 /** Самый дешёвый тариф нужного режима — то же, что должен посчитать calculateCdekTariff. */
 export function expectedTariff(cityCode, type, packagesCount) {
   const mode = type === "pvz" ? 4 : 3;
   const matching = tariffsFor(cityCode, packagesCount).filter((t) => t.delivery_mode === mode);
   return matching.reduce((min, t) => (t.delivery_sum < min.delivery_sum ? t : min));
+}
+
+/** Сумма, которую покупатель платит за доставку: тариф плюс страховка объявленной стоимости. */
+export function expectedDeliveryCost(cityCode, type, packagesCount, declaredValue) {
+  return expectedTariff(cityCode, type, packagesCount).delivery_sum + insuranceFee(declaredValue);
 }

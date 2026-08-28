@@ -113,6 +113,9 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       cityCode: delivery.cityCode,
       type: delivery.type,
       packages: deriveShipmentPackages(items),
+      // Объявленная стоимость — сумма товаров по ценам Payload: ровно её мы укажем в
+      // items.cost при регистрации отправления, и страховой сбор СДЭК считает с неё же.
+      declaredValue: subtotal,
     });
   } catch (err) {
     console.error("[createOrderPayment] CDEK tariff recalculation failed:", err);

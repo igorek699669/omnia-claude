@@ -17,7 +17,7 @@
  */
 import http from "node:http";
 import net from "node:net";
-import { CITIES, PVZ, tariffsFor } from "./cdek-fixtures.mjs";
+import { CITIES, PVZ, tariffsFor, insuranceFee } from "./cdek-fixtures.mjs";
 
 const PORT = Number(process.env.MOCKS_PORT ?? 4010);
 const SMTP_PORT = Number(process.env.MOCKS_SMTP_PORT ?? 4025);
@@ -299,6 +299,38 @@ async function cdek(req, res, path, url, raw) {
     const packagesCount = Array.isArray(body.packages) ? body.packages.length : 1;
     state.requests.push({ kind: "cdek-tariff", cityCode, packagesCount, packages: body.packages });
     return json(res, 200, { tariff_codes: tariffsFor(Number(cityCode), packagesCount) });
+  }
+
+  // Расчёт по конкретному тарифу — здесь СДЭК добавляет к доставке услуги, и ради
+  // страховки объявленной стоимости приложение и делает этот второй запрос.
+  if (path === "/calculator/tariff") {
+    if (state.failures.has("cdek-tariff")) return json(res, 503, { message: "Service unavailable" });
+    const body = JSON.parse(raw);
+    const cityCode = Number(body.to_location?.code);
+    const packagesCount = Array.isArray(body.packages) ? body.packages.length : 1;
+    const tariff = tariffsFor(cityCode, packagesCount).find((t) => t.tariff_code === body.tariff_code);
+    if (!tariff) return json(res, 400, { errors: [{ code: "tariff_code", message: "Тариф недоступен" }] });
+
+    const insurance = (body.services ?? [])
+      .filter((s) => s.code === "INSURANCE")
+      .reduce((sum, s) => sum + insuranceFee(Number(s.parameter)), 0);
+
+    state.requests.push({
+      kind: "cdek-tariff-priced",
+      cityCode,
+      packagesCount,
+      packages: body.packages,
+      tariffCode: body.tariff_code,
+      services: body.services,
+    });
+    return json(res, 200, {
+      tariff_code: tariff.tariff_code,
+      delivery_sum: tariff.delivery_sum,
+      total_sum: tariff.delivery_sum + insurance,
+      period_min: tariff.period_min,
+      period_max: tariff.period_max,
+      services: (body.services ?? []).map((s) => ({ code: s.code, sum: insuranceFee(Number(s.parameter)) })),
+    });
   }
 
   if (path === "/orders" && req.method === "POST") {

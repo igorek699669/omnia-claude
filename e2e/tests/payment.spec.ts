@@ -1,5 +1,5 @@
 import { test, expect, waitForAppReady, type Shop, type Storefront, type SeededProduct } from "../fixtures";
-import { expectedTariff } from "../mocks/cdek-fixtures.mjs";
+import { expectedTariff, expectedDeliveryCost } from "../mocks/cdek-fixtures.mjs";
 
 /**
  * Всё, что происходит по факту оплаты: списание остатка, регистрация отправления в СДЭК и
@@ -56,6 +56,7 @@ test.describe("оплата заказа", () => {
   }) => {
     const product = seed.products.find((p) => p.slug === "e2e-kurd-10")!;
     const tariff = expectedTariff(MOSCOW, "pvz", 1);
+    const deliveryCost = expectedDeliveryCost(MOSCOW, "pvz", 1, product.price);
 
     const placed = await placeOrder(storefront, shop, product, phone);
     await storefront.payAtCheckout();
@@ -64,7 +65,7 @@ test.describe("оплата заказа", () => {
     await expect(page.getByRole("heading", { name: "Оплата прошла успешно" })).toBeVisible({ timeout: 30_000 });
 
     const order = await shop.waitForOrderStatus(placed.id, "paid");
-    expect(order.total).toBe(product.price + tariff.delivery_sum);
+    expect(order.total).toBe(product.price + deliveryCost);
 
     // Инструмент штучный — остаток уменьшился ровно на купленное.
     const stock = await shop.product(product.slug);
