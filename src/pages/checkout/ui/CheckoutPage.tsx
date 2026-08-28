@@ -137,10 +137,13 @@ export function CheckoutPage() {
   }
 
   return (
-    <section className="relative isolate flex min-h-[75vh] items-center justify-center overflow-hidden px-5 py-16">
+    <section className="relative isolate flex min-h-[75vh] items-stretch justify-center overflow-hidden sm:items-center sm:px-5 sm:py-16">
       <Backdrop />
 
-      <div className="relative w-full max-w-[620px] rounded-card bg-paper-50/95 p-8 shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] backdrop-blur-sm md:p-10">
+      {/* На телефоне форма занимает весь экран: карточка с полями, зажатая в скруглённый
+          блок поверх фона, читается как модальное окно и отнимает и без того дефицитную
+          ширину у полей. Скругления, тень и подложка остаются с sm и выше. */}
+      <div className="relative w-full bg-paper-50 px-5 py-8 sm:max-w-[620px] sm:rounded-card sm:bg-paper-50/95 sm:p-8 sm:shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] sm:backdrop-blur-sm md:p-10">
         {orderItems.length === 0 ? (
           <div>
             <SectionTitle className="text-[32px]">Оформление заказа</SectionTitle>
