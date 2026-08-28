@@ -13,9 +13,15 @@ test.describe("вход по звонку", () => {
     await page.getByPlaceholder("Телефон").pressSequentially(phone.replace("+7", ""), { delay: 20 });
     await page.getByRole("button", { name: "Продолжить" }).click();
 
-    // Номер для звонка выдаёт SMS.ru — приложение не придумывает его само.
+    // Номер для звонка выдаёт SMS.ru — приложение не придумывает его само. Показан он
+    // текстом (набирать с десктопа), а кнопка «Позвонить» ведёт на тот же номер: на
+    // мобильном по ней открывается набор.
     await expect(page.getByRole("heading", { name: "Позвоните нам" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "8-800-777-9999" })).toBeVisible();
+    await expect(page.getByText("8-800-777-9999")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Позвонить" })).toHaveAttribute(
+      "href",
+      "tel:+78007779999",
+    );
 
     await mocks.confirmCall(phone);
 
