@@ -15,8 +15,6 @@ export function AuthPage() {
   const [phone, setPhone] = useState("");
   const { start, isStarting, call, secondsLeft, reset } = useCallCheck(() => {
     setIsDone(true);
-    // Сессию поставил server action, а не authClient, поэтому клиентский стор о ней
-    // ещё не знает — без перечитывания эффект ниже не сработает и редиректа не будет.
     refetch();
   });
 
@@ -24,9 +22,6 @@ export function AuthPage() {
     if (session) router.replace("/profile");
   }, [session, router]);
 
-  // Пока сессия проверяется — форму не показываем: иначе уже вошедший пользователь
-  // на миг видит экран входа, и его тут же уносит в кабинет. Готовый вход исключён:
-  // там сессия уже появилась, и DoneStep сам сообщает о переходе в кабинет.
   const isCheckingSession = !isDone && (isPending || Boolean(session));
 
   return (

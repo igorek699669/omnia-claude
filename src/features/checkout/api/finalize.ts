@@ -47,9 +47,6 @@ export async function finalizePaidOrder(orderId: number | string): Promise<Final
 
   if (order.status === "paid" || order.status === "cancelled") return "already-final";
 
-  // Остаток перепроверяем здесь, а не доверяем проверке с чекаута: между оформлением и
-  // оплатой инструмент мог уехать другому покупателю. Резерв в stock.ts делает это редким,
-  // но именно на этом шаге решается, есть ли товар физически.
   const products = new Map<string, ProductStockDoc>();
   const shortages: string[] = [];
   for (const item of order.items) {
@@ -63,26 +60,13 @@ export async function finalizePaidOrder(orderId: number | string): Promise<Final
     }
   }
 
-  // Товара не хватило — заказ всё равно проводим, а решение оставляем продавцу. Инструменты
-  // делаются руками, и покупатель, который уже заплатил, чаще готов подождать новый, чем
-  // получить деньги обратно. Автоматический возврат отнял бы этот разговор; вместо него —
-  // громкий лог и отдельная строка в письме продавцу.
-  if (shortages.length > 0) {
-    console.error(
-      `[finalize] заказ ${order.id} оплачен, но товара не хватает: ${shortages.join(", ")} — свяжитесь с покупателем`,
-    );
-  }
-
   for (const item of order.items) {
     const product = products.get(String(item.product))!;
-    // Ниже нуля не уходим: отрицательный остаток сломал бы витрину и все дальнейшие проверки.
     const nextQty = Math.max(0, (product.stockQty ?? 0) - item.qty);
     await payload.update({ collection: "products", id: item.product, data: { stockQty: nextQty } });
   }
   await payload.update({ collection: "orders", id: order.id, data: { status: "paid" } });
 
-  // Дальше — то, что не должно откатывать оплату. Каждый шаг в своём try: сбой СДЭК не
-  // должен лишить покупателя письма, а сбой почты — оставить заказ без отправления.
   try {
     await registerCdekShipment(order.id);
   } catch (err) {

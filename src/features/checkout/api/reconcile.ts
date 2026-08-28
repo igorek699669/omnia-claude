@@ -112,8 +112,6 @@ export async function reconcileCustomerOrders(customerId: string, now = Date.now
     const payload = await getPayload({ config });
     const cutoff = new Date(now - PAYMENT_SETTLE_WINDOW_MS).toISOString();
 
-    // Только незакрытые и недавние: висящий третьи сутки pending — брошенная корзина,
-    // дёргать по нему платёжный API на каждый заход в профиль незачем.
     const pending = await payload.find({
       collection: "orders",
       where: {

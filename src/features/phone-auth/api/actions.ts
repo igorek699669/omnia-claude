@@ -30,8 +30,6 @@ export interface ConfirmResult {
 export async function startPhoneCall(phone: string): Promise<StartResult> {
   if (!PHONE_RE.test(phone)) return { error: "Некорректный номер телефона" };
 
-  // Лимит до обращения к SMS.ru: проверка там платная, и отказать нужно раньше, чем
-  // она заведётся (см. rate-limit.ts).
   const verdict = takePhoneCallAttempt(phone, clientIp(await headers()));
   if (!verdict.allowed) {
     const minutes = Math.max(1, Math.ceil((verdict.retryAfterMs ?? 0) / 60_000));
