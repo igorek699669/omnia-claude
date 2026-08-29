@@ -41,7 +41,10 @@ export function CheckoutPage() {
 
   const selectedIds = useCart((s) => s.selectedIds);
 
-  const orderItems = selectedIds ? items.filter((i) => selectedIds.includes(i.productId)) : items;
+  // Пустой выбор трактуем как всю корзину: снять все галочки покупатель может, а прийти
+  // сюда по прямой ссылке — тоже, и тогда он увидел бы пустой заказ при непустой корзине.
+  const chosen = selectedIds ? items.filter((i) => selectedIds.includes(i.productId)) : items;
+  const orderItems = chosen.length > 0 ? chosen : items;
 
   const orderForm = useForm<OrderValues>({
     resolver: zodResolver(orderSchema),

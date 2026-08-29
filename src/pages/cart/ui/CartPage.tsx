@@ -1,53 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice, reachGoal, GOALS } from "@/shared/lib";
 import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt, TrashIcon } from "@/shared/ui";
 
 export function CartPage() {
-  const { items, setQty, remove, select } = useCart();
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const seenIds = useRef<Set<string>>(new Set());
+  const { items, selectedIds, setQty, remove, select } = useCart();
 
-  // Новые товары (в т.ч. подгруженные из localStorage при гидратации) выбраны по умолчанию.
-  useEffect(() => {
-    const unseen = items.filter((i) => !seenIds.current.has(i.productId));
-    if (unseen.length === 0) return;
-    unseen.forEach((i) => seenIds.current.add(i.productId));
-    setSelected((prev) => {
-      const next = new Set(prev);
-      unseen.forEach((i) => next.add(i.productId));
-      return next;
-    });
-  }, [items]);
+  // null — покупатель ещё ничего не отмечал: тогда выбрана вся корзина, включая только что
+  // добавленный товар. Так же это читает и чекаут, поэтому отдельного состояния тут нет.
+  const selected = new Set(selectedIds ?? items.map((i) => i.productId));
 
   function toggleOne(productId: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(productId)) next.delete(productId);
-      else next.add(productId);
-      return next;
-    });
+    const next = new Set(selected);
+    if (next.has(productId)) next.delete(productId);
+    else next.add(productId);
+    select([...next]);
   }
 
   function toggleAll() {
-    setSelected((prev) => (prev.size === items.length ? new Set() : new Set(items.map((i) => i.productId))));
-  }
-
-  function handleRemove(productId: string) {
-    remove(productId);
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.delete(productId);
-      return next;
-    });
+    select(selected.size === items.length ? [] : items.map((i) => i.productId));
   }
 
   function removeSelected() {
     selected.forEach((id) => remove(id));
-    setSelected(new Set());
   }
 
   const selectedItems = items.filter((i) => selected.has(i.productId));
@@ -131,7 +108,7 @@ export function CartPage() {
                       <span className="w-6 text-center font-medium">{item.qty}</span>
                       <QtyBtn onClick={() => setQty(item.productId, item.qty + 1)}>+</QtyBtn>
                       <button
-                        onClick={() => handleRemove(item.productId)}
+                        onClick={() => remove(item.productId)}
                         aria-label={`Убрать «${item.name}» из корзины`}
                         className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-ink-900/15 text-ink-600 transition-colors hover:border-brand hover:text-brand-dark"
                       >
@@ -173,14 +150,7 @@ export function CartPage() {
               <ArrowLink
                 href="/checkout"
                 className="w-full justify-center sm:w-auto lg:w-full"
-                onClick={() => {
-                  reachGoal(GOALS.checkoutStarted, { items: selectedQty });
-                  try {
-                    select([...selected]);
-                  } catch {
-                    // ignore
-                  }
-                }}
+                onClick={() => reachGoal(GOALS.checkoutStarted, { items: selectedQty })}
               >
                 Оформить заказ{selectedQty > 0 ? ` (${selectedQty})` : ""}
               </ArrowLink>
