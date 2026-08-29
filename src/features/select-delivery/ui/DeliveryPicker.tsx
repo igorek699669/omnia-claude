@@ -5,10 +5,15 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { SectionTitle, Tabs, TabsList, TabsTrigger, TabsContent, Backdrop, LegalLinks, Combobox, ArrowLeftIcon } from "@/shared/ui";
 import { formatPrice, DELIVERY_PROVIDER_LABELS, useDebouncedEffect } from "@/shared/lib";
-import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
-import { searchCitySuggestions, getPvzPointsByCity, calculateDeliveryCost } from "../api/actions";
+import type { CdekCityMatch, CdekTariff, DadataAddress } from "@/shared/lib";
+import {
+  searchCitySuggestions,
+  searchAddressSuggestions,
+  getPvzPointsByCity,
+  calculateDeliveryCost,
+} from "../api/actions";
 import { PvzMap } from "./PvzMap";
-import { CITY_SEARCH_MIN_CHARS } from "../model/types";
+import { CITY_SEARCH_MIN_CHARS, ADDRESS_SEARCH_MIN_CHARS } from "../model/types";
 import type { Delivery, Pvz } from "../model/types";
 
 function errorMessage(error: unknown, fallback: string): string {
@@ -63,6 +68,17 @@ export function DeliveryPicker({
   } = useMutation({
     mutationFn: (query: string) => searchCitySuggestions(query),
     onError: () => toast.error(CITY_SEARCH_ERROR),
+  });
+
+  // Подсказки улицы и дома в выбранном городе. Ошибку не показываем: без ДаData поле
+  // работает как обычный ввод, а полноту адреса проверит сервер при создании заказа.
+  const {
+    mutate: searchAddresses,
+    data: addressSuggestions,
+    isPending: isSearchingAddresses,
+  } = useMutation({
+    mutationFn: ({ city, query }: { city: string; query: string }) =>
+      searchAddressSuggestions(city, query),
   });
 
   const {
@@ -124,6 +140,17 @@ export function DeliveryPicker({
       if (query.length >= CITY_SEARCH_MIN_CHARS) searchCourierCities(query);
     },
     [courierQuery],
+    CITY_SEARCH_DELAY_MS,
+  );
+
+  useDebouncedEffect(
+    () => {
+      const query = address.trim();
+      if (courierCity && query.length >= ADDRESS_SEARCH_MIN_CHARS) {
+        searchAddresses({ city: courierCity.city, query });
+      }
+    },
+    [address, courierCity],
     CITY_SEARCH_DELAY_MS,
   );
 
@@ -277,17 +304,24 @@ export function DeliveryPicker({
               minChars={CITY_SEARCH_MIN_CHARS}
               placeholder="Город"
             />
-            <div className="flex items-center gap-3 rounded-input border border-ink-900/18 bg-white px-5 py-3.5">
-              <input
-                value={address}
-                onChange={(e) => {
-                  setAddress(e.target.value);
-                  setCourierTariff(null);
-                }}
-                className="w-full min-w-0 flex-1 bg-transparent text-base outline-none"
-                placeholder="Улица, дом, квартира"
-              />
-            </div>
+            <Combobox
+              value={address}
+              onValueChange={(value) => {
+                setAddress(value);
+                setCourierTariff(null);
+              }}
+              items={addressSuggestions ?? []}
+              getItemKey={(a: DadataAddress) => a.full}
+              getItemLabel={(a: DadataAddress) => a.value}
+              onSelect={(a: DadataAddress) => {
+                setAddress(a.value);
+                setCourierTariff(null);
+              }}
+              isLoading={isSearchingAddresses}
+              minChars={ADDRESS_SEARCH_MIN_CHARS}
+              placeholder="Улица, дом, квартира"
+              disabled={!courierCity}
+            />
 
             <button
               type="button"

@@ -5,6 +5,9 @@ export type { DeliveryProvider, DeliveryType };
 // Порог для живых подсказок города (клиент и сервер должны совпадать — см. DeliveryPicker.tsx и actions.ts).
 export const CITY_SEARCH_MIN_CHARS = 2;
 
+/** Порог для подсказок улицы: с двух букв ДаData отдаёт весь город. */
+export const ADDRESS_SEARCH_MIN_CHARS = 3;
+
 export interface Pvz {
   provider: DeliveryProvider;
   code: string;

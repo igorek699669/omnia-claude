@@ -14,6 +14,8 @@ import {
   clientIp,
   siteUrl,
   CONSENT_TEXT_VERSION,
+  isDadataConfigured,
+  suggestDadataAddresses,
 } from "@/shared/lib";
 import type { CdekTariff } from "@/shared/lib";
 
@@ -93,6 +95,32 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     } catch (err) {
       console.error("[createOrderPayment] CDEK pickup point lookup failed:", err);
       return { error: "Не удалось проверить пункт выдачи. Попробуйте ещё раз." };
+    }
+  }
+
+  // У курьера адрес набран руками, и дальше он уходит в СДЭК как есть. Сверяем по ГАР, что
+  // такой дом в городе существует: несуществующий всплыл бы уже после оплаты — отправление
+  // не зарегистрировалось бы вовсе или поехало бы в никуда.
+  if (delivery.type === "courier" && isDadataConfigured()) {
+    try {
+      // В address город уже приклеен спереди — ищем по остатку, город задан отдельным полем.
+      const prefix = `${delivery.city},`;
+      const street = delivery.address.toLowerCase().startsWith(prefix.toLowerCase())
+        ? delivery.address.slice(prefix.length).trim()
+        : delivery.address;
+      const matches = await suggestDadataAddresses(delivery.city, street, 1);
+      // Пустой ответ — тоже отказ: на выдуманную улицу ДаData не отдаёт ничего, а не «улицу
+      // без дома», и пропускать такое значит не проверять ничего. Подсказки в поле адреса
+      // ведут покупателя к варианту из реестра, так что дойти сюда можно только вводом руками.
+      if (matches.length === 0) {
+        return { error: "Не нашли такой адрес — выберите вариант из подсказок" };
+      }
+      if (!matches[0].hasHouse) {
+        return { error: "Уточните адрес: нужны улица и номер дома" };
+      }
+    } catch (err) {
+      // Сбой самой ДаData адрес виноватым не делает — заказ проходит, как и до проверки.
+      console.error("[createOrderPayment] проверка адреса в ДаData не удалась:", err);
     }
   }
 

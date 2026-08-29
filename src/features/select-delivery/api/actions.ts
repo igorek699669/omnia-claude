@@ -2,9 +2,15 @@
 
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { suggestCdekCities, getCdekPvzPoints, calculateCdekTariff, deriveShipmentPackages } from "@/shared/lib";
-import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
-import { CITY_SEARCH_MIN_CHARS } from "../model/types";
+import {
+  suggestCdekCities,
+  getCdekPvzPoints,
+  calculateCdekTariff,
+  deriveShipmentPackages,
+  suggestDadataAddresses,
+} from "@/shared/lib";
+import type { CdekCityMatch, CdekTariff, DadataAddress } from "@/shared/lib";
+import { CITY_SEARCH_MIN_CHARS, ADDRESS_SEARCH_MIN_CHARS } from "../model/types";
 import { TOP_RU_CITIES } from "../model/topCities";
 import type { DeliveryType, Pvz } from "../model/types";
 
@@ -28,6 +34,23 @@ export async function searchCitySuggestions(query: string): Promise<CdekCityMatc
   }));
   ranked.sort((a, b) => Number(b.isTop) - Number(a.isTop));
   return ranked.slice(0, 8).map((m) => m.city);
+}
+
+/**
+ * Подсказки улицы и дома внутри выбранного города. Сбой ДаData гасим: подсказки — помощь
+ * покупателю, и без них поле остаётся обычным вводом, а адрес всё равно сверит сервер
+ * при создании заказа.
+ */
+export async function searchAddressSuggestions(city: string, query: string): Promise<DadataAddress[]> {
+  const q = query.trim();
+  if (!city || q.length < ADDRESS_SEARCH_MIN_CHARS) return [];
+
+  try {
+    return await suggestDadataAddresses(city, q);
+  } catch (err) {
+    console.error("[dadata] не удалось получить подсказки адреса:", err);
+    return [];
+  }
 }
 
 export async function getPvzPointsByCity(cityCode: number): Promise<Pvz[]> {

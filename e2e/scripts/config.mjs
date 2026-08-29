@@ -40,6 +40,9 @@ export const E2E_ENV = {
   CDEK_ACCOUNT: "e2e-account",
   CDEK_SECURE_PASSWORD: "e2e-password",
   CDEK_SHIPMENT_POINT: "",
+  // Пусто — иначе локальный прогон подхватил бы ключ из .env.local, и проверка адреса
+  // курьерской доставки пошла бы в живую ДаData: внешний сервис в тестах не участвует.
+  DADATA_API_KEY: "",
 
   SMTP_HOST: "127.0.0.1",
   SMTP_PORT: String(MOCKS_SMTP_PORT),

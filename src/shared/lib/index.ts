@@ -48,3 +48,5 @@ export type { DeliveryProvider, DeliveryType } from "./delivery-providers";
 export { useBreakpoints } from "./useBreakpoints";
 export type { Breakpoints } from "./useBreakpoints";
 export { useDebouncedEffect } from "./useDebouncedEffect";
+export { suggestDadataAddresses, isDadataConfigured } from "./dadata";
+export type { DadataAddress } from "./dadata";
