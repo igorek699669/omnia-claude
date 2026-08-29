@@ -4,8 +4,9 @@ import {
   CONTACT_PHONE_HREF,
   CONTACT_EMAIL,
   CONTACT_EMAIL_HREF,
+  GOALS,
 } from "@/shared/lib";
-import { MESSENGERS } from "@/shared/ui";
+import { GoalLink, MESSENGERS } from "@/shared/ui";
 
 const [emailLocalPart, emailDomain] = CONTACT_EMAIL.split("@");
 
@@ -39,21 +40,31 @@ export function Footer() {
               Связаться
             </h4>
             <p className="text-[13px] text-paper-50/50">Номер телефона</p>
-            <a href={CONTACT_PHONE_HREF} className="font-display text-[22px] transition-colors hover:text-brand">
+            <GoalLink
+              href={CONTACT_PHONE_HREF}
+              goal={GOALS.phoneClick}
+              params={{ place: "footer" }}
+              className="font-display text-[22px] transition-colors hover:text-brand"
+            >
               {CONTACT_PHONE}
-            </a>
+            </GoalLink>
             <p className="mt-3">
               {/* Почта — одно длинное «слово»: в узкой колонке на мобиле она вылезала за край.
                   <wbr/> после @ даёт красивую точку переноса, break-words — страховка для совсем узких экранов. */}
-              <a href={CONTACT_EMAIL_HREF} className="text-[15px] break-words transition-colors hover:text-brand">
+              <GoalLink
+                href={CONTACT_EMAIL_HREF}
+                goal={GOALS.messengerClick}
+                params={{ channel: "email", place: "footer" }}
+                className="text-[15px] break-words transition-colors hover:text-brand"
+              >
                 {emailLocalPart}@<wbr />
                 {emailDomain}
-              </a>
+              </GoalLink>
             </p>
             <p className="mt-5 text-[13px] text-paper-50/50">Мы на связи в соцсетях</p>
             <div className="mt-3 flex gap-2.5">
               {MESSENGERS.map(({ id, label, href, Icon }) => (
-                <Social key={id} label={label} href={href}>
+                <Social key={id} label={label} href={href} channel={id}>
                   <Icon size={17} />
                 </Social>
               ))}
@@ -90,20 +101,24 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
 function Social({
   label,
   href,
+  channel,
   children,
 }: {
   label: string;
   href: string;
+  channel: string;
   children: React.ReactNode;
 }) {
   return (
-    <a
+    <GoalLink
       href={href}
       aria-label={label}
+      goal={GOALS.messengerClick}
+      params={{ channel, place: "footer" }}
       {...(href !== "#" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className="grid size-9.5 place-items-center rounded-full border border-paper-50/25 transition-colors hover:border-brand hover:text-brand"
     >
       {children}
-    </a>
+    </GoalLink>
   );
 }
