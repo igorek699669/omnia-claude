@@ -16,9 +16,7 @@ export interface PendingCall {
   ticket: string;
 }
 
-/**
- * Заводит проверку номера звонком и опрашивает её до подтверждения или до конца пятиминутки.
- */
+/** Заводит проверку звонком и опрашивает её до подтверждения или конца пятиминутки. */
 export function useCallCheck(onConfirmed: () => void) {
   const [call, setCall] = useState<PendingCall | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(WINDOW_SECONDS);
@@ -53,8 +51,7 @@ export function useCallCheck(onConfirmed: () => void) {
   const reset = useCallback(() => setCall(null), []);
 
   const { data: check } = useQuery({
-    // Ключ по билету: следующая попытка — другой билет, а значит чистый запрос,
-    // без шанса мгновенно получить ответ от предыдущей.
+    // Ключ по билету: следующая попытка — другой билет, а значит чистый запрос.
     queryKey: ["phone-call-check", call?.ticket],
     queryFn: () => confirmPhoneByCall(call!.ticket),
     enabled: Boolean(call),
@@ -67,8 +64,7 @@ export function useCallCheck(onConfirmed: () => void) {
   });
 
   // Ожидание закончилось, как только пришёл ответ, который что-то решает. Отдельным
-  // состоянием это не дублируем: зеркалить ответ запроса в useState — лишний рендер и
-  // риск, что копия разойдётся с оригиналом.
+  // состоянием не дублируем: зеркалить ответ в useState — лишний рендер и риск расхождения.
   const isFinished = Boolean(check?.confirmed || check?.error);
   const pendingCall = isFinished ? null : call;
 
@@ -84,8 +80,8 @@ export function useCallCheck(onConfirmed: () => void) {
   useEffect(() => {
     if (!pendingCall) return;
 
-    // Считаем от метки времени, а не вычитанием по секунде: в свёрнутой вкладке браузер
-    // придерживает таймеры, и счётчик разошёлся бы с реальной пятиминуткой у SMS.ru.
+    // Считаем от метки времени: в свёрнутой вкладке браузер придерживает таймеры, и
+    // счётчик разошёлся бы с реальной пятиминуткой у SMS.ru.
     const deadline = Date.now() + WINDOW_SECONDS * 1000;
     const tick = setInterval(() => {
       const left = Math.max(0, Math.round((deadline - Date.now()) / 1000));

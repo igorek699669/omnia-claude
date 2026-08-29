@@ -14,10 +14,7 @@ interface CreatePaymentParams {
   metadata?: Record<string, string>;
 }
 
-/**
- * Боевой адрес ЮKassa. Переопределяется только в E2E (e2e/mocks) — там вместо настоящего
- * API отвечает локальная заглушка, иначе прогон пайплайна создавал бы реальные платежи.
- */
+/** Боевой адрес. Переопределяется только в E2E — иначе прогон создавал бы реальные платежи. */
 function apiUrl(): string {
   return process.env.YOOKASSA_API_URL ?? "https://api.yookassa.ru/v3";
 }
@@ -54,8 +51,8 @@ export async function createYookassaPayment(params: CreatePaymentParams): Promis
 }
 
 /**
- * Вебхуки ЮKassa не подписаны (нет HMAC) — единственный надёжный способ проверки
- * события — перезапросить платёж по id своим секретным ключом и доверять только этому ответу.
+ * Вебхуки ЮKassa не подписаны — единственная надёжная проверка события: перезапросить платёж
+ * по id своим секретным ключом и верить только этому ответу.
  */
 export async function getYookassaPayment(paymentId: string): Promise<YookassaPayment> {
   const res = await fetch(`${apiUrl()}/payments/${paymentId}`, {

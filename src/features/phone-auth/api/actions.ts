@@ -23,10 +23,7 @@ export interface ConfirmResult {
   error?: string;
 }
 
-/**
- * Заводит проверку номера и отдаёт телефон, на который покупатель должен позвонить.
- * Номер приходит уже нормализованным в E.164 (normalizePhone на клиенте).
- */
+/** Заводит проверку и отдаёт телефон для звонка. Номер приходит уже в E.164. */
 export async function startPhoneCall(phone: string): Promise<StartResult> {
   if (!PHONE_RE.test(phone)) return { error: "Некорректный номер телефона" };
 
@@ -47,9 +44,7 @@ export async function startPhoneCall(phone: string): Promise<StartResult> {
 
 /**
  * Спрашивает SMS.ru, дозвонился ли покупатель. Если да — заводит пользователя (при первом
- * входе) и выдаёт сессию силами Better Auth.
- *
- * Клиент дёргает это раз в несколько секунд, пока не придёт confirmed или не выйдет время.
+ * входе) и выдаёт сессию силами Better Auth. Клиент дёргает это раз в несколько секунд.
  */
 export async function confirmPhoneByCall(ticket: string): Promise<ConfirmResult> {
   const payload = readTicket(ticket);
@@ -64,10 +59,9 @@ export async function confirmPhoneByCall(ticket: string): Promise<ConfirmResult>
   }
   if (status !== CHECK_CONFIRMED) return { confirmed: false };
 
-  // Номер подтверждён звонком. Дальше — штатный путь Better Auth: он сам заведёт
-  // пользователя по signUpOnVerification, пометит номер подтверждённым и поставит cookie.
-  // Код нигде не показывается — сервер генерирует его и тут же проверяет сам,
-  // подробности в комментарии к takeGeneratedOtp в auth.ts.
+  // Дальше штатный путь Better Auth: он сам заведёт пользователя по signUpOnVerification,
+  // пометит номер подтверждённым и поставит cookie. Код нигде не показывается — сервер
+  // генерирует его и тут же проверяет сам, подробности у takeGeneratedOtp в auth.ts.
   const requestHeaders = await headers();
   try {
     await auth.api.sendPhoneNumberOTP({ body: { phoneNumber: payload.phone } });

@@ -4,8 +4,8 @@ import config from "@payload-config";
 import type { Product } from "../model/types";
 
 /**
- * Ручная форма документа products из Payload — без зависимости от payload-types.ts
- * (генерация типов через CLI сейчас недоступна на Windows, см. payloadcms/payload#16378).
+ * Ручная форма документа products — без зависимости от payload-types.ts: генерация типов
+ * через CLI недоступна на Windows (payloadcms/payload#16378).
  */
 interface MediaDoc {
   id: number | string;

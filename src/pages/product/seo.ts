@@ -10,10 +10,7 @@ import {
 } from "@/entities/product";
 import { formatPrice, siteUrl, DEFAULT_OG_IMAGE } from "@/shared/lib";
 
-/**
- * Замер по 34 сайтам: заголовок длиннее 64 знаков обрезается в выдаче всегда,
- * рабочий запас — 55–62, главное слово в первых 30.
- */
+/** Замер по 34 сайтам: длиннее 64 знаков выдача режет всегда, рабочий запас — 55–62. */
 const TITLE_LIMIT = 62;
 
 /** «Ханг D Kurd 11 — 11 нот, ре минор, 87 990 ₽» — модель, размер, строй и цена. */
@@ -29,10 +26,8 @@ function title(product: Product): string {
 }
 
 /**
- * Описание, которое видно и в выдаче, и в превью ссылки, — из реальных полей инструмента.
- *
- * Держим 180–240 знаков и главное в первых 120: Яндекс берёт описание дословно примерно
- * у каждой восьмой страницы, в остальных режет свой кусок, и запас всё равно нужен.
+ * Описание для выдачи и превью ссылки. Держим 180–240 знаков и главное в первых 120: Яндекс
+ * берёт описание дословно примерно у каждой восьмой страницы, в остальных режет свой кусок.
  */
 function describe(product: Product): string {
   const { model, scaleRu } = parseProductName(product.name);
@@ -48,10 +43,7 @@ function describe(product: Product): string {
   ].join(" ");
 }
 
-/**
- * Метаданные карточки товара. Живут в слайсе, а не в app/: по правилу проекта роут — одна
- * строка ре-экспорта, а данные для заголовка всё равно тянутся тем же getProductBySlug.
- */
+/** Метаданные карточки. В слайсе, а не в app/: роут по правилу проекта — одна строка. */
 export async function generateProductMetadata({
   params,
 }: {
@@ -65,8 +57,7 @@ export async function generateProductMetadata({
   const url = `/product/${product.slug}`;
 
   return {
-    // absolute — потому что шаблон layout добавляет « — Omnia», а в карточке это восемь
-    // знаков из шестидесяти четырёх, которые Яндекс из хвоста всё равно вырезает сам.
+    // absolute — иначе шаблон layout добавит « — Omnia», а это восемь знаков из лимита.
     title: { absolute: title(product) },
     description,
     alternates: { canonical: url },
@@ -74,9 +65,8 @@ export async function generateProductMetadata({
       title: `${product.name} — Omnia`,
       description,
       url,
-      // Свой кадр инструмента вместо общей картинки сайта: в ленте видно именно то, чем
-      // делятся. Фолбэк указываем явно — Next заменяет родительский openGraph целиком,
-      // а не дополняет его, и без этой строки карточка без фото осталась бы без превью.
+      // Свой кадр вместо общей картинки сайта. Фолбэк явно: Next заменяет родительский
+      // openGraph целиком, и без этой строки товар без фото остался бы без превью.
       images: product.media[0]
         ? [{ url: product.media[0].url, alt: product.media[0].alt }]
         : [DEFAULT_OG_IMAGE],
@@ -84,10 +74,7 @@ export async function generateProductMetadata({
   };
 }
 
-/**
- * Разметка Product для поисковиков: цена, наличие и характеристики отдельными полями.
- * Без неё выдача показывает только заголовок, с ней — цену и «в наличии» прямо в сниппете.
- */
+/** Разметка Product: без неё в выдаче только заголовок, с ней — цена и «в наличии». */
 export function productJsonLd(product: Product): string {
   const base = siteUrl();
 
@@ -107,16 +94,14 @@ export function productJsonLd(product: Product): string {
       url: new URL(`/product/${product.slug}`, base).toString(),
       priceCurrency: "RUB",
       price: product.price,
-      // BackOrder, а не OutOfStock: справка Вебмастера прямо пишет, что при «нет в наличии»
-      // цена в выдаче не отображается, а на экране у такого товара стоит «Под заказ» —
-      // расхождения между разметкой и надписью нет, и это ровно наш случай.
+      // BackOrder, а не OutOfStock: при «нет в наличии» Яндекс не показывает цену, а на
+      // экране у такого товара и так стоит «Под заказ» — расхождения с разметкой нет.
       availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@type": "Organization", name: "Omnia" },
     },
   };
 
-  // Разметка уходит внутрь <script>, поэтому «<» экранируем: название товара приходит из
-  // админки, и закрывающий тег в нём оборвал бы скрипт.
+  // Экранируем «<»: название приходит из админки и закрывающим тегом оборвало бы <script>.
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }

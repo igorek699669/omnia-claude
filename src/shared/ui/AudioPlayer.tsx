@@ -52,10 +52,9 @@ function useAudioPlayer(src: string | undefined, preload: "none" | "metadata" = 
     <audio
       ref={audioRef}
       src={src}
-      // "metadata" на странице каталога означало бы десятки одновременных запросов
-      // (по одному на карточку), упирающихся в лимит браузера на соединения к одному
-      // origin — часть плееров зависала с length=0, потому что их запрос на метаданные
-      // просто не успевал стартовать. Грузим только когда реально нажали play.
+      // "metadata" в каталоге означало бы десятки одновременных запросов (по одному на
+      // карточку) в лимит браузера на соединения к одному origin — часть плееров зависала
+      // с length=0. Грузим только когда реально нажали play.
       preload={preload}
       onPlay={(e) => {
         if (activeAudio && activeAudio !== e.currentTarget) activeAudio.pause();
@@ -145,8 +144,7 @@ export function AudioPlayerBar({ src, className = "" }: { src?: string; classNam
 }
 
 function AudioPlayerBarInner({ src, className }: { src: string; className: string }) {
-  // Единственный плеер на странице товара — можно грузить метаданные сразу,
-  // без риска забить лимит соединений (в отличие от карточек в каталоге).
+  // Единственный плеер на странице — метаданные можно грузить сразу, лимит не забьётся.
   const { audioEl, playing, current, duration, toggle, seek } = useAudioPlayer(src, "metadata");
 
   return (

@@ -44,10 +44,9 @@ function readBreakpoints(): Breakpoints {
 }
 
 /**
- * Брейкпоинты Tailwind (sm/md/lg/xl/2xl) плюс семантические isMobile/isTablet/isDesktop.
- * До монтирования реальная ширина неизвестна — возвращает null, чтобы вызывающий код
- * мог осознанно решить, что рендерить на сервере/до гидратации (не показывать сразу
- * оба варианта разметки).
+ * Брейкпоинты Tailwind плюс семантические isMobile/isTablet/isDesktop. До монтирования
+ * ширина неизвестна — возвращает null, чтобы вызывающий сам решил, что рендерить до
+ * гидратации, а не показывал сразу оба варианта разметки.
  */
 export function useBreakpoints(): Breakpoints | null {
   const [breakpoints, setBreakpoints] = useState<Breakpoints | null>(null);

@@ -21,9 +21,8 @@ export async function subscribeToRestock(
   try {
     const payload = await getPayload({ config });
 
-    // С клиента id приходит строкой (Product.id — string), а в Postgres он числовой.
-    // Валидация relationship в Payload строку не приводит к числу и роняет create,
-    // поэтому берём нативный id из самого документа — заодно проверяем, что товар есть.
+    // С клиента id приходит строкой, а в Postgres он числовой, и валидация relationship
+    // строку не приводит — берём нативный id из документа, заодно проверяя, что товар есть.
     let product: { id: number | string };
     try {
       product = await payload.findByID({

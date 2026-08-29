@@ -12,18 +12,16 @@ function normalizeCityName(text: string): string {
   return text.trim().toLowerCase().replace(/ё/g, "е");
 }
 
-// Живой фильтр СДЭК (/location/cities?city=...) матчит только полные названия, поэтому
-// подсказки берём с /location/suggest/cities (см. suggestCdekCities) — он понимает
-// неполный ввод и сразу отдаёт настоящий code, резолвить город по строке не нужно.
+// /location/cities матчит только полные названия, поэтому подсказки берём с
+// /location/suggest/cities — он понимает неполный ввод и сразу отдаёт настоящий code.
 export async function searchCitySuggestions(query: string): Promise<CdekCityMatch[]> {
   const q = normalizeCityName(query);
   if (q.length < CITY_SEARCH_MIN_CHARS) return [];
 
   const cities = await suggestCdekCities(q);
 
-  // Города из топ-50 по населению — всегда выше остальных совпадений: СДЭК ранжирует
-  // выдачу по-своему, и рядом с «Брянском» легко всплывает посёлок «Брянка», который
-  // покупателю почти наверняка не нужен.
+  // Топ-50 по населению — всегда выше остальных: СДЭК ранжирует по-своему, и рядом с
+  // «Брянском» легко всплывает посёлок «Брянка».
   const ranked = cities.map((city) => ({
     city,
     isTop: TOP_RU_CITIES.has(normalizeCityName(city.city)),
@@ -53,10 +51,8 @@ export interface CalculateDeliveryCostInput {
 
 /**
  * Возвращает не только сумму, но и код тарифа: по нему после оплаты регистрируется
- * отправление, и он обязан совпадать с тем, по которому покупателю показали цену.
- *
- * Город принимаем кодом, а не названием: он уже известен из выбранной подсказки, так что
- * лишний резолв по строке только добавлял бы риск попасть в город-тёзку.
+ * отправление, и он обязан совпадать с тем, по которому показали цену. Город принимаем
+ * кодом — он известен из выбранной подсказки, а резолв по строке попал бы в город-тёзку.
  */
 export async function calculateDeliveryCost(input: CalculateDeliveryCostInput): Promise<CdekTariff> {
   const packages = deriveShipmentPackages(input.items);
@@ -69,14 +65,11 @@ export async function calculateDeliveryCost(input: CalculateDeliveryCostInput): 
 }
 
 /**
- * Объявленная стоимость вложения — сумма товаров по ценам из Payload.
+ * Объявленная стоимость вложения — сумма товаров по ценам из Payload: она уходит в страховой
+ * сбор СДЭК, то есть влияет на деньги, а из корзины сюда приходят только id и количество.
  *
- * Именно она уходит в страховой сбор СДЭК, то есть влияет на деньги, поэтому цену берём
- * из базы, а не из корзины в браузере: из неё сюда приходят только id и количество.
- * Так же поступает и чекаут при финальном пересчёте, и суммы совпадают.
- *
- * Товара с таким id может уже не быть — считаем его нулём и молчим: наличие и цену
- * проверит createOrderPayment, а расчёт доставки не место для отказа в заказе.
+ * Товара с таким id может уже не быть — считаем его нулём и молчим: наличие и цену проверит
+ * createOrderPayment, а расчёт доставки не место для отказа в заказе.
  */
 async function declaredValueOf(items: CalculateDeliveryCostInput["items"]): Promise<number> {
   const payload = await getPayload({ config });

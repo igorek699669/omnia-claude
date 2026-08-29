@@ -20,23 +20,18 @@ interface ShipmentOrderDoc {
   items: { product: { id: number | string; name: string } | number | string; qty: number; price: number }[];
 }
 
-// В заказе телефон лежит в том виде, в каком его набрали в форме («+7 (900) 000-00-00»).
-// СДЭК ожидает номер без разметки.
+// В заказе телефон лежит как его набрали в форме, СДЭК ожидает номер без разметки.
 function normalizePhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   return digits.startsWith("8") ? `+7${digits.slice(1)}` : `+${digits}`;
 }
 
 /**
- * Регистрирует отправление в СДЭК по уже оплаченному заказу.
+ * Регистрирует отправление по уже оплаченному заказу. Зовётся из вебхука ЮKassa: до оплаты
+ * нельзя, иначе на каждый брошенный заказ у продавца висела бы накладная.
  *
- * Вызывается из вебхука ЮKassa после перевода заказа в "paid" — до оплаты создавать
- * отправление нельзя, иначе на каждый брошенный на странице оплаты заказ у продавца
- * висела бы накладная.
- *
- * Идемпотентна на двух уровнях: заказ с уже проставленным cdekUuid пропускается, а если
- * запись до СДЭК дошла, но до нас нет, повторную попытку отобьёт сам СДЭК — number заказа
- * у него уникален.
+ * Идемпотентна дважды: заказ с cdekUuid пропускается, а дошедшую до СДЭК, но не до нас
+ * запись отобьёт сам СДЭК — number заказа у него уникален.
  */
 export async function registerCdekShipment(orderId: number | string): Promise<void> {
   const payload = await getPayload({ config });
@@ -48,13 +43,11 @@ export async function registerCdekShipment(orderId: number | string): Promise<vo
     depth: 1,
   })) as unknown as ShipmentOrderDoc;
 
-  // Раньше проверки статуса: заказ, по которому отправление уже создано, — не ошибка,
-  // а обычный повторный вызов, и его статус к этому моменту может уйти в "shipped".
+  // Раньше проверки статуса: повторный вызов — не ошибка, а статус мог уйти в "shipped".
   if (order.cdekUuid) return;
 
-  // Оплату проверяем здесь, а не полагаемся на то, что вызывающий уже это сделал: накладная
-  // стоит продавцу денег, и создать её по неоплаченному заказу нельзя ни из вебхука, ни
-  // откуда-то ещё, откуда эту функцию позовут завтра.
+  // Оплату проверяем здесь, а не полагаемся на вызывающего: накладная стоит продавцу денег,
+  // и по неоплаченному заказу её нельзя создать ни из вебхука, ни откуда позовут завтра.
   if (order.status !== "paid") {
     throw new Error(`Заказ ${orderId} не оплачен (статус «${order.status}») — отправление не создаётся`);
   }
@@ -92,8 +85,7 @@ export async function registerCdekShipment(orderId: number | string): Promise<vo
 
   await payload.update({ collection: "orders", id: order.id, data: { cdekUuid: uuid } });
 
-  // Номер накладной на этой секунде обычно ещё не присвоен — заказ у СДЭК обрабатывается
-  // асинхронно. Пробуем разово: получилось — хорошо, нет — подтянется позже, uuid уже сохранён.
+  // Номер обычно ещё не присвоен — пробуем разово, иначе подтянется позже по uuid.
   try {
     const cdekNumber = await getCdekOrderNumber(uuid);
     if (cdekNumber) {
@@ -104,10 +96,7 @@ export async function registerCdekShipment(orderId: number | string): Promise<vo
   }
 }
 
-/**
- * Досинхронизация номера накладной для заказов, где он не успел присвоиться при регистрации.
- * Дёргается из карточки заказа — отдельного планировщика в проекте пока нет.
- */
+/** Досинхронизация номера накладной — дёргается из карточки заказа, планировщика нет. */
 export async function syncCdekOrderNumber(orderId: number | string): Promise<string | null> {
   const payload = await getPayload({ config });
   const order = (await payload.findByID({

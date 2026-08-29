@@ -44,8 +44,7 @@ export function DeliveryPicker({
   const [address, setAddress] = useState("");
   const [courierTariff, setCourierTariff] = useState<CdekTariff | null>(null);
 
-  // Подсказки городов идут в СДЭК через сервер (см. actions.ts searchCitySuggestions) —
-  // оттуда сразу приходит настоящий code, резолвить его отдельно не нужно.
+  // Подсказки приходят с настоящим code (см. actions.ts) — резолвить его отдельно не нужно.
   const {
     mutate: searchCities,
     data: citySuggestions,
@@ -55,8 +54,7 @@ export function DeliveryPicker({
     onError: () => toast.error(CITY_SEARCH_ERROR),
   });
 
-  // Отдельная мутация для вкладки «Курьером» — тот же источник, но своё состояние
-  // подсказок, чтобы не путать его с поиском города для ПВЗ.
+  // Отдельная мутация для «Курьером»: тот же источник, но своё состояние подсказок.
   const {
     mutate: searchCourierCities,
     data: courierCitySuggestions,
@@ -103,8 +101,7 @@ export function DeliveryPicker({
     });
   }
 
-  // Живые подсказки городов по мере ввода — от 2 символов, независимо от того, дописан
-  // ли город целиком (см. actions.ts searchCitySuggestions).
+  // Живые подсказки по мере ввода — от 2 символов, независимо от полноты названия.
   useEffect(() => {
     const query = cityQuery.trim();
     if (query.length < CITY_SEARCH_MIN_CHARS) return;
@@ -163,8 +160,8 @@ export function DeliveryPicker({
       provider: "cdek",
       type: "courier",
       label: `${DELIVERY_PROVIDER_LABELS.cdek}, курьер`,
-      // Город обязательно в самом адресе: без него в заказе остались бы только «улица,
-      // дом, квартира» — по такой строке ни собрать доставку, ни понять, куда она едет.
+      // Город обязательно в самом адресе: иначе в заказе останутся «улица, дом, квартира»,
+      // а по такой строке не понять, куда доставка едет.
       address: `${courierCity.city}, ${address}`,
       cost: courierTariff.cost,
       city: courierCity.city,

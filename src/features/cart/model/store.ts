@@ -17,9 +17,8 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   /**
-   * Что покупатель отметил галочками перед переходом к оформлению. Живёт здесь, а не в
-   * sessionStorage: это состояние корзины, и передавать его между страницами через
-   * строковый ключ незачем — стор и так переживает и переходы, и перезагрузку.
+   * Что покупатель отметил перед оформлением. Здесь, а не в sessionStorage: это состояние
+   * корзины, а стор и так переживает и переходы, и перезагрузку.
    */
   selectedIds: string[] | null;
   select: (productIds: string[]) => void;
@@ -32,8 +31,8 @@ interface CartState {
 
 /**
  * Выбранное всегда должно быть подмножеством корзины: выбор переживает перезагрузку вместе
- * со стором, и товар, удалённый после отметки, иначе остался бы в нём навсегда. Заказ из
- * одних таких «призраков» показал бы на чекауте пустой состав при непустой корзине.
+ * со стором, и товар, удалённый после отметки, остался бы в нём навсегда — заказ из таких
+ * «призраков» показал бы на чекауте пустой состав при непустой корзине.
  */
 function withoutId(selectedIds: string[] | null, productId: string): string[] | null {
   if (!selectedIds) return null;
@@ -47,8 +46,7 @@ export const useCart = create<CartState>()(
       items: [],
       selectedIds: null,
       select: (productIds) => set({ selectedIds: productIds }),
-      // Цель шлём здесь, а не в кнопках: путей добавления два (карточка и страница
-      // товара), и любой новый получит счёт сам.
+      // Цель шлём здесь, а не в кнопках: путей добавления два, и новый получит счёт сам.
       add: (product) => {
         reachGoal(GOALS.addToCart, { product: product.slug });
         set((state) => {
@@ -80,8 +78,7 @@ export const useCart = create<CartState>()(
           items: state.items.filter((i) => i.productId !== productId),
           selectedIds: withoutId(state.selectedIds, productId),
         })),
-      // Выбор сбрасываем: сюда приходят по факту оплаты, и старые отметки на следующем
-      // заказе только путали бы состав.
+      // Выбор сбрасываем: сюда приходят по факту оплаты, старые отметки только путали бы.
       removeMany: (productIds) =>
         set((state) => ({
           items: state.items.filter((i) => !productIds.includes(i.productId)),

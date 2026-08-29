@@ -37,10 +37,9 @@ export function Combobox<T>({
 }: ComboboxProps<T>) {
   const [isFocused, setIsFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  // Отдельно от isFocused: клик по варианту сохраняет реальный DOM-фокус на инпуте
-  // (мы гасим blur через preventDefault ниже), поэтому закрывать список нужно этим
-  // флагом, а не занижением isFocused — иначе следующий onFocus просто не наступит
-  // (фокус и так уже стоит на поле) и список не откроется, пока не стереть/ввести текст.
+  // Отдельно от isFocused: клик по варианту сохраняет DOM-фокус на инпуте (blur гасим ниже),
+  // поэтому список закрываем этим флагом — занизив isFocused, следующего onFocus мы бы не
+  // дождались (фокус и так на поле), и список не открылся бы, пока не тронуть текст.
   const [isSuppressed, setIsSuppressed] = useState(false);
 
   // Сбрасываем подсветку варианта при каждом новом наборе результатов поиска —
@@ -100,8 +99,7 @@ export function Combobox<T>({
           placeholder={placeholder}
           role="combobox"
           aria-expanded={isOpen}
-          // Роль combobox обязана указывать на свой список, иначе скринридер не свяжет
-          // поле с подсказками и не объявит их появление.
+          // Роль combobox обязана указывать на свой список, иначе скринридер их не свяжет.
           aria-controls={listboxId}
           aria-autocomplete="list"
         />
