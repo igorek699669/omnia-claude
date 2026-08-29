@@ -6,7 +6,6 @@ import { NotifyMeButton } from "@/features/notify-me";
 import { Tag, SectionTitle, ArrowLink, Slider } from "@/shared/ui";
 
 const VISIBLE_COUNT = 3;
-/** До xl три карточки в ряд не помещаются — там витрина листается, на xl это ровный ряд. */
 const SLIDE_WIDTH = "basis-[86%] md:basis-1/2 xl:basis-1/3";
 
 /**

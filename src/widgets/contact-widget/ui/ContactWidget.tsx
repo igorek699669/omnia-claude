@@ -19,7 +19,6 @@ const links = [
   { label: "Написать на почту", channel: "email", href: CONTACT_EMAIL_HREF, external: false, icon: MailIcon, dx: 0, dy: -120 },
 ] as const;
 
-/** Плавающий виджет связи — фиксирован в правом нижнем углу поверх любого контента. */
 export function ContactWidget() {
   const [open, setOpen] = useState(false);
   const [attention, setAttention] = useState(false);

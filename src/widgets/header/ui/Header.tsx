@@ -68,7 +68,6 @@ export function Header() {
           </Link>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-4">
-            {/* До sm номер в шапку не помещается — на телефоне он живёт в меню ниже. */}
             <a
               href={CONTACT_PHONE_HREF}
               onClick={() => reachGoal(GOALS.phoneClick, { place: "header" })}

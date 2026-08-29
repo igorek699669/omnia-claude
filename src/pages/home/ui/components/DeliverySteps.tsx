@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { SectionTitle } from "@/shared/ui";
 
-/** Одно и то же фото показывается в узком мобильном блоке и в широком десктопном — отсюда две ширины. */
 const STEP_IMAGE_SIZES = "(min-width: 1024px) 45vw, 100vw";
 
 const steps = [
@@ -41,7 +40,6 @@ export function DeliverySteps() {
           <div className="flex flex-col">
             {steps.map((step, i) => (
               <div key={step.title} className="border-b border-paper-50/14 py-5 last:border-none">
-                {/* Десктоп: кликабельный шаг; мобилка: статичный блок с картинкой */}
                 <button
                   onClick={() => setActive(i)}
                   className={`grid w-full cursor-default grid-cols-[auto_1fr] gap-5 text-left transition-opacity lg:cursor-pointer ${i === active ? "" : "lg:opacity-55 lg:hover:opacity-100"

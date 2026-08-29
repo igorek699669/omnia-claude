@@ -5,7 +5,6 @@
 import { reachGoal, GOALS } from "@/shared/lib";
 import { MESSENGERS } from "./messengers";
 
-/** Третичный уровень: рядом с кнопкой покупки ряд не должен спорить с ней за внимание. */
 const tone =
   "bg-paper-100 text-ink-900 hover:bg-paper-200 hover:text-brand-dark focus-visible:bg-paper-200";
 

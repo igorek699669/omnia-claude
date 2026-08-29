@@ -4,10 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import type { ProductMedia } from "../model/types";
 
-/** Ширина медиа-блока карточки по брейкпоинтам — для next/image. */
 export const CARD_IMAGE_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
 
-/** Медиа-блок страницы товара — половина экрана на десктопе. */
 export const PRODUCT_PAGE_IMAGE_SIZES = "(min-width: 1024px) 50vw, 100vw";
 
 /**

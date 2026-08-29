@@ -6,7 +6,6 @@ import { SectionTitle, Slider } from "@/shared/ui";
 /** Ограничение только для «похожих по цене»: там это соседи по чеку, а не по звуку. */
 const LIMIT = 5;
 
-/** Как на главной: три карточки в ряд на xl, на узких экранах ряд листается. */
 const SLIDE_WIDTH = "basis-[86%] md:basis-1/2 xl:basis-1/3";
 
 export async function RelatedProducts({ product }: { product: Product }) {

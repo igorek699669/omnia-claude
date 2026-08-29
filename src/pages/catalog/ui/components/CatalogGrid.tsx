@@ -55,7 +55,6 @@ export async function CatalogGrid({
   );
 }
 
-/** Сколько карточек-заглушек рисовать — по два ряда на каждом брейкпоинте. */
 const SKELETON_COUNT = 6;
 
 export function CatalogGridSkeleton() {

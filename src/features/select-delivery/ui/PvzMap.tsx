@@ -40,7 +40,6 @@ export function PvzMap({
               key={point.code}
               geometry={[point.lat, point.lon]}
               properties={{ hintContent: point.address }}
-              // Выбранный ПВЗ — фирменным оранжевым Omnia и поверх остальных, остальные — зелёным СДЭК.
               options={{ preset: isSelected ? "islands#orangeDotIcon" : "islands#greenDotIcon", zIndex: isSelected ? 1000 : undefined }}
               onClick={() => onSelect(point)}
             />

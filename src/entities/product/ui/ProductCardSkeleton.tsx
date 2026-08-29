@@ -1,6 +1,5 @@
 import { Skeleton } from "@/shared/ui";
 
-/** Заглушка карточки товара на время загрузки — повторяет раскладку ProductCard. */
 export function ProductCardSkeleton() {
   return (
     <article className="flex flex-col overflow-hidden rounded-card bg-white">

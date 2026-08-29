@@ -140,9 +140,6 @@ export function CheckoutPage() {
     <section className="relative isolate flex min-h-[75vh] items-stretch justify-center overflow-hidden sm:items-center sm:px-5 sm:py-16">
       <Backdrop />
 
-      {/* На телефоне форма занимает весь экран: карточка с полями, зажатая в скруглённый
-          блок поверх фона, читается как модальное окно и отнимает и без того дефицитную
-          ширину у полей. Скругления, тень и подложка остаются с sm и выше. */}
       <div className="relative w-full bg-paper-50 px-5 py-8 sm:max-w-[620px] sm:rounded-card sm:bg-paper-50/95 sm:p-8 sm:shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] sm:backdrop-blur-sm md:p-10">
         {orderItems.length === 0 ? (
           <div>
@@ -248,9 +245,6 @@ export function CheckoutPage() {
                 render={({ field }) => (
                   <label className="flex cursor-pointer items-start gap-3 text-[15px]">
                     <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
-                    {/* Весь текст — одним span: во flex-контейнере каждый текстовый узел между
-                        элементами стал бы отдельным flex-элементом, и строка развалилась бы на
-                        колонки с gap между ними. */}
                     <span>
                       Согласен на <ConsentLink href="/privacy">обработку персональных данных</ConsentLink> для
                       оформления и доставки заказа

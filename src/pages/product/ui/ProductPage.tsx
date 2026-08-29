@@ -42,8 +42,6 @@ export async function ProductPage({ slug }: { slug: string }) {
       <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="relative">
           <div className="relative aspect-square overflow-hidden rounded-card bg-white">
-            {/* Отступ отдельной обёрткой, а не паддингом контейнера: Image с fill
-                позиционируется от padding-box родителя и паддинг бы просто перекрыло. */}
             <div className="absolute inset-6 md:inset-10">
               {media.length > 1 ? (
                 <ProductGallery media={media} sizes={PRODUCT_PAGE_IMAGE_SIZES} fit="contain" />

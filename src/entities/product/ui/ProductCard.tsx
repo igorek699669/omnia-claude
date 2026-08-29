@@ -20,9 +20,6 @@ export function ProductCard({
 
   return (
     <article className="flex flex-col overflow-hidden rounded-card bg-white transition-all hover:-translate-y-1 hover:shadow-[0_32px_64px_-32px_rgba(28,20,16,0.3)]">
-      {/* Верхний паддинг 20px — снаружи aspect-ratio блока, а не паддингом/inset внутри него:
-          иначе object-cover пришлось бы сильнее обрезать фото по высоте, чтобы всё равно
-          заполнить уменьшенный бокс (см. отступ по бокам ниже — та же причина). */}
       <div className="bg-white pt-5">
         <div className="relative aspect-[4/3] overflow-hidden">
           {!product.inStock && (

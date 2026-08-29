@@ -49,8 +49,6 @@ export function Footer() {
               {CONTACT_PHONE}
             </GoalLink>
             <p className="mt-3">
-              {/* Почта — одно длинное «слово»: в узкой колонке на мобиле она вылезала за край.
-                  <wbr/> после @ даёт красивую точку переноса, break-words — страховка для совсем узких экранов. */}
               <GoalLink
                 href={CONTACT_EMAIL_HREF}
                 goal={GOALS.messengerClick}

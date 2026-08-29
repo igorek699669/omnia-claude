@@ -57,9 +57,6 @@ export function Slider({
 
   return (
     <div className={className}>
-      {/* Вьюпорт режет и по вертикали, поэтому подъём карточки на ховере и её тень живут
-          внутри паддингов; сверху отступ выбирается отрицательным margin, снизу он остаётся
-          в потоке и служит зазором до точек. */}
       <div
         ref={emblaRef}
         className="-mt-2 overflow-hidden pb-8 pt-2"
