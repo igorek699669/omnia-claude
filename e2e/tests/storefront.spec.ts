@@ -1,4 +1,13 @@
 import { test, expect, waitForAppReady } from "../fixtures";
+import type { Page } from "@playwright/test";
+
+/** Разметок на странице несколько — Organization из макета и крошки, — берём нужную по типу. */
+async function jsonLdOfType(page: Page, type: string) {
+  const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
+  const found = blocks.map((raw) => JSON.parse(raw)).find((data) => data["@type"] === type);
+  expect(found, `на странице нет разметки ${type}`).toBeDefined();
+  return found;
+}
 
 /**
  * Витрина. Проверяется то, без чего магазина нет вовсе: страницы открываются, товар из
@@ -70,9 +79,7 @@ test.describe("витрина", () => {
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /^https?:\/\//);
 
     // Разметка Product — то, из чего выдача берёт цену и наличие.
-    const raw = await page.locator('script[type="application/ld+json"]').first().textContent();
-    const jsonLd = JSON.parse(raw!);
-    expect(jsonLd["@type"]).toBe("Product");
+    const jsonLd = await jsonLdOfType(page, "Product");
     expect(jsonLd.name).toBe(product.name);
     expect(jsonLd.offers.price).toBe(product.price);
     expect(jsonLd.offers.priceCurrency).toBe("RUB");
@@ -80,12 +87,14 @@ test.describe("витрина", () => {
     expect(jsonLd.offers.url).toMatch(new RegExp(`/product/${product.slug}$`));
   });
 
-  test("распроданный инструмент помечен в разметке как отсутствующий", async ({ page, seed }) => {
+  // BackOrder, а не OutOfStock: при «нет в наличии» Яндекс гасит цену в выдаче, а на экране
+  // у такого товара и так стоит «Под заказ».
+  test("распроданный инструмент помечен в разметке как «под заказ»", async ({ page, seed }) => {
     const soldOut = seed.products.find((p) => p.stockQty === 0)!;
     await page.goto(`/product/${soldOut.slug}`);
 
-    const raw = await page.locator('script[type="application/ld+json"]').first().textContent();
-    expect(JSON.parse(raw!).offers.availability).toBe("https://schema.org/OutOfStock");
+    const jsonLd = await jsonLdOfType(page, "Product");
+    expect(jsonLd.offers.availability).toBe("https://schema.org/BackOrder");
   });
 
   test("карта сайта перечисляет товары и не выдаёт личные страницы", async ({ page, seed }) => {
