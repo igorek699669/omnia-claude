@@ -50,7 +50,7 @@ export function Faq() {
             src="/images/faq/tuning.webp"
             alt="Настройка ханга в мастерской: мастер снимает спектр ноты по экрану тюнера"
             fill
-            sizes="(min-width: 1024px) 900px, 170vw"
+            sizes="(min-width: 1024px) 900px, 100vw"
             className="object-cover object-[38%_50%]"
           />
         </div>

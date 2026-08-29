@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { z } from "zod";
+import { reachGoal, GOALS } from "@/shared/lib";
 import { subscribeToRestock } from "../api/actions";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogClose, BellIcon } from "@/shared/ui";
 import type { Product } from "@/entities/product";
@@ -34,6 +35,7 @@ export function NotifyMeButton({
       }
       setOpen(false);
       form.reset();
+      reachGoal(GOALS.restockSubscribed, { product: product.slug });
       toast.success("Сообщим на почту, когда товар появится в наличии");
     },
     onError: () => toast.error("Не получилось оформить подписку — попробуйте ещё раз"),

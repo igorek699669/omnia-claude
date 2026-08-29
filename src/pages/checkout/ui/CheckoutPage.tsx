@@ -146,7 +146,7 @@ export function CheckoutPage() {
       <div className="relative w-full bg-paper-50 px-5 py-8 sm:max-w-[620px] sm:rounded-card sm:bg-paper-50/95 sm:p-8 sm:shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] sm:backdrop-blur-sm md:p-10">
         {orderItems.length === 0 ? (
           <div>
-            <SectionTitle className="text-[32px]">Оформление заказа</SectionTitle>
+            <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
             <p className="mt-4 text-ink-600">В корзине пока пусто.</p>
             <Link
               href="/catalog"
@@ -163,7 +163,7 @@ export function CheckoutPage() {
             }}
             noValidate
           >
-            <SectionTitle className="text-[32px]">Оформление заказа</SectionTitle>
+            <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
 
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
               <Field label="Фамилия" error={orderForm.formState.errors.lastName?.message} {...orderForm.register("lastName")} />

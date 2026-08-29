@@ -4,7 +4,7 @@ export function TermsPage() {
   return (
     <section className="mx-auto max-w-[900px] px-5 py-16 md:px-12">
       <Tag>Документы</Tag>
-      <SectionTitle className="mt-5">Пользовательское соглашение</SectionTitle>
+      <SectionTitle as="h1" className="mt-5">Пользовательское соглашение</SectionTitle>
 
       <div className="mt-10 flex flex-col gap-10 text-[17px] leading-relaxed">
         <LegalBlock title="1. Общие положения">

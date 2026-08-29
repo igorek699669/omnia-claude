@@ -33,6 +33,12 @@ export function AccordionTrigger({
   );
 }
 
+/**
+ * forceMount — не ради анимации, а ради поиска: без него Radix рендерит содержимое
+ * закрытого пункта как `{isOpen && children}`, то есть текст ответа физически
+ * отсутствует в HTML до клика, и робот его не находит. С forceMount содержимое
+ * всегда в разметке, а закрытое состояние схлопывает h-0 поверх анимации.
+ */
 export function AccordionContent({
   children,
   className = "",
@@ -40,7 +46,8 @@ export function AccordionContent({
 }: ComponentProps<typeof RadixAccordion.Content> & { children: ReactNode }) {
   return (
     <RadixAccordion.Content
-      className={`overflow-hidden text-[15px] text-ink-600 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down ${className}`}
+      forceMount
+      className={`overflow-hidden text-[15px] text-ink-600 data-[state=closed]:h-0 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down ${className}`}
       {...props}
     >
       <div className="pb-6 pr-0 lg:pr-16">{children}</div>

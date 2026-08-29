@@ -18,7 +18,7 @@ export function PopularProducts() {
     <section id="catalog" className="mx-auto max-w-[1440px] scroll-mt-24 px-5 py-24 md:px-12">
       <div className="mb-12 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
         <div>
-          <Tag>В наличии</Tag>
+          <Tag>В наличии и под заказ</Tag>
           <SectionTitle className="mt-5">Популярные инструменты</SectionTitle>
         </div>
         <Link

@@ -10,6 +10,10 @@ import {
 } from "@payloadcms/next/routes";
 
 export const GET = REST_GET(config);
+// Отдельно от GET: без этого экспорта проверочный запрос HEAD к картинке из
+// /api/media/file/... отвечает «не найдено», хотя обычный GET её отдаёт, — роботы
+// считают такую картинку битой.
+export const HEAD = REST_GET(config);
 export const POST = REST_POST(config);
 export const DELETE = REST_DELETE(config);
 export const PATCH = REST_PATCH(config);

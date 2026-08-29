@@ -11,7 +11,7 @@ export function PrivacyPage() {
   return (
     <section className="mx-auto max-w-[900px] px-5 py-16 md:px-12">
       <Tag>Документы</Tag>
-      <SectionTitle className="mt-5">Политика обработки персональных данных</SectionTitle>
+      <SectionTitle as="h1" className="mt-5">Политика обработки персональных данных</SectionTitle>
       <p className="mt-4 text-sm text-ink-600">
         В соответствии с Федеральным законом №152-ФЗ «О персональных данных». Действует в
         редакции от 19.08.2026.

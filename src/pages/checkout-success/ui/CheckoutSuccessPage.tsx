@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getOrderStatus } from "@/features/checkout";
 import { useCart } from "@/features/cart";
-import { formatPrice } from "@/shared/lib";
+import { formatPrice, reachGoal, GOALS } from "@/shared/lib";
 import { SectionTitle, CheckIcon } from "@/shared/ui";
 
 type Status = "loading" | "pending" | "paid" | "cancelled" | "not-found";
@@ -36,9 +36,13 @@ export function CheckoutSuccessPage({ orderId }: { orderId?: string }) {
   const total = data?.total ?? null;
 
   useEffect(() => {
+    if (status !== "paid" || !data) return;
     // Из корзины убираем только то, что реально было в этом заказе — оплата части
     // корзины не должна стирать остальные выбранные позиции.
-    if (status === "paid" && data) removeItems(data.productIds);
+    removeItems(data.productIds);
+    // Цель шлём отсюда, а не с чекаута: там человек только уходит на форму оплаты,
+    // а деньги могут и не дойти. Опрос статуса до paid доводится один раз.
+    reachGoal(GOALS.orderPaid, { total: data.total });
   }, [status, data, removeItems]);
 
   return (

@@ -1,11 +1,9 @@
-import { CONTACT_MAX_URL, CONTACT_TELEGRAM_URL, CONTACT_WHATSAPP_URL } from "@/shared/lib";
-import { MaxIcon, TelegramIcon, WhatsAppIcon } from "./assets/icons";
+"use client";
 
-export const MESSENGERS = [
-  { id: "tg", label: "Telegram", href: CONTACT_TELEGRAM_URL, Icon: TelegramIcon },
-  { id: "wa", label: "WhatsApp", href: CONTACT_WHATSAPP_URL, Icon: WhatsAppIcon },
-  { id: "max", label: "MAX", href: CONTACT_MAX_URL, Icon: MaxIcon },
-] as const;
+// Клиентский не ради состояния, а ради счёта: клик по мессенджеру — это лид, и без него
+// в Метрике видно только «сколько зашло».
+import { reachGoal, GOALS } from "@/shared/lib";
+import { MESSENGERS } from "./messengers";
 
 /** Третичный уровень: рядом с кнопкой покупки ряд не должен спорить с ней за внимание. */
 const tone =
@@ -35,6 +33,7 @@ export function MessengerLinks({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Написать в ${label}`}
+          onClick={() => reachGoal(GOALS.messengerClick, { channel: id })}
           className={`group relative grid place-items-center rounded-full transition-colors ${tone} ${lg ? "size-[58px]" : "size-9"}`}
         >
           <Icon size={lg ? 24 : 17} />

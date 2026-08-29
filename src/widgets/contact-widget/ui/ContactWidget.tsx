@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CONTACT_EMAIL_HREF } from "@/shared/lib";
+import { CONTACT_EMAIL_HREF, reachGoal, GOALS } from "@/shared/lib";
 import { ChatIcon, CloseIcon, MailIcon, MESSENGERS, PointerArrowIcon } from "@/shared/ui";
 import { onContactWidgetPing } from "../model/attention";
 
@@ -13,10 +13,10 @@ import { onContactWidgetPing } from "../model/attention";
 const messengers = Object.fromEntries(MESSENGERS.map((m) => [m.id, m]));
 
 const links = [
-  { label: "Написать в WhatsApp", href: messengers.wa.href, external: true, icon: messengers.wa.Icon, dx: -120, dy: 0 },
-  { label: "Написать в Telegram", href: messengers.tg.href, external: true, icon: messengers.tg.Icon, dx: -104, dy: -60 },
-  { label: "Написать в MAX", href: messengers.max.href, external: true, icon: messengers.max.Icon, dx: -60, dy: -104 },
-  { label: "Написать на почту", href: CONTACT_EMAIL_HREF, external: false, icon: MailIcon, dx: 0, dy: -120 },
+  { label: "Написать в WhatsApp", channel: "wa", href: messengers.wa.href, external: true, icon: messengers.wa.Icon, dx: -120, dy: 0 },
+  { label: "Написать в Telegram", channel: "tg", href: messengers.tg.href, external: true, icon: messengers.tg.Icon, dx: -104, dy: -60 },
+  { label: "Написать в MAX", channel: "max", href: messengers.max.href, external: true, icon: messengers.max.Icon, dx: -60, dy: -104 },
+  { label: "Написать на почту", channel: "email", href: CONTACT_EMAIL_HREF, external: false, icon: MailIcon, dx: 0, dy: -120 },
 ] as const;
 
 /** Плавающий виджет связи — фиксирован в правом нижнем углу поверх любого контента. */
@@ -62,7 +62,7 @@ export function ContactWidget() {
           <PointerArrowIcon className="animate-widget-arrow pointer-events-none absolute bottom-13 right-2 text-brand drop-shadow-[0_4px_10px_rgba(255,89,0,0.35)]" />
         )}
 
-        {links.map(({ label, href, external, icon: Icon, dx, dy }, i) => (
+        {links.map(({ label, channel, href, external, icon: Icon, dx, dy }, i) => (
           <a
             key={label}
             href={href}
@@ -70,7 +70,10 @@ export function ContactWidget() {
             aria-hidden={!open}
             tabIndex={open ? 0 : -1}
             title={label}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              reachGoal(GOALS.messengerClick, { channel, place: "widget" });
+              setOpen(false);
+            }}
             {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             style={{
               transform: open ? `translate(${dx}px, ${dy}px) scale(1)` : "translate(0, 0) scale(0.3)",

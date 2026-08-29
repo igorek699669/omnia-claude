@@ -1,6 +1,8 @@
 export { ArrowButton, ArrowLink } from "./ArrowButton";
 export { Tag } from "./Tag";
 export { SectionTitle } from "./SectionTitle";
+export { Breadcrumbs } from "./Breadcrumbs";
+export type { Crumb } from "./Breadcrumbs";
 export { Checkbox } from "./Checkbox";
 export { RadioGroup, RadioChip } from "./RadioGroup";
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
@@ -45,4 +47,5 @@ export {
   WhatsAppIcon,
 } from "./assets/icons";
 export { AudioPlayerChip, AudioPlayerBar } from "./AudioPlayer";
-export { MessengerLinks, MESSENGERS } from "./MessengerLinks";
+export { MessengerLinks } from "./MessengerLinks";
+export { MESSENGERS } from "./messengers";

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import {
   getProductBySlug,
+  notesWord,
+  parseProductName,
   HANDPAN_MATERIAL,
   HANDPAN_WEIGHT_GRAMS,
   HANDPAN_DIAMETER_CM,
@@ -8,13 +10,41 @@ import {
 } from "@/entities/product";
 import { formatPrice, siteUrl, DEFAULT_OG_IMAGE } from "@/shared/lib";
 
-/** Описание, которое видно и в выдаче, и в превью ссылки, — из реальных полей инструмента. */
+/**
+ * Замер по 34 сайтам: заголовок длиннее 64 знаков обрезается в выдаче всегда,
+ * рабочий запас — 55–62, главное слово в первых 30.
+ */
+const TITLE_LIMIT = 62;
+
+/** «Ханг D Kurd 11 — 11 нот, ре минор, 87 990 ₽» — модель, размер, строй и цена. */
+function title(product: Product): string {
+  const { model, scaleRu } = parseProductName(product.name);
+  const notes = `${product.notesCount} ${notesWord(product.notesCount)}`;
+  const short = `Ханг ${model} — ${notes}, ${formatPrice(product.price)}`;
+  const full = scaleRu ? `Ханг ${model} — ${notes}, ${scaleRu}, ${formatPrice(product.price)}` : short;
+
+  // «фа-диез румынский хиджаз» в лимит не влезает. Жертвуем переводом строя, а не ценой:
+  // цену прямо в выдаче показывают единицы, и она отличает нас сильнее.
+  return full.length <= TITLE_LIMIT ? full : short;
+}
+
+/**
+ * Описание, которое видно и в выдаче, и в превью ссылки, — из реальных полей инструмента.
+ *
+ * Держим 180–240 знаков и главное в первых 120: Яндекс берёт описание дословно примерно
+ * у каждой восьмой страницы, в остальных режет свой кусок, и запас всё равно нужен.
+ */
 function describe(product: Product): string {
+  const { model, scaleRu } = parseProductName(product.name);
+  const notes = `${product.notesCount} ${notesWord(product.notesCount)}`;
+  const scale = scaleRu ? `звукоряд ${scaleRu}, ` : "";
+  const weightKg = (HANDPAN_WEIGHT_GRAMS / 1000).toLocaleString("ru-RU");
+
   return [
-    `${product.name} — ханг ручной работы.`,
-    `Строй ${product.scaleNotes}, ${product.notesCount} нот, ${product.tuningHz} Hz.`,
-    `${formatPrice(product.price)}.`,
-    "Доставка СДЭК по России.",
+    `Ханг ${model}: ${notes}, ${scale}${product.tuningHz} Гц, цена ${formatPrice(product.price)}.`,
+    `${HANDPAN_MATERIAL}, диаметр ${HANDPAN_DIAMETER_CM} см, вес ${weightKg} кг, ручная настройка каждой ноты.`,
+    product.inStock ? "Есть в наличии," : "Делаем под заказ,",
+    "защитный чехол в комплекте, доставка СДЭК по России.",
   ].join(" ");
 }
 
@@ -35,7 +65,9 @@ export async function generateProductMetadata({
   const url = `/product/${product.slug}`;
 
   return {
-    title: product.name,
+    // absolute — потому что шаблон layout добавляет « — Omnia», а в карточке это восемь
+    // знаков из шестидесяти четырёх, которые Яндекс из хвоста всё равно вырезает сам.
+    title: { absolute: title(product) },
     description,
     alternates: { canonical: url },
     openGraph: {
@@ -75,7 +107,10 @@ export function productJsonLd(product: Product): string {
       url: new URL(`/product/${product.slug}`, base).toString(),
       priceCurrency: "RUB",
       price: product.price,
-      availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      // BackOrder, а не OutOfStock: справка Вебмастера прямо пишет, что при «нет в наличии»
+      // цена в выдаче не отображается, а на экране у такого товара стоит «Под заказ» —
+      // расхождения между разметкой и надписью нет, и это ровно наш случай.
+      availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@type": "Organization", name: "Omnia" },
     },

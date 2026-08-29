@@ -30,3 +30,17 @@ export function ym(action: string, ...args: unknown[]): void {
   if (typeof window === "undefined" || METRIKA_ID === null) return;
   window.ym?.(METRIKA_ID, action, ...args);
 }
+
+export const GOALS = {
+  addToCart: "add-to-cart",
+  checkoutStarted: "checkout-started",
+  orderPaid: "order-paid",
+  messengerClick: "messenger-click",
+  phoneClick: "phone-click",
+  restockSubscribed: "restock-subscribed",
+  audioPlay: "audio-play",
+} as const;
+
+export function reachGoal(goal: string, params?: Record<string, unknown>): void {
+  ym("reachGoal", goal, params);
+}

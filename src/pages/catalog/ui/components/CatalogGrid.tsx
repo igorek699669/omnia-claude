@@ -5,19 +5,13 @@ import { NotifyMeButton } from "@/features/notify-me";
 import { Skeleton } from "@/shared/ui";
 import { Pagination } from "./Pagination";
 
-// Сколько карточек показывать за раз зависит от того, сколько колонок в сетке
-// (см. grid ниже: 1 колонка < sm, 2 колонки sm–xl, 3 колонки xl+). Сервер не знает
-// ширину экрана, поэтому забираем сразу под самую широкую раскладку (12 = 3×4),
-// а лишние карточки на узких экранах прячем через CSS, не трогая пагинацию.
-export const PAGE_SIZE = 12;
-const MOBILE_VISIBLE = 5;
-const TABLET_VISIBLE = 8;
-
-/** Класс, прячущий карточку на брейкпоинтах, где она не помещается в ряды. */
-function visibilityClass(index: number) {
-  if (index < MOBILE_VISIBLE) return undefined;
-  return index < TABLET_VISIBLE ? "hidden sm:block" : "hidden xl:block";
-}
+// Весь каталог помещается на одну страницу — так и отдаём. Причин две. Поиск: у страниц
+// 2 и 3 canonical вёл на первую, и товары с них оставались без единой учитываемой ссылки.
+// Люди: карточки сверх пятой прятались на узких экранах через CSS, и с телефона половина
+// каталога была недостижима вообще — ни листанием, ни пагинацией.
+// Пагинация не удалена: когда инструментов станет больше этого числа, она снова включится,
+// а страницы к тому времени получат собственный canonical (см. generateMetadata каталога).
+export const PAGE_SIZE = 48;
 
 export async function CatalogGrid({
   query,
@@ -41,8 +35,8 @@ export async function CatalogGrid({
     <>
       <p className="text-sm text-ink-600">Найдено инструментов: {totalDocs}</p>
       <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {products.map((p, i) => (
-          <div key={p.id} className={visibilityClass(i)}>
+        {products.map((p) => (
+          <div key={p.id}>
             <ProductCard
               product={p}
               cartAction={

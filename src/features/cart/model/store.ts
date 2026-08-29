@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/entities/product";
+import { reachGoal, GOALS } from "@/shared/lib";
 
 export interface CartItem {
   productId: string;
@@ -46,7 +47,10 @@ export const useCart = create<CartState>()(
       items: [],
       selectedIds: null,
       select: (productIds) => set({ selectedIds: productIds }),
-      add: (product) =>
+      // Цель шлём здесь, а не в кнопках: путей добавления два (карточка и страница
+      // товара), и любой новый получит счёт сам.
+      add: (product) => {
+        reachGoal(GOALS.addToCart, { product: product.slug });
         set((state) => {
           const existing = state.items.find((i) => i.productId === product.id);
           if (existing) {
@@ -69,7 +73,8 @@ export const useCart = create<CartState>()(
               },
             ],
           };
-        }),
+        });
+      },
       remove: (productId) =>
         set((state) => ({
           items: state.items.filter((i) => i.productId !== productId),

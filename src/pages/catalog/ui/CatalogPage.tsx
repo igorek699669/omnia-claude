@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Tag, SectionTitle } from "@/shared/ui";
+import { Tag, SectionTitle, Breadcrumbs } from "@/shared/ui";
 import { CatalogFilters } from "./components/CatalogFilters";
 import { CatalogGrid, CatalogGridSkeleton, PAGE_SIZE } from "./components/CatalogGrid";
 
@@ -28,11 +28,9 @@ export async function CatalogPage({
 
   return (
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
+      <Breadcrumbs className="mb-6" items={[{ name: "Главная", href: "/" }, { name: "Каталог" }]} />
       <Tag>Каталог</Tag>
-      <SectionTitle className="mt-5">Все инструменты</SectionTitle>
-      <p className="mt-4 max-w-[56ch] text-ink-600">
-        Пока в каталоге ханги. Глюкофоны, RAV-драмы и комплектующие появятся позже.
-      </p>
+      <SectionTitle as="h1" className="mt-5">Все инструменты</SectionTitle>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
         <div className="sticky top-20 z-10 min-w-0 self-start lg:top-26">

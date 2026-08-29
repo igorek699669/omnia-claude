@@ -6,7 +6,7 @@ import { Footer } from "@/widgets/footer";
 import { ContactWidget } from "@/widgets/contact-widget";
 import { CookieBanner } from "@/widgets/cookie-banner";
 import { YandexMetrika } from "@/widgets/analytics";
-import { QueryProvider, siteUrl, DEFAULT_OG_IMAGE } from "@/shared/lib";
+import { QueryProvider, siteUrl, organizationJsonLd, DEFAULT_OG_IMAGE } from "@/shared/lib";
 import "./globals.css";
 
 const jost = Jost({
@@ -26,12 +26,12 @@ export const metadata: Metadata = {
   // соцсети и поисковики их не резолвят — картинка и канонический адрес просто теряются.
   metadataBase: new URL(siteUrl()),
   title: {
-    default: "Omnia — ханги ручной работы из нержавеющей стали",
+    default: "Мастерская хангов Omnia — ханги и хэндпаны ручной работы",
     // Страницы задают только своё имя: «Каталог» превращается в «Каталог — Omnia».
     template: "%s — Omnia",
   },
   description:
-    "Мастерская хангов: ручная настройка, подбор звука под вашу практику, доставка по всей России.",
+    "Мастерская Omnia: ханги и хэндпаны (handpan) ручной работы из нержавеющей стали. Ручная настройка каждой ноты, запись звучания каждого инструмента, доставка СДЭК по всей России.",
   openGraph: {
     type: "website",
     locale: "ru_RU",
@@ -46,6 +46,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${jost.variable} ${golos.variable}`}>
       <body className="overflow-x-hidden">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: organizationJsonLd() }}
+        />
         <QueryProvider>
           <Header />
           <main>{children}</main>

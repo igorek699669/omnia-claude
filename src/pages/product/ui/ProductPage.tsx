@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import {
   getProductBySlug,
+  productHeading,
   ProductGallery,
   PRODUCT_PAGE_IMAGE_SIZES,
   HANDPAN_DIAMETER_CM,
@@ -10,10 +11,11 @@ import {
   HANDPAN_MATERIAL,
 } from "@/entities/product";
 import { formatPrice } from "@/shared/lib";
-import { Tag, HandpanArt, AudioPlayerBar } from "@/shared/ui";
+import { Tag, HandpanArt, AudioPlayerBar, Breadcrumbs } from "@/shared/ui";
 import { productJsonLd } from "../seo";
 import { AddToCartSection } from "./components/AddToCartSection";
 import { CustomOrderBlock } from "./components/CustomOrderBlock";
+import { RelatedProducts } from "./components/RelatedProducts";
 
 export async function ProductPage({ slug }: { slug: string }) {
   const product = await getProductBySlug(slug);
@@ -27,6 +29,15 @@ export async function ProductPage({ slug }: { slug: string }) {
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
       {/* Разметка Product для поисковиков — цена и наличие попадают прямо в сниппет выдачи. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: productJsonLd(product) }} />
+
+      <Breadcrumbs
+        className="mb-8"
+        items={[
+          { name: "Главная", href: "/" },
+          { name: "Каталог", href: "/catalog" },
+          { name: product.name },
+        ]}
+      />
 
       <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="relative">
@@ -60,8 +71,10 @@ export async function ProductPage({ slug }: { slug: string }) {
 
         <div>
           <Tag>{product.inStock ? "В наличии" : "Под заказ"}</Tag>
+          {/* Не одно имя «Ханг D Kurd 11»: заголовок сразу отвечает, сколько нот и какой
+              строй, — именно этими словами инструмент и ищут. */}
           <h1 className="mt-5 font-display text-[clamp(36px,4vw,56px)] font-medium leading-[1.05] tracking-tight">
-            {product.name}
+            {productHeading(product)}
           </h1>
 
           <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-4 border-y border-ink-900/10 py-6 text-[15px]">
@@ -72,7 +85,7 @@ export async function ProductPage({ slug }: { slug: string }) {
             </Spec>
             <Spec label="Вес">{(HANDPAN_WEIGHT_GRAMS / 1000).toLocaleString("ru-RU")} кг</Spec>
             <Spec label="Материал">{HANDPAN_MATERIAL}</Spec>
-            <Spec label="Строй, Hz">{product.tuningHz} Hz</Spec>
+            <Spec label="Настройка">{product.tuningHz} Гц</Spec>
           </dl>
 
           <div className="mt-8 flex items-baseline gap-4">
@@ -94,6 +107,8 @@ export async function ProductPage({ slug }: { slug: string }) {
           </p>
         </div>
       </div>
+
+      <RelatedProducts product={product} />
     </section>
   );
 }

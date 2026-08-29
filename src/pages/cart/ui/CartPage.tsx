@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
-import { formatPrice } from "@/shared/lib";
+import { formatPrice, reachGoal, GOALS } from "@/shared/lib";
 import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt, TrashIcon } from "@/shared/ui";
 
 export function CartPage() {
@@ -59,7 +59,7 @@ export function CartPage() {
   return (
     <section className="mx-auto max-w-[1440px] px-5 py-16 md:px-12">
       <Tag>Корзина</Tag>
-      <SectionTitle className="mt-5">Ваш заказ</SectionTitle>
+      <SectionTitle as="h1" className="mt-5">Ваш заказ</SectionTitle>
 
       {items.length === 0 ? (
         <div className="mt-10">
@@ -174,6 +174,7 @@ export function CartPage() {
                 href="/checkout"
                 className="w-full justify-center sm:w-auto lg:w-full"
                 onClick={() => {
+                  reachGoal(GOALS.checkoutStarted, { items: selectedQty });
                   try {
                     select([...selected]);
                   } catch {

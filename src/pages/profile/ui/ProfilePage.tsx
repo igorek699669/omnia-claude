@@ -23,7 +23,7 @@ export async function ProfilePage() {
     <section className="mx-auto max-w-[900px] px-5 py-16 md:px-12">
       <OrdersLiveRefresh awaitingPayment={awaitingPayment} />
       <Tag>Личный кабинет</Tag>
-      <SectionTitle className="mt-5">Мои заказы</SectionTitle>
+      <SectionTitle as="h1" className="mt-5">Мои заказы</SectionTitle>
 
       {orders.length === 0 ? (
         <p className="mt-10 text-ink-600">У вас пока нет заказов.</p>
@@ -91,7 +91,7 @@ function OrderItemRow({ item }: { item: OrderItem }) {
   const specs = [
     item.scaleNotes,
     item.notesCount ? `${item.notesCount} нот` : null,
-    item.tuningHz ? `${item.tuningHz} Hz` : null,
+    item.tuningHz ? `${item.tuningHz} Гц` : null,
   ].filter(Boolean);
 
   return (

@@ -72,7 +72,7 @@ export function ProductCard({
         </div>
         <p className="text-[13px] text-ink-600">
           {product.notesCount} нот · {(HANDPAN_WEIGHT_GRAMS / 1000).toLocaleString("ru-RU")} кг ·
-          диаметр {HANDPAN_DIAMETER_CM} см (+{HANDPAN_RIM_CM} см окантовка) · {product.tuningHz} Hz
+          диаметр {HANDPAN_DIAMETER_CM} см (+{HANDPAN_RIM_CM} см окантовка) · {product.tuningHz} Гц
         </p>
 
         <div className="mt-auto flex items-center justify-between gap-4 pt-2">

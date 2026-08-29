@@ -12,7 +12,7 @@ export function OfertaPage() {
   return (
     <section className="mx-auto max-w-[900px] px-5 py-16 md:px-12">
       <Tag>Документы</Tag>
-      <SectionTitle className="mt-5">Публичная оферта</SectionTitle>
+      <SectionTitle as="h1" className="mt-5">Публичная оферта</SectionTitle>
       <p className="mt-4 text-sm text-ink-600">Действует в редакции от 25.08.2026.</p>
 
       <div className="mt-10 flex flex-col gap-10 text-[17px] leading-relaxed">

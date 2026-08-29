@@ -59,8 +59,9 @@ test.describe("витрина", () => {
     const product = seed.products.find((p) => p.stockQty > 0)!;
     await page.goto(`/product/${product.slug}`);
 
-    // Заголовок собирается по шаблону из корневого layout.
-    await expect(page).toHaveTitle(`${product.name} — Omnia`);
+    // Заголовок карточки — по формуле «модель — сколько нот, цена»; хвоста « — Omnia»
+    // в нём нет намеренно: имя магазина Яндекс из конца вырезает сам, а места оно ест.
+    await expect(page).toHaveTitle(new RegExp(`^${product.name} — ${product.notesCount} нот`));
 
     const canonical = page.locator('link[rel="canonical"]');
     await expect(canonical).toHaveAttribute("href", new RegExp(`/product/${product.slug}$`));

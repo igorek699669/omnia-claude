@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PauseIcon, PlayIcon } from "./assets/icons";
+import { reachGoal, GOALS } from "@/shared/lib";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -32,8 +33,12 @@ function useAudioPlayer(src: string | undefined, preload: "none" | "metadata" = 
   function toggle() {
     const audio = audioRef.current;
     if (!audio) return;
-    if (playing) audio.pause();
-    else audio.play();
+    if (playing) {
+      audio.pause();
+      return;
+    }
+    reachGoal(GOALS.audioPlay, { src });
+    audio.play();
   }
 
   function seek(value: number) {
@@ -97,9 +102,8 @@ function AudioPlayerChipInner({
 
   return (
     <div
-      className={`flex min-w-0 flex-1 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-colors ${
-        playing ? "bg-brand text-white" : "bg-paper-100"
-      } ${className}`}
+      className={`flex min-w-0 flex-1 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-colors ${playing ? "bg-brand text-white" : "bg-paper-100"
+        } ${className}`}
     >
       {audioEl}
       <button
@@ -110,9 +114,8 @@ function AudioPlayerChipInner({
         }}
         aria-label={playing ? "Остановить воспроизведение строя" : label}
         title={label}
-        className={`grid size-7 shrink-0 cursor-pointer place-items-center rounded-full transition-colors ${
-          playing ? "bg-white text-brand" : "bg-white text-ink-900 hover:bg-brand hover:text-white"
-        }`}
+        className={`grid size-7 shrink-0 cursor-pointer place-items-center rounded-full transition-colors ${playing ? "bg-white text-brand" : "bg-white text-ink-900 hover:bg-brand hover:text-white"
+          }`}
       >
         {playing ? <PauseIcon size={11} /> : <PlayIcon size={11} />}
       </button>
