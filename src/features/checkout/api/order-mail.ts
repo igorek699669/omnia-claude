@@ -234,3 +234,46 @@ export async function sendTrackNumberEmail(orderId: number | string): Promise<vo
     html: toHtml(lines),
   });
 }
+
+/**
+ * Регистрация отправления сорвалась уже после оплаты: деньги приняты, заказ «оплачен»,
+ * а накладной нет. Без письма об этом знал бы только лог сервера — заказ бы просто завис.
+ * Отправление в таком случае создаётся руками в кабинете СДЭК.
+ */
+export async function sendShipmentFailureEmail(
+  orderId: number | string,
+  reason: string,
+): Promise<void> {
+  if (!process.env.SMTP_HOST) {
+    console.warn(`[order-mail] SMTP не настроен — о сбое регистрации заказа ${orderId} не сообщено`);
+    return;
+  }
+
+  const { order, rows, deliveryLine } = await loadOrderSummary(orderId);
+
+  const lines = [
+    `!! Заказ №${order.id} оплачен, но не зарегистрирован в СДЭК.`,
+    "Создайте отправление вручную в кабинете СДЭК и впишите накладную в заказ.",
+    "",
+    `Причина отказа: ${reason}`,
+    "",
+    `Покупатель: ${order.customerName}`,
+    `Телефон: ${order.customerPhone}`,
+    `Почта: ${order.customerEmail}`,
+    `Куда: ${deliveryLine}`,
+    "",
+    "Состав:",
+    ...rows.map((r) => `— ${r.name} × ${r.qty} — ${formatPrice(r.sum)}`),
+    "",
+    `Оплачено: ${formatPrice(order.total)}`,
+  ];
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: sellerEmail(),
+    replyTo: order.customerEmail,
+    subject: `!! Заказ №${order.id} оплачен, но не ушёл в СДЭК`,
+    text: lines.join("\n"),
+    html: toHtml(lines),
+  });
+}

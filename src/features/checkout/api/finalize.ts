@@ -2,7 +2,7 @@ import "server-only";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { registerCdekShipment } from "./shipment";
-import { sendPaidOrderEmail, sendCustomerOrderEmail } from "./order-mail";
+import { sendPaidOrderEmail, sendCustomerOrderEmail, sendShipmentFailureEmail } from "./order-mail";
 
 interface FinalizeOrderDoc {
   id: number | string;
@@ -68,6 +68,12 @@ export async function finalizePaidOrder(orderId: number | string): Promise<Final
     await registerCdekShipment(order.id);
   } catch (err) {
     console.error(`[cdek] не удалось зарегистрировать отправление по заказу ${order.id}:`, err);
+    // Оплату это не отменяет, но и молчать нельзя: заказ оплачен и никуда не едет.
+    try {
+      await sendShipmentFailureEmail(order.id, err instanceof Error ? err.message : String(err));
+    } catch (mailErr) {
+      console.error(`[order-mail] не удалось предупредить о сбое по заказу ${order.id}:`, mailErr);
+    }
   }
 
   try {
