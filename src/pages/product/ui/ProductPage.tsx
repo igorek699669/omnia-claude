@@ -69,8 +69,6 @@ export async function ProductPage({ slug }: { slug: string }) {
 
         <div>
           <Tag>{product.inStock ? "В наличии" : "Под заказ"}</Tag>
-          {/* Не одно имя «Ханг D Kurd 11»: заголовок сразу отвечает, сколько нот и какой
-              строй, — именно этими словами инструмент и ищут. */}
           <h1 className="mt-5 font-display text-[clamp(36px,4vw,56px)] font-medium leading-[1.05] tracking-tight">
             {productHeading(product)}
           </h1>
@@ -98,10 +96,6 @@ export async function ProductPage({ slug }: { slug: string }) {
           <p className="mt-6 text-sm text-ink-600">
             Доставка СДЭК по всей России — трек-номер появится
             в личном кабинете после отправки.
-          </p>
-          <p className="mt-2 text-sm text-ink-600">
-            Ханг не подключается к электросети и не подлежит обязательной сертификации или
-            декларированию соответствия.
           </p>
         </div>
       </div>
