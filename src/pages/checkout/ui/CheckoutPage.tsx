@@ -46,7 +46,15 @@ export function CheckoutPage() {
   const chosen = selectedIds ? items.filter((i) => selectedIds.includes(i.productId)) : items;
   const orderItems = chosen.length > 0 ? chosen : items;
 
-  const orderForm = useForm<OrderValues>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    trigger,
+    watch,
+    formState: { errors },
+  } = useForm<OrderValues>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
       lastName: "",
@@ -69,15 +77,15 @@ export function CheckoutPage() {
 
   useEffect(() => {
     // Форма — внешнее по отношению к React состояние, её синхронизация эффектом уместна.
-    if (sessionPhone) orderForm.setValue("phone", formatPhone(sessionPhone));
-  }, [sessionPhone, orderForm]);
+    if (sessionPhone) setValue("phone", formatPhone(sessionPhone));
+  }, [sessionPhone, setValue]);
 
   // watch() здесь намеренно, несмотря на предупреждение линта: именно он заставляет React
   // Compiler отказаться от оптимизации компонента. С useWatch компилятор мемоизирует чтения
   // formState — Proxy, на котором RHF строит подписку, — и ошибки валидации перестают
   // появляться. Ловится E2E «без согласий, доставки и телефона заказ не уходит».
   // eslint-disable-next-line react-hooks/incompatible-library
-  const phone = orderForm.watch("phone");
+  const phone = watch("phone");
   const subtotal = cartTotal(orderItems);
   const total = subtotal + (delivery?.cost ?? 0);
 
@@ -157,28 +165,28 @@ export function CheckoutPage() {
           <form
             onSubmit={(e) => {
               setSubmitAttempted(true);
-              return orderForm.handleSubmit(handleOrderSubmit)(e);
+              return handleSubmit(handleOrderSubmit)(e);
             }}
             noValidate
           >
             <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
 
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
-              <Field label="Фамилия" error={orderForm.formState.errors.lastName?.message} {...orderForm.register("lastName")} />
-              <Field label="Имя" error={orderForm.formState.errors.firstName?.message} {...orderForm.register("firstName")} />
+              <Field label="Фамилия" error={errors.lastName?.message} {...register("lastName")} />
+              <Field label="Имя" error={errors.firstName?.message} {...register("firstName")} />
             </div>
 
             <div className="mt-5 flex flex-col gap-5">
               <Field
                 label="you@mail.ru"
                 type="email"
-                error={orderForm.formState.errors.email?.message}
-                {...orderForm.register("email")}
+                error={errors.email?.message}
+                {...register("email")}
               />
               <div>
                 <div className="flex items-center gap-2">
                   <Controller
-                    control={orderForm.control}
+                    control={control}
                     name="phone"
                     render={({ field }) => (
                       <PhoneInput
@@ -199,7 +207,7 @@ export function CheckoutPage() {
                   ) : (
                     <PhoneConfirmDialog
                       phone={phone}
-                      validate={() => orderForm.trigger("phone")}
+                      validate={() => trigger("phone")}
                       onConfirmed={() => {
                         setConfirmedByCall(true);
                         // Подтверждение заводит сессию на сервере — перечитываем, иначе
@@ -209,8 +217,8 @@ export function CheckoutPage() {
                     />
                   )}
                 </div>
-                {orderForm.formState.errors.phone ? (
-                  <p className="mt-1.5 text-sm text-brand-dark">{orderForm.formState.errors.phone.message}</p>
+                {errors.phone ? (
+                  <p className="mt-1.5 text-sm text-brand-dark">{errors.phone.message}</p>
                 ) : (
                   submitAttempted &&
                   !phoneConfirmed && <p className="mt-1.5 text-sm text-brand-dark">Подтвердите телефон</p>
@@ -241,7 +249,7 @@ export function CheckoutPage() {
 
             <div className="mt-5 flex flex-col gap-3">
               <Controller
-                control={orderForm.control}
+                control={control}
                 name="consentPersonalData"
                 render={({ field }) => (
                   <label className="flex cursor-pointer items-start gap-3 text-[15px]">
@@ -253,12 +261,12 @@ export function CheckoutPage() {
                   </label>
                 )}
               />
-              {orderForm.formState.errors.consentPersonalData && (
-                <p className="-mt-2 text-sm text-brand-dark">{orderForm.formState.errors.consentPersonalData.message}</p>
+              {errors.consentPersonalData && (
+                <p className="-mt-2 text-sm text-brand-dark">{errors.consentPersonalData.message}</p>
               )}
 
               <Controller
-                control={orderForm.control}
+                control={control}
                 name="consentOffer"
                 render={({ field }) => (
                   <label className="flex cursor-pointer items-start gap-3 text-[15px]">
@@ -270,12 +278,12 @@ export function CheckoutPage() {
                   </label>
                 )}
               />
-              {orderForm.formState.errors.consentOffer && (
-                <p className="-mt-2 text-sm text-brand-dark">{orderForm.formState.errors.consentOffer.message}</p>
+              {errors.consentOffer && (
+                <p className="-mt-2 text-sm text-brand-dark">{errors.consentOffer.message}</p>
               )}
 
               <Controller
-                control={orderForm.control}
+                control={control}
                 name="consentMarketing"
                 render={({ field }) => (
                   <label className="flex cursor-pointer items-start gap-3 text-[15px] text-ink-600">

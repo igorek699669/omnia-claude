@@ -24,7 +24,12 @@ export function NotifyMeButton({
   variant?: "icon" | "pill";
 }) {
   const [open, setOpen] = useState(false);
-  const form = useForm<EmailValues>({ resolver: zodResolver(emailSchema), defaultValues: { email: "" } });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<EmailValues>({ resolver: zodResolver(emailSchema), defaultValues: { email: "" } });
 
   const { mutate, isPending } = useMutation({
     mutationFn: (email: string) => subscribeToRestock(product.id, email),
@@ -34,7 +39,7 @@ export function NotifyMeButton({
         return;
       }
       setOpen(false);
-      form.reset();
+      reset();
       reachGoal(GOALS.restockSubscribed, { product: product.slug });
       toast.success("Сообщим на почту, когда товар появится в наличии");
     },
@@ -68,16 +73,16 @@ export function NotifyMeButton({
           Оставьте почту — напишем, как только «{product.name}» снова появится в наличии.
         </p>
 
-        <form onSubmit={form.handleSubmit((values) => mutate(values.email))} className="mt-6">
+        <form onSubmit={handleSubmit((values) => mutate(values.email))} className="mt-6">
           <input
             type="email"
             autoFocus
             placeholder="you@example.com"
-            {...form.register("email")}
+            {...register("email")}
             className="w-full rounded-input border border-ink-900/18 bg-white px-5 py-4 outline-none transition-colors focus:border-brand"
           />
-          {form.formState.errors.email && (
-            <p className="mt-2 text-sm text-brand-dark">{form.formState.errors.email.message}</p>
+          {errors.email && (
+            <p className="mt-2 text-sm text-brand-dark">{errors.email.message}</p>
           )}
 
           <div className="mt-6 flex items-center gap-5">

@@ -22,20 +22,24 @@ export function PhoneStep({
   onSubmit: (phone: string) => void;
   isPending: boolean;
 }) {
-  const form = useForm<PhoneValues>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PhoneValues>({
     resolver: zodResolver(phoneSchema),
     defaultValues: { phone: "" },
   });
 
   return (
-    <form onSubmit={form.handleSubmit((values) => onSubmit(normalizePhone(values.phone)))} noValidate>
+    <form onSubmit={handleSubmit((values) => onSubmit(normalizePhone(values.phone)))} noValidate>
       <SectionTitle>Вход или регистрация</SectionTitle>
       <p className="mt-4 text-ink-600">
         Укажите номер телефона — подтвердим его бесплатным звонком. Пароль и код не нужны.
       </p>
       <div className="mt-8">
         <Controller
-          control={form.control}
+          control={control}
           name="phone"
           render={({ field }) => (
             <PhoneInput
@@ -44,7 +48,7 @@ export function PhoneStep({
               onBlur={field.onBlur}
               name={field.name}
               autoFocus
-              error={form.formState.errors.phone?.message}
+              error={errors.phone?.message}
             />
           )}
         />
