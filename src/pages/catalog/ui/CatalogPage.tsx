@@ -33,7 +33,7 @@ export async function CatalogPage({
       <SectionTitle as="h1" className="mt-5">Все инструменты</SectionTitle>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
-        <div className="sticky top-20 z-10 min-w-0 self-start lg:top-26">
+        <div className="sticky top-20 z-30 min-w-0 self-start lg:top-26">
           <CatalogFilters />
         </div>
 
