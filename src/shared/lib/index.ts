@@ -47,3 +47,4 @@ export { DELIVERY_PROVIDERS, DELIVERY_PROVIDER_LABELS, DELIVERY_TYPES } from "./
 export type { DeliveryProvider, DeliveryType } from "./delivery-providers";
 export { useBreakpoints } from "./useBreakpoints";
 export type { Breakpoints } from "./useBreakpoints";
+export { useDebouncedEffect } from "./useDebouncedEffect";

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogTitle, CloseIcon, FiltersIcon } from "@/shared/ui";
-import { useBreakpoints } from "@/shared/lib";
+import { useBreakpoints, useDebouncedEffect } from "@/shared/lib";
 
 const inputClass =
   "w-full min-w-0 rounded-input border border-ink-900/18 bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-brand";
@@ -79,25 +79,16 @@ function SearchField({
 }) {
   const router = useRouter();
   const [q, setQ] = useState(searchParams?.get("q") ?? "");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mountedRef = useRef(false);
 
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      return;
-    }
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
+  useDebouncedEffect(
+    () => {
       const trimmed = q.trim();
       const qs = mergeParams(searchParams, { q: trimmed.length >= MIN_QUERY_LENGTH ? trimmed : undefined });
       router.push(qs ? `${pathname}?${qs}` : pathname);
-    }, APPLY_DELAY_MS);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+    },
+    [q],
+    APPLY_DELAY_MS,
+  );
 
   return (
     <input
@@ -187,28 +178,19 @@ function DesktopFilters({
 }) {
   const router = useRouter();
   const [values, setValues] = useState<RangeValues>(() => readRangeFromParams(searchParams));
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mountedRef = useRef(false);
 
   function patch(p: Partial<RangeValues>) {
     setValues((prev) => ({ ...prev, ...p }));
   }
 
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      return;
-    }
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
+  useDebouncedEffect(
+    () => {
       const qs = mergeParams(searchParams, values);
       router.push(qs ? `${pathname}?${qs}` : pathname);
-    }, APPLY_DELAY_MS);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values.priceMin, values.priceMax, values.notesMin, values.notesMax]);
+    },
+    [values.priceMin, values.priceMax, values.notesMin, values.notesMax],
+    APPLY_DELAY_MS,
+  );
 
   return (
     <div className="rounded-card bg-white p-6">

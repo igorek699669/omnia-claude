@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { SectionTitle, Tabs, TabsList, TabsTrigger, TabsContent, Backdrop, LegalLinks, Combobox, ArrowLeftIcon } from "@/shared/ui";
-import { formatPrice, DELIVERY_PROVIDER_LABELS } from "@/shared/lib";
+import { formatPrice, DELIVERY_PROVIDER_LABELS, useDebouncedEffect } from "@/shared/lib";
 import type { CdekCityMatch, CdekTariff } from "@/shared/lib";
 import { searchCitySuggestions, getPvzPointsByCity, calculateDeliveryCost } from "../api/actions";
 import { PvzMap } from "./PvzMap";
@@ -18,6 +18,7 @@ function errorMessage(error: unknown, fallback: string): string {
 // Текст СДЭК-ошибки покупателю не показываем: при недоступности контура оттуда прилетает
 // HTML страницы 504 целиком, а в проде Server Action и вовсе отдаёт редактированный digest.
 const CITY_SEARCH_ERROR = "Не удалось загрузить подсказки городов. Попробуйте ещё раз";
+const CITY_SEARCH_DELAY_MS = 300;
 
 export function DeliveryPicker({
   items,
@@ -102,13 +103,14 @@ export function DeliveryPicker({
   }
 
   // Живые подсказки по мере ввода — от 2 символов, независимо от полноты названия.
-  useEffect(() => {
-    const query = cityQuery.trim();
-    if (query.length < CITY_SEARCH_MIN_CHARS) return;
-    const timer = setTimeout(() => searchCities(query), 300);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cityQuery]);
+  useDebouncedEffect(
+    () => {
+      const query = cityQuery.trim();
+      if (query.length >= CITY_SEARCH_MIN_CHARS) searchCities(query);
+    },
+    [cityQuery],
+    CITY_SEARCH_DELAY_MS,
+  );
 
   function selectCourierCity(city: CdekCityMatch) {
     setCourierCity(city);
@@ -116,13 +118,14 @@ export function DeliveryPicker({
     setCourierTariff(null);
   }
 
-  useEffect(() => {
-    const query = courierQuery.trim();
-    if (query.length < CITY_SEARCH_MIN_CHARS) return;
-    const timer = setTimeout(() => searchCourierCities(query), 300);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courierQuery]);
+  useDebouncedEffect(
+    () => {
+      const query = courierQuery.trim();
+      if (query.length >= CITY_SEARCH_MIN_CHARS) searchCourierCities(query);
+    },
+    [courierQuery],
+    CITY_SEARCH_DELAY_MS,
+  );
 
   function selectPvzPoint(point: Pvz) {
     if (!selectedCity) return;
