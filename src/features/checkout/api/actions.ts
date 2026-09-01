@@ -15,7 +15,7 @@ import {
   siteUrl,
   CONSENT_TEXT_VERSION,
   isDadataConfigured,
-  suggestDadataAddresses,
+  verifyDadataAddress,
 } from "@/shared/lib";
 import type { CdekTariff } from "@/shared/lib";
 
@@ -108,14 +108,11 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       const street = delivery.address.toLowerCase().startsWith(prefix.toLowerCase())
         ? delivery.address.slice(prefix.length).trim()
         : delivery.address;
-      const matches = await suggestDadataAddresses(delivery.city, street, 1);
-      // Пустой ответ — тоже отказ: на выдуманную улицу ДаData не отдаёт ничего, а не «улицу
-      // без дома», и пропускать такое значит не проверять ничего. Подсказки в поле адреса
-      // ведут покупателя к варианту из реестра, так что дойти сюда можно только вводом руками.
-      if (matches.length === 0) {
+      const verdict = await verifyDadataAddress(delivery.city, street);
+      if (verdict === "not-found") {
         return { error: "Не нашли такой адрес — выберите вариант из подсказок" };
       }
-      if (!matches[0].hasHouse) {
+      if (verdict === "no-house") {
         return { error: "Уточните адрес: нужны улица и номер дома" };
       }
     } catch (err) {

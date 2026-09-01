@@ -114,6 +114,7 @@ jobs:
             CDEK_ACCOUNT=${CDEK_ACCOUNT}
             CDEK_SECURE_PASSWORD=${CDEK_SECURE_PASSWORD}
             CDEK_SHIPMENT_POINT=BRK16
+            DADATA_API_KEY=${DADATA_API_KEY}
             EOF
 
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
@@ -148,3 +149,6 @@ jobs:
           YOOKASSA_SECRET_KEY: ${{ secrets.YOOKASSA_SECRET_KEY }}
           CDEK_ACCOUNT: ${{ secrets.CDEK_ACCOUNT }}
           CDEK_SECURE_PASSWORD: ${{ secrets.CDEK_SECURE_PASSWORD }}
+          # Без ключа поле адреса курьерской доставки остаётся обычным вводом, а сверка
+          # дома по реестру ГАР не выполняется — заказ проходит с любым текстом.
+          DADATA_API_KEY: ${{ secrets.DADATA_API_KEY }}

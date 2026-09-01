@@ -8,8 +8,10 @@ import {
   calculateCdekTariff,
   deriveShipmentPackages,
   suggestDadataAddresses,
+  verifyDadataAddress,
+  isDadataConfigured,
 } from "@/shared/lib";
-import type { CdekCityMatch, CdekTariff, DadataAddress } from "@/shared/lib";
+import type { CdekCityMatch, CdekTariff, DadataAddress, AddressVerdict } from "@/shared/lib";
 import { CITY_SEARCH_MIN_CHARS, ADDRESS_SEARCH_MIN_CHARS } from "../model/types";
 import { TOP_RU_CITIES } from "../model/topCities";
 import type { DeliveryType, Pvz } from "../model/types";
@@ -50,6 +52,22 @@ export async function searchAddressSuggestions(city: string, query: string): Pro
   } catch (err) {
     console.error("[dadata] не удалось получить подсказки адреса:", err);
     return [];
+  }
+}
+
+/**
+ * Тот же вердикт, что и при создании заказа, — чтобы покупатель узнал о неполном адресе
+ * в форме, а не после «Оформить заказ». Без ключа ДаData и при сбое сервиса возвращаем
+ * "unchecked": проверить нечем, а держать покупателя из-за этого нельзя.
+ */
+export async function checkAddress(city: string, address: string): Promise<AddressVerdict | "unchecked"> {
+  if (!isDadataConfigured()) return "unchecked";
+
+  try {
+    return await verifyDadataAddress(city, address);
+  } catch (err) {
+    console.error("[dadata] не удалось проверить адрес:", err);
+    return "unchecked";
   }
 }
 

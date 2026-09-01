@@ -52,7 +52,7 @@ export async function suggestDadataAddresses(
       locations: [{ city }],
       restrict_value: true,
       from_bound: { value: "street" },
-      to_bound: { value: "house" },
+      to_bound: { value: "flat" },
     }),
     signal: AbortSignal.timeout(5000),
   });
@@ -70,4 +70,16 @@ export async function suggestDadataAddresses(
     full: s.unrestricted_value ?? s.value ?? "",
     hasHouse: Boolean(s.data?.house),
   }));
+}
+
+export type AddressVerdict = "ok" | "no-house" | "not-found";
+
+/**
+ * Есть ли такой адрес в реестре и указан ли в нём дом. Квартиру не требуем: по адресу не
+ * понять, частный это дом или многоквартирный.
+ */
+export async function verifyDadataAddress(city: string, address: string): Promise<AddressVerdict> {
+  const [match] = await suggestDadataAddresses(city, address, 1);
+  if (!match) return "not-found";
+  return match.hasHouse ? "ok" : "no-house";
 }

@@ -393,8 +393,9 @@ export class Storefront {
     await this.page.getByRole("option", { name: new RegExp(`^${city}`) }).click();
     await this.page.getByPlaceholder("Улица, дом, квартира").fill(address);
 
-    await this.page.getByRole("button", { name: "Рассчитать стоимость" }).click();
-    await expect(this.page.getByText("Стоимость доставки:")).toBeVisible({ timeout: 30_000 });
+    // Кнопки «Рассчитать стоимость» больше нет: сумма считается сама по дебаунсу, как
+    // только заполнены город и адрес. Ждём именно цифру — до неё в строке «считаем…».
+    await expect(this.page.getByText(/Стоимость доставки: \d/)).toBeVisible({ timeout: 30_000 });
     await this.page.getByRole("button", { name: "Применить" }).click();
     await expect(this.page.getByRole("button", { name: /Способ доставки:/ })).toBeVisible();
   }
