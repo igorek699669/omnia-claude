@@ -75,7 +75,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: SEED,GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMS_RU_API_ID,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD
+          # Список закрытый: переменная из блока env: ниже доедет до сервера, только
+          # если она перечислена здесь, иначе ${VAR} в скрипте развернётся в пустоту
+          # и в .env.local уедет пустое значение — молча, без единой ошибки.
+          envs: SEED,GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMS_RU_API_ID,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD,DADATA_API_KEY
           script: |
             set -e
             mkdir -p /opt/omnia
