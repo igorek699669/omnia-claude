@@ -24,6 +24,7 @@ interface ProductDoc {
   name: string;
   price: number;
   stockQty?: number | null;
+  hidden?: boolean | null;
   testPayment?: boolean | null;
   freeDelivery?: boolean | null;
 }
@@ -72,8 +73,10 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     } catch {
       doc = null;
     }
-    const available = doc ? (doc.stockQty ?? 0) - (reserved.get(String(doc.id)) ?? 0) : 0;
-    if (!doc || available < item.qty) {
+    // Снятый с продажи товар с витрины пропал, но в чужой корзине из localStorage он мог
+    // остаться — считаем его недоступным здесь же, вместе с остатком.
+    const available = doc && !doc.hidden ? (doc.stockQty ?? 0) - (reserved.get(String(doc.id)) ?? 0) : 0;
+    if (!doc || doc.hidden || available < item.qty) {
       return { error: `Товар «${doc?.name ?? item.productId}» больше недоступен в нужном количестве` };
     }
     orderItems.push({ product: Number(doc.id), qty: item.qty, price: doc.price });

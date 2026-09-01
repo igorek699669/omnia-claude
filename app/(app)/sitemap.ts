@@ -37,7 +37,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let productEntries: MetadataRoute.Sitemap = [];
   try {
-    const products = await getProducts();
+    // Черновики (adminOnly) в карту сайта не попадают, даже если её открыл вошедший админ.
+    const products = await getProducts({ publicOnly: true });
     productEntries = products.map((product) => ({
       url: new URL(`/product/${product.slug}`, base).toString(),
       priority: 0.8,

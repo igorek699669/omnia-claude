@@ -1,5 +1,6 @@
+import { headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
-import type { Where } from "payload";
+import type { BasePayload, Where } from "payload";
 import config from "@payload-config";
 import type { Product } from "../model/types";
 
@@ -24,6 +25,7 @@ interface ProductDoc {
   tuningHz: "440" | "432";
   stockQty?: number | null;
   inStock?: boolean | null;
+  hidden?: boolean | null;
   audioSample?: string | null;
   media?: (MediaDoc | number | string)[] | null;
 }
@@ -47,11 +49,51 @@ function toProduct(doc: ProductDoc): Product {
   };
 }
 
-export async function getProducts(filters?: { tuningHz?: "440" | "432" }): Promise<Product[]> {
+/**
+ * Снятый с продажи товар (чекбокс «Скрыт из каталога» в Payload) не показывается на витрине
+ * никому и никогда. Удалить его нельзя — он есть в заказах, а в них от позиции остаётся
+ * только ссылка на товар (см. beforeDelete в payload/collections/Products.ts).
+ *
+ * not_equals не режет NULL: у товаров, заведённых до появления поля, колонка пустая, и они
+ * должны остаться видимыми.
+ */
+const NOT_HIDDEN: Where = { hidden: { not_equals: true } };
+
+/** Черновик (`adminOnly`) — виден на сайте только тому, кто вошёл в админ-панель. */
+const NOT_DRAFT: Where = { adminOnly: { not_equals: true } };
+
+/**
+ * Открыта ли у посетителя сессия админ-панели. Проверяем тем же `payload.auth`, что и сама
+ * админка: она кладёт свою куку `payload-token`, и подделать её не проще, чем войти. Ошибку
+ * гасим — «не смогли проверить» это «обычный посетитель», а не повод уронить витрину.
+ *
+ * Читает заголовки запроса, поэтому вызывающие страницы обязаны рендериться динамически
+ * (все, где это используется, и так `ƒ`): иначе кука не видна и черновик покажется всем.
+ */
+async function isAdminViewer(payload: BasePayload): Promise<boolean> {
+  try {
+    const { user } = await payload.auth({ headers: await nextHeaders() });
+    return Boolean(user);
+  } catch {
+    return false;
+  }
+}
+
+/** Что вообще можно показать этому посетителю: админу — ещё и черновики. */
+async function visibleWhere(payload: BasePayload): Promise<Where> {
+  return (await isAdminViewer(payload)) ? NOT_HIDDEN : { and: [NOT_HIDDEN, NOT_DRAFT] };
+}
+
+export async function getProducts(filters?: {
+  tuningHz?: "440" | "432";
+  /** Для карты сайта: черновики не должны попадать в неё даже когда её открыл админ. */
+  publicOnly?: boolean;
+}): Promise<Product[]> {
   const payload = await getPayload({ config });
+  const visible = filters?.publicOnly ? { and: [NOT_HIDDEN, NOT_DRAFT] } : await visibleWhere(payload);
   const result = await payload.find({
     collection: "products",
-    where: filters?.tuningHz ? { tuningHz: { equals: filters.tuningHz } } : undefined,
+    where: filters?.tuningHz ? { and: [visible, { tuningHz: { equals: filters.tuningHz } }] } : visible,
     limit: 100,
     sort: "-createdAt",
   });
@@ -79,7 +121,7 @@ export interface CatalogResult {
 export async function getCatalogProducts(filters: CatalogFilters = {}): Promise<CatalogResult> {
   const payload = await getPayload({ config });
 
-  const and: Where[] = [];
+  const and: Where[] = [await visibleWhere(payload)];
   const q = filters.q?.trim();
   if (q && q.length >= 2) {
     and.push({ or: [{ name: { contains: q } }, { scaleNotes: { contains: q } }] });
@@ -91,7 +133,7 @@ export async function getCatalogProducts(filters: CatalogFilters = {}): Promise<
 
   const result = await payload.find({
     collection: "products",
-    where: and.length ? { and } : undefined,
+    where: { and },
     // Товары без остатка — в конец списка, доступные показываются первыми.
     // Local API не разбивает строку по запятой на несколько полей (в отличие от REST) — нужен массив.
     sort: ["-inStock", "-createdAt"],
@@ -111,7 +153,7 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
   const payload = await getPayload({ config });
   const result = await payload.find({
     collection: "products",
-    where: { slug: { equals: slug } },
+    where: { and: [await visibleWhere(payload), { slug: { equals: slug } }] },
     limit: 1,
   });
   const doc = result.docs[0] as ProductDoc | undefined;
