@@ -38,6 +38,11 @@ export function CheckoutPage() {
   const { items } = useCart();
   const { data: session, refetch: refetchSession } = useSession();
   const [showDelivery, setShowDelivery] = useState(false);
+  // Открытый однажды пикер больше не размонтируется, а прячется: иначе при повторном
+  // открытии терялись бы выбранный город, загруженные пункты выдачи и посчитанный тариф —
+  // покупатель, зашедший «поправить квартиру», начинал бы с пустых полей. До первого
+  // открытия не монтируем вовсе, чтобы не держать его разметку у тех, кто до неё не дошёл.
+  const [deliveryMounted, setDeliveryMounted] = useState(false);
 
   const selectedIds = useCart((s) => s.selectedIds);
 
@@ -132,207 +137,215 @@ export function CheckoutPage() {
     });
   }
 
-  if (showDelivery) {
-    return (
-      <DeliveryPicker
-        items={orderItems.map((item) => ({ productId: item.productId, qty: item.qty }))}
-        onApply={(d) => {
-          setDelivery(d);
-          setShowDelivery(false);
-        }}
-        onBack={() => setShowDelivery(false)}
-      />
-    );
-  }
-
   return (
-    <section className="relative isolate flex min-h-[75vh] items-stretch justify-center overflow-hidden sm:items-center sm:px-5 sm:py-16">
-      <Backdrop />
-
-      <div className="relative w-full bg-paper-50 px-5 py-8 sm:max-w-[620px] sm:rounded-card sm:bg-paper-50/95 sm:p-8 sm:shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] sm:backdrop-blur-sm md:p-10">
-        {orderItems.length === 0 ? (
-          <div>
-            <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
-            <p className="mt-4 text-ink-600">В корзине пока пусто.</p>
-            <Link
-              href="/catalog"
-              className="mt-6 inline-block border-b border-ink-900/25 py-2 text-base font-medium transition-colors hover:border-brand hover:text-brand-dark"
-            >
-              Перейти в каталог
-            </Link>
-          </div>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              setSubmitAttempted(true);
-              return handleSubmit(handleOrderSubmit)(e);
+    <>
+      {deliveryMounted && (
+        // hidden на обёртке, а не на самой <section>: у секций есть утилиты flex, а они
+        // перебивают `[hidden] { display: none }` из preflight Tailwind по порядку правил.
+        <div hidden={!showDelivery}>
+          <DeliveryPicker
+            items={orderItems.map((item) => ({ productId: item.productId, qty: item.qty }))}
+            onApply={(d) => {
+              setDelivery(d);
+              setShowDelivery(false);
             }}
-            noValidate
-          >
-            <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
+            onBack={() => setShowDelivery(false)}
+          />
+        </div>
+      )}
+      <div hidden={showDelivery}>
+        <section className="relative isolate flex min-h-[75vh] items-stretch justify-center overflow-hidden sm:items-center sm:px-5 sm:py-16">
+          <Backdrop />
 
-            <div className="mt-8 grid gap-5 sm:grid-cols-2">
-              <Field label="Фамилия" error={errors.lastName?.message} {...register("lastName")} />
-              <Field label="Имя" error={errors.firstName?.message} {...register("firstName")} />
-            </div>
-
-            <div className="mt-5 flex flex-col gap-5">
-              <Field
-                label="you@mail.ru"
-                type="email"
-                error={errors.email?.message}
-                {...register("email")}
-              />
+          <div className="relative w-full bg-paper-50 px-5 py-8 sm:max-w-[620px] sm:rounded-card sm:bg-paper-50/95 sm:p-8 sm:shadow-[0_40px_80px_-32px_rgba(28,20,16,0.35)] sm:backdrop-blur-sm md:p-10">
+            {orderItems.length === 0 ? (
               <div>
-                <div className="flex items-center gap-2">
-                  <Controller
-                    control={control}
-                    name="phone"
-                    render={({ field }) => (
-                      <PhoneInput
-                        className="min-w-0 flex-1"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        disabled={phoneConfirmed}
-                      />
-                    )}
+                <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
+                <p className="mt-4 text-ink-600">В корзине пока пусто.</p>
+                <Link
+                  href="/catalog"
+                  className="mt-6 inline-block border-b border-ink-900/25 py-2 text-base font-medium transition-colors hover:border-brand hover:text-brand-dark"
+                >
+                  Перейти в каталог
+                </Link>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  setSubmitAttempted(true);
+                  return handleSubmit(handleOrderSubmit)(e);
+                }}
+                noValidate
+              >
+                <SectionTitle as="h1" className="text-[32px]">Оформление заказа</SectionTitle>
+
+                <div className="mt-8 grid gap-5 sm:grid-cols-2">
+                  <Field label="Фамилия" error={errors.lastName?.message} {...register("lastName")} />
+                  <Field label="Имя" error={errors.firstName?.message} {...register("firstName")} />
+                </div>
+
+                <div className="mt-5 flex flex-col gap-5">
+                  <Field
+                    label="you@mail.ru"
+                    type="email"
+                    error={errors.email?.message}
+                    {...register("email")}
                   />
-                  {phoneConfirmed ? (
-                    <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-dark">
-                      <CheckIcon size={14} strokeWidth={3} />
-                      Подтверждён
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Controller
+                        control={control}
+                        name="phone"
+                        render={({ field }) => (
+                          <PhoneInput
+                            className="min-w-0 flex-1"
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            disabled={phoneConfirmed}
+                          />
+                        )}
+                      />
+                      {phoneConfirmed ? (
+                        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-dark">
+                          <CheckIcon size={14} strokeWidth={3} />
+                          Подтверждён
+                        </span>
+                      ) : (
+                        <PhoneConfirmDialog
+                          phone={phone}
+                          validate={() => trigger("phone")}
+                          onConfirmed={() => {
+                            setConfirmedByCall(true);
+                            // Подтверждение заводит сессию на сервере — перечитываем, иначе
+                            // шапка до перезагрузки страницы показывает гостя.
+                            refetchSession();
+                          }}
+                        />
+                      )}
+                    </div>
+                    {errors.phone ? (
+                      <p className="mt-1.5 text-sm text-brand-dark">{errors.phone.message}</p>
+                    ) : (
+                      submitAttempted &&
+                      !phoneConfirmed && <p className="mt-1.5 text-sm text-brand-dark">Подтвердите телефон</p>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeliveryMounted(true);
+                    setShowDelivery(true);
+                  }}
+                  className="mt-5 flex w-full cursor-pointer items-center justify-between gap-4 rounded-input border border-ink-900/18 bg-white px-5 py-3.5 text-left transition-colors hover:border-brand"
+                >
+                  {delivery ? (
+                    <span className="min-w-0 truncate text-[15px]">
+                      <span className="text-ink-600">Способ доставки: </span>
+                      {delivery.label} · {formatPrice(delivery.cost)}
                     </span>
                   ) : (
-                    <PhoneConfirmDialog
-                      phone={phone}
-                      validate={() => trigger("phone")}
-                      onConfirmed={() => {
-                        setConfirmedByCall(true);
-                        // Подтверждение заводит сессию на сервере — перечитываем, иначе
-                        // шапка до перезагрузки страницы показывает гостя.
-                        refetchSession();
-                      }}
-                    />
+                    <span className="text-ink-600">Способ доставки</span>
                   )}
-                </div>
-                {errors.phone ? (
-                  <p className="mt-1.5 text-sm text-brand-dark">{errors.phone.message}</p>
-                ) : (
-                  submitAttempted &&
-                  !phoneConfirmed && <p className="mt-1.5 text-sm text-brand-dark">Подтвердите телефон</p>
+                  <span className="shrink-0 rounded-full bg-paper-100 px-4 py-2 text-sm font-medium">
+                    {delivery ? "Изменить" : "На карте"}
+                  </span>
+                </button>
+                {submitAttempted && !delivery && (
+                  <p className="mt-1.5 text-sm text-brand-dark">Выберите способ доставки</p>
                 )}
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => setShowDelivery(true)}
-              className="mt-5 flex w-full cursor-pointer items-center justify-between gap-4 rounded-input border border-ink-900/18 bg-white px-5 py-3.5 text-left transition-colors hover:border-brand"
-            >
-              {delivery ? (
-                <span className="min-w-0 truncate text-[15px]">
-                  <span className="text-ink-600">Способ доставки: </span>
-                  {delivery.label} · {formatPrice(delivery.cost)}
-                </span>
-              ) : (
-                <span className="text-ink-600">Способ доставки</span>
-              )}
-              <span className="shrink-0 rounded-full bg-paper-100 px-4 py-2 text-sm font-medium">
-                {delivery ? "Изменить" : "На карте"}
-              </span>
-            </button>
-            {submitAttempted && !delivery && (
-              <p className="mt-1.5 text-sm text-brand-dark">Выберите способ доставки</p>
-            )}
-
-            <div className="mt-5 flex flex-col gap-3">
-              <Controller
-                control={control}
-                name="consentPersonalData"
-                render={({ field }) => (
-                  <label className="flex cursor-pointer items-start gap-3 text-[15px]">
-                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
-                    <span>
-                      Согласен на <ConsentLink href="/privacy">обработку персональных данных</ConsentLink> для
-                      оформления и доставки заказа
-                    </span>
-                  </label>
-                )}
-              />
-              {errors.consentPersonalData && (
-                <p className="-mt-2 text-sm text-brand-dark">{errors.consentPersonalData.message}</p>
-              )}
-
-              <Controller
-                control={control}
-                name="consentOffer"
-                render={({ field }) => (
-                  <label className="flex cursor-pointer items-start gap-3 text-[15px]">
-                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
-                    <span>
-                      Ознакомлен с <ConsentLink href="/oferta">офертой</ConsentLink> и{" "}
-                      <ConsentLink href="/return">условиями возврата</ConsentLink>
-                    </span>
-                  </label>
-                )}
-              />
-              {errors.consentOffer && (
-                <p className="-mt-2 text-sm text-brand-dark">{errors.consentOffer.message}</p>
-              )}
-
-              <Controller
-                control={control}
-                name="consentMarketing"
-                render={({ field }) => (
-                  <label className="flex cursor-pointer items-start gap-3 text-[15px] text-ink-600">
-                    <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
-                    <span>Хочу получать новости и предложения рассылкой (необязательно)</span>
-                  </label>
-                )}
-              />
-            </div>
-
-            <ul className="mt-5 flex max-h-56 flex-col gap-3 overflow-y-auto rounded-input border border-ink-900/12 p-4">
-              {orderItems.map((item) => (
-                <li key={item.productId} className="flex items-center gap-3">
-                  <div className="relative shrink-0">
-                    <div className="grid size-12 place-items-center overflow-hidden rounded-xl bg-paper-200">
-                      <HandpanArt className="h-3/4 w-3/4" />
-                    </div>
-                    <span className="absolute -left-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-brand text-[11px] font-semibold text-white">
-                      {item.qty}
-                    </span>
-                  </div>
-                  <p className="min-w-0 flex-1 truncate font-medium">{item.name}</p>
-                  <div className="shrink-0 text-right">
-                    <span className="font-semibold">{formatPrice(item.price)}</span>
-                    {item.oldPrice && item.oldPrice > item.price && (
-                      <s className="ml-2 text-sm text-ink-600">{formatPrice(item.oldPrice)}</s>
+                <div className="mt-5 flex flex-col gap-3">
+                  <Controller
+                    control={control}
+                    name="consentPersonalData"
+                    render={({ field }) => (
+                      <label className="flex cursor-pointer items-start gap-3 text-[15px]">
+                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
+                        <span>
+                          Согласен на <ConsentLink href="/privacy">обработку персональных данных</ConsentLink> для
+                          оформления и доставки заказа
+                        </span>
+                      </label>
                     )}
+                  />
+                  {errors.consentPersonalData && (
+                    <p className="-mt-2 text-sm text-brand-dark">{errors.consentPersonalData.message}</p>
+                  )}
+
+                  <Controller
+                    control={control}
+                    name="consentOffer"
+                    render={({ field }) => (
+                      <label className="flex cursor-pointer items-start gap-3 text-[15px]">
+                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
+                        <span>
+                          Ознакомлен с <ConsentLink href="/oferta">офертой</ConsentLink> и{" "}
+                          <ConsentLink href="/return">условиями возврата</ConsentLink>
+                        </span>
+                      </label>
+                    )}
+                  />
+                  {errors.consentOffer && (
+                    <p className="-mt-2 text-sm text-brand-dark">{errors.consentOffer.message}</p>
+                  )}
+
+                  <Controller
+                    control={control}
+                    name="consentMarketing"
+                    render={({ field }) => (
+                      <label className="flex cursor-pointer items-start gap-3 text-[15px] text-ink-600">
+                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} className="mt-0.5" />
+                        <span>Хочу получать новости и предложения рассылкой (необязательно)</span>
+                      </label>
+                    )}
+                  />
+                </div>
+
+                <ul className="mt-5 flex max-h-56 flex-col gap-3 overflow-y-auto rounded-input border border-ink-900/12 p-4">
+                  {orderItems.map((item) => (
+                    <li key={item.productId} className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <div className="grid size-12 place-items-center overflow-hidden rounded-xl bg-paper-200">
+                          <HandpanArt className="h-3/4 w-3/4" />
+                        </div>
+                        <span className="absolute -left-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-brand text-[11px] font-semibold text-white">
+                          {item.qty}
+                        </span>
+                      </div>
+                      <p className="min-w-0 flex-1 truncate font-medium">{item.name}</p>
+                      <div className="shrink-0 text-right">
+                        <span className="font-semibold">{formatPrice(item.price)}</span>
+                        {item.oldPrice && item.oldPrice > item.price && (
+                          <s className="ml-2 text-sm text-ink-600">{formatPrice(item.oldPrice)}</s>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+                  <div className="text-[15px] text-ink-600">
+                    <p>Доставка: {delivery ? formatPrice(delivery.cost) : "не указана"}</p>
+                    <p className="font-display text-2xl font-semibold text-ink-900">
+                      Итог: {formatPrice(total)}
+                    </p>
                   </div>
-                </li>
-              ))}
-            </ul>
+                  <ArrowButton type="submit" disabled={isSubmittingOrder}>
+                    {isSubmittingOrder ? "Переходим к оплате…" : "Оформить заказ"}
+                  </ArrowButton>
+                </div>
 
-            <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-              <div className="text-[15px] text-ink-600">
-                <p>Доставка: {delivery ? formatPrice(delivery.cost) : "не указана"}</p>
-                <p className="font-display text-2xl font-semibold text-ink-900">
-                  Итог: {formatPrice(total)}
-                </p>
-              </div>
-              <ArrowButton type="submit" disabled={isSubmittingOrder}>
-                {isSubmittingOrder ? "Переходим к оплате…" : "Оформить заказ"}
-              </ArrowButton>
-            </div>
-
-            <LegalLinks />
-          </form>
-        )}
+                <LegalLinks />
+              </form>
+            )}
+          </div>
+        </section>
       </div>
-    </section>
+    </>
   );
 }
 
