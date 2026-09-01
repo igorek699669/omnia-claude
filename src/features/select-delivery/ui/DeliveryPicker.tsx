@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { SectionTitle, Tabs, TabsList, TabsTrigger, TabsContent, Backdrop, LegalLinks, Combobox, ArrowLeftIcon } from "@/shared/ui";
-import { formatPrice, DELIVERY_PROVIDER_LABELS, useDebouncedEffect } from "@/shared/lib";
+import { formatDeliveryCost, DELIVERY_PROVIDER_LABELS, useDebouncedEffect } from "@/shared/lib";
 import type { CdekCityMatch, CdekTariff, DadataAddress } from "@/shared/lib";
 import {
   searchCitySuggestions,
@@ -319,7 +319,7 @@ export function DeliveryPicker({
                 )}
                 <p className="mt-1">
                   <b>Стоимость:</b>{" "}
-                  {isCalculatingPvz ? "считаем…" : pvzTariff ? formatPrice(pvzTariff.cost) : "—"}
+                  {isCalculatingPvz ? "считаем…" : pvzTariff ? formatDeliveryCost(pvzTariff.cost) : "—"}
                 </p>
                 <button
                   type="button"
@@ -377,7 +377,7 @@ export function DeliveryPicker({
             {(isCalculatingCourier || courierTariff) && (
               <p className="text-[15px]">
                 <b>Стоимость доставки:</b>{" "}
-                {isCalculatingCourier || !courierTariff ? "считаем…" : formatPrice(courierTariff.cost)}
+                {isCalculatingCourier || !courierTariff ? "считаем…" : formatDeliveryCost(courierTariff.cost)}
               </p>
             )}
 

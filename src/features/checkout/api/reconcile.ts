@@ -11,6 +11,8 @@ interface PendingOrderDoc {
   id: number | string;
   total: number;
   paymentId?: string | null;
+  /** Платёж заведён в тестовом магазине — проверять его надо тестовыми ключами. */
+  testPayment?: boolean | null;
 }
 
 /** Не чаще одного обращения к ЮKassa на заказ: профиль опрашивает себя раз в 10 секунд. */
@@ -117,7 +119,7 @@ export async function reconcileCustomerOrders(customerId: string, now = Date.now
       if (!takeSlot(`payment:${doc.id}`, now)) continue;
 
       try {
-        const payment = await getYookassaPayment(doc.paymentId);
+        const payment = await getYookassaPayment(doc.paymentId, Boolean(doc.testPayment));
         if (payment.status === "succeeded") {
           // Сумму сверяем и здесь: проверка не должна жить только в одной из двух веток.
           if (payment.amount.value !== Number(doc.total).toFixed(2)) {

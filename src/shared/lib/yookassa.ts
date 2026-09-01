@@ -12,6 +12,8 @@ interface CreatePaymentParams {
   description: string;
   returnUrl: string;
   metadata?: Record<string, string>;
+  /** Тестовый магазин — товар помечен чекбоксом «тестовая оплата» в Payload. */
+  test: boolean;
 }
 
 /** Боевой адрес. Переопределяется только в E2E — иначе прогон создавал бы реальные платежи. */
@@ -19,11 +21,21 @@ function apiUrl(): string {
   return process.env.YOOKASSA_API_URL ?? "https://api.yookassa.ru/v3";
 }
 
-function authHeader(): string {
-  const shopId = process.env.YOOKASSA_SHOP_ID;
-  const secretKey = process.env.YOOKASSA_SECRET_KEY;
+/**
+ * Ключи магазина. Адрес API у тестового магазина тот же — отличаются только shopId и секрет,
+ * поэтому тестовый заказ проходит весь боевой путь, но денег не списывает. На боевые ключи
+ * при отсутствии тестовых не откатываемся: списать реальные деньги с того, кто проверяет
+ * чекаут, хуже, чем не создать платёж вовсе.
+ */
+function authHeader(test: boolean): string {
+  const shopId = test ? process.env.YOOKASSA_TEST_SHOP_ID : process.env.YOOKASSA_SHOP_ID;
+  const secretKey = test ? process.env.YOOKASSA_TEST_SECRET_KEY : process.env.YOOKASSA_SECRET_KEY;
   if (!shopId || !secretKey) {
-    throw new Error("YOOKASSA_SHOP_ID/YOOKASSA_SECRET_KEY не заданы в .env.local");
+    throw new Error(
+      test
+        ? "YOOKASSA_TEST_SHOP_ID/YOOKASSA_TEST_SECRET_KEY не заданы, а товар помечен «тестовая оплата»"
+        : "YOOKASSA_SHOP_ID/YOOKASSA_SECRET_KEY не заданы в .env.local",
+    );
   }
   return `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString("base64")}`;
 }
@@ -34,7 +46,7 @@ export async function createYookassaPayment(params: CreatePaymentParams): Promis
     headers: {
       "Content-Type": "application/json",
       "Idempotence-Key": params.idempotenceKey,
-      Authorization: authHeader(),
+      Authorization: authHeader(params.test),
     },
     body: JSON.stringify({
       amount: { value: params.amount.toFixed(2), currency: "RUB" },
@@ -52,11 +64,12 @@ export async function createYookassaPayment(params: CreatePaymentParams): Promis
 
 /**
  * Вебхуки ЮKassa не подписаны — единственная надёжная проверка события: перезапросить платёж
- * по id своим секретным ключом и верить только этому ответу.
+ * по id своим секретным ключом и верить только этому ответу. Ключ берётся по флагу заказа:
+ * тестовый магазин про боевой платёж ничего не знает, и наоборот.
  */
-export async function getYookassaPayment(paymentId: string): Promise<YookassaPayment> {
+export async function getYookassaPayment(paymentId: string, test: boolean): Promise<YookassaPayment> {
   const res = await fetch(`${apiUrl()}/payments/${paymentId}`, {
-    headers: { Authorization: authHeader() },
+    headers: { Authorization: authHeader(test) },
   });
   if (!res.ok) {
     throw new Error(`ЮKassa: не удалось проверить платёж (${res.status}): ${await res.text()}`);

@@ -12,6 +12,7 @@ import {
   isDadataConfigured,
 } from "@/shared/lib";
 import type { CdekCityMatch, CdekTariff, DadataAddress, AddressVerdict } from "@/shared/lib";
+import { hasFreeDelivery } from "@/entities/product";
 import { CITY_SEARCH_MIN_CHARS, ADDRESS_SEARCH_MIN_CHARS } from "../model/types";
 import { TOP_RU_CITIES } from "../model/topCities";
 import type { DeliveryType, Pvz } from "../model/types";
@@ -94,15 +95,20 @@ export interface CalculateDeliveryCostInput {
  * Возвращает не только сумму, но и код тарифа: по нему после оплаты регистрируется
  * отправление, и он обязан совпадать с тем, по которому показали цену. Город принимаем
  * кодом — он известен из выбранной подсказки, а резолв по строке попал бы в город-тёзку.
+ *
+ * У товара с «бесплатной доставкой» цена для покупателя нулевая, но тариф считается тот же:
+ * по нему регистрируется отправление, а платит за него мастерская.
  */
 export async function calculateDeliveryCost(input: CalculateDeliveryCostInput): Promise<CdekTariff> {
   const packages = deriveShipmentPackages(input.items);
-  return calculateCdekTariff({
+  const tariff = await calculateCdekTariff({
     cityCode: input.cityCode,
     type: input.type,
     packages,
     declaredValue: await declaredValueOf(input.items),
   });
+
+  return (await hasFreeDelivery(input.items)) ? { ...tariff, cost: 0 } : tariff;
 }
 
 /**

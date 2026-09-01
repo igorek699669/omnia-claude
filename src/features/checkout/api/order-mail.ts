@@ -1,7 +1,15 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import nodemailer from "nodemailer";
-import { formatPrice, formatDate, siteUrl, cdekTrackingUrl, CONTACT_EMAIL, CONTACT_PHONE } from "@/shared/lib";
+import {
+  formatPrice,
+  formatDeliveryCost,
+  formatDate,
+  siteUrl,
+  cdekTrackingUrl,
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+} from "@/shared/lib";
 
 interface NotifyOrderDoc {
   id: number | string;
@@ -126,7 +134,7 @@ export async function sendPaidOrderEmail(
     ...rows.map((r) => `— ${r.name} × ${r.qty} — ${formatPrice(r.sum)}`),
     "",
     `Товары: ${formatPrice(itemsTotal)}`,
-    `Доставка: ${deliveryLine} — ${formatPrice(order.delivery?.cost ?? 0)}`,
+    `Доставка: ${deliveryLine} — ${formatDeliveryCost(order.delivery?.cost ?? 0)}`,
     `Итого оплачено: ${formatPrice(order.total)}`,
     "",
     // Продавец на НПД: кассы нет, чек пробивается руками в «Мой налог». Напоминание здесь,
@@ -170,7 +178,7 @@ export async function sendCustomerOrderEmail(orderId: number | string): Promise<
     ...rows.map((r) => `— ${r.name} × ${r.qty} — ${formatPrice(r.sum)}`),
     "",
     `Товары: ${formatPrice(itemsTotal)}`,
-    `Доставка: ${deliveryLine} — ${formatPrice(order.delivery?.cost ?? 0)}`,
+    `Доставка: ${deliveryLine} — ${formatDeliveryCost(order.delivery?.cost ?? 0)}`,
     `Итого оплачено: ${formatPrice(order.total)}`,
     "",
     "Что дальше",

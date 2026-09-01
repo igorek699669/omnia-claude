@@ -8,6 +8,7 @@ export {
 export { notesWord, parseProductName, productHeading } from "./model/naming";
 export { getProducts, getProductBySlug, getCatalogProducts } from "./api/payload";
 export type { CatalogFilters, CatalogResult } from "./api/payload";
+export { hasFreeDelivery } from "./api/free-delivery";
 export { ProductCard } from "./ui/ProductCard";
 export { ProductGallery, PRODUCT_PAGE_IMAGE_SIZES } from "./ui/ProductGallery";
 export { ProductCardSkeleton } from "./ui/ProductCardSkeleton";

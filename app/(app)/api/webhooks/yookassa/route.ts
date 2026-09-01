@@ -8,6 +8,7 @@ interface OrderDoc {
   id: number | string;
   status: string;
   total: number;
+  testPayment?: boolean | null;
 }
 
 export async function POST(request: Request) {
@@ -23,25 +24,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid payload" }, { status: 400 });
   }
 
-  // ЮKassa не подписывает вебхуки (нет HMAC) — телу запроса не доверяем в принципе.
-  // Единственный источник правды — перезапросить платёж по id своим секретным ключом.
-  let payment;
-  try {
-    payment = await getYookassaPayment(paymentId);
-  } catch {
-    return NextResponse.json({ error: "failed to verify payment" }, { status: 502 });
-  }
-
+  // Заказ ищем раньше проверки платежа: по его флагу выбирается магазин ЮKassa (боевой или
+  // тестовый — чекбокс «тестовая оплата» у товара), а тестовый про боевой платёж не знает.
+  // Из тела при этом берётся только id как ключ поиска — статусу и сумме оттуда веры нет.
   const payload = await getPayload({ config });
   const found = await payload.find({
     collection: "orders",
-    where: { paymentId: { equals: payment.id } },
+    where: { paymentId: { equals: paymentId } },
     limit: 1,
     depth: 0,
   });
   const order = found.docs[0] as OrderDoc | undefined;
   if (!order) {
     return NextResponse.json({ ok: true });
+  }
+
+  // ЮKassa не подписывает вебхуки (нет HMAC) — телу запроса не доверяем в принципе.
+  // Единственный источник правды — перезапросить платёж по id своим секретным ключом.
+  let payment;
+  try {
+    payment = await getYookassaPayment(paymentId, Boolean(order.testPayment));
+  } catch {
+    return NextResponse.json({ error: "failed to verify payment" }, { status: 502 });
   }
 
   if (payment.status === "succeeded") {

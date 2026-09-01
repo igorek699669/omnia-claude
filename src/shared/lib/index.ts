@@ -1,4 +1,4 @@
-export { formatPrice, formatDate } from "./format";
+export { formatPrice, formatDeliveryCost, formatDate } from "./format";
 export {
   CONTACT_PHONE,
   CONTACT_PHONE_HREF,

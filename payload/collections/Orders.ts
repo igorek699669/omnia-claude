@@ -55,6 +55,10 @@ export const Orders: CollectionConfig = {
           type: "number",
           required: true,
           min: 0,
+          admin: {
+            description:
+              "Сколько за доставку заплатил покупатель. 0 — доставка отдана бесплатно (чекбокс «Бесплатная доставка» у товара); счёт от СДЭК по тарифу ниже мастерской всё равно придёт",
+          },
         },
         {
           // Значения синхронизированы вручную с src/shared/lib/delivery-providers.ts —
@@ -153,6 +157,16 @@ export const Orders: CollectionConfig = {
       unique: true,
       admin: {
         description: "id платежа ЮKassa — используется вебхуком для поиска заказа и идемпотентности",
+      },
+    },
+    {
+      name: "testPayment",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        readOnly: true,
+        description:
+          "Заказ оплачивался в тестовом магазине ЮKassa — реальных денег в нём нет. Ставится автоматически по чекбоксу товара; вебхук и сверка проверяют такой платёж тестовыми ключами",
       },
     },
     {

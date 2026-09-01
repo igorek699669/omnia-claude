@@ -24,6 +24,8 @@ interface ProductDoc {
   name: string;
   price: number;
   stockQty?: number | null;
+  testPayment?: boolean | null;
+  freeDelivery?: boolean | null;
 }
 
 interface OrderDoc {
@@ -58,6 +60,11 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
   // именно number: на Postgres id числовой, и связь в коллекции orders ждёт число.
   const orderItems: { product: number; qty: number; price: number }[] = [];
   let subtotal = 0;
+  // Чекбоксы товара из блока «Тестовый режим» (см. payload/collections/Products.ts). Флаги
+  // берём здесь же, из уже прочитанных документов, и действуют они на весь заказ, если помечен
+  // хотя бы один товар: платёж и посылка у заказа одни на всех.
+  let testPayment = false;
+  let freeDelivery = false;
   for (const item of items) {
     let doc: ProductDoc | null = null;
     try {
@@ -71,6 +78,8 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     }
     orderItems.push({ product: Number(doc.id), qty: item.qty, price: doc.price });
     subtotal += doc.price * item.qty;
+    testPayment = testPayment || Boolean(doc.testPayment);
+    freeDelivery = freeDelivery || Boolean(doc.freeDelivery);
   }
 
   // Пункт выдачи обязан лежать в городе, по которому считается тариф: это два независимых
@@ -138,13 +147,17 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
     return { error: "Не удалось рассчитать доставку. Попробуйте ещё раз." };
   }
 
+  // Сколько за доставку платит покупатель. У товара с «бесплатной доставкой» — ничего:
+  // отправление всё равно едет по посчитанному тарифу, счёт за него получит мастерская.
+  const deliveryCost = freeDelivery ? 0 : tariff.cost;
+
   // Разошлось с тем, что покупатель видел, — списывать другую сумму молча нельзя. Допуск
   // в рубль на округление у СДЭК.
-  if (Math.abs(tariff.cost - delivery.cost) > 1) {
+  if (Math.abs(deliveryCost - delivery.cost) > 1) {
     return { error: "Стоимость доставки изменилась — выберите способ доставки заново" };
   }
 
-  const total = subtotal + tariff.cost;
+  const total = subtotal + deliveryCost;
 
   let customerId: string | undefined;
   try {
@@ -162,11 +175,15 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       customerEmail: customer.email,
       customerPhone: customer.phone,
       // Сумма и тариф — серверные: по tariffCode из заказа потом регистрируется отправление,
-      // и он обязан быть тем, по которому мы сами посчитали цену.
-      delivery: { ...delivery, cost: tariff.cost, tariffCode: tariff.tariffCode },
+      // и он обязан быть тем, по которому мы сами посчитали цену. cost — то, что заплатил
+      // покупатель: у бесплатной доставки это 0, а тариф остаётся настоящим.
+      delivery: { ...delivery, cost: deliveryCost, tariffCode: tariff.tariffCode },
       items: orderItems,
       total,
       status: "pending",
+      // Магазин запоминается в заказе: платёж проверяет вебхук, а к тому моменту корзины
+      // уже нет — спросить, тестовый он был или боевой, будет не у кого.
+      testPayment,
     },
   })) as OrderDoc;
 
@@ -198,6 +215,7 @@ export async function createOrderPayment(input: CheckoutInput): Promise<Checkout
       description: `Заказ №${order.id} — Omnia`,
       returnUrl: `${siteUrl()}/checkout/success?orderId=${order.id}`,
       metadata: { orderId: String(order.id) },
+      test: testPayment,
     });
 
     await payload.update({ collection: "orders", id: order.id, data: { paymentId: payment.id } });

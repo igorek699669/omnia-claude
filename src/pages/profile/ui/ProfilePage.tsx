@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { getOrdersByCustomer, ORDER_STATUS_LABELS, isAwaitingPayment } from "@/entities/order";
 import type { Order, OrderItem } from "@/entities/order";
 import { reconcileCustomerOrders } from "@/features/checkout/server";
-import { formatPrice, formatDate, cdekTrackingUrl } from "@/shared/lib";
+import { formatPrice, formatDeliveryCost, formatDate, cdekTrackingUrl } from "@/shared/lib";
 import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
 import { OrdersLiveRefresh } from "./components/OrdersLiveRefresh";
 
@@ -58,7 +58,7 @@ function OrderCard({ order }: { order: Order }) {
         <div className="mt-5 border-t border-ink-900/10 pt-5 text-[15px]">
           <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1">
             <span className="text-ink-600">Доставка</span>
-            <span className="font-medium">{formatPrice(order.delivery.cost)}</span>
+            <span className="font-medium">{formatDeliveryCost(order.delivery.cost)}</span>
           </div>
           <p className="mt-1">
             {order.delivery.label}

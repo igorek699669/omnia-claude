@@ -106,6 +106,13 @@ jobs:
             SMS_RU_API_ID=${SMS_RU_API_ID}
             YOOKASSA_SHOP_ID=${YOOKASSA_SHOP_ID}
             YOOKASSA_SECRET_KEY=${YOOKASSA_SECRET_KEY}
+            # Тестовый магазин — для товаров с чекбоксом «тестовая оплата»
+            # (payload/collections/Products.ts): по ним прод-чекаут проходится целиком без
+            # списания денег. Ключи те же, что в локальном .env.local, и лежат прямо здесь,
+            # а не в Secrets: тестовый магазин реальных денег не двигает. Боевые заказы это
+            # не трогает — им идут YOOKASSA_SHOP_ID/YOOKASSA_SECRET_KEY выше.
+            YOOKASSA_TEST_SHOP_ID=1417637
+            YOOKASSA_TEST_SECRET_KEY=test_PjKsc2-YGwnpvwwwUUAxUhr6J6G6u1tv2j9mPj9GyuY
             # Боевой контур и код пункта приёма зашиты здесь, а не в Secrets/Variables:
             # ни то ни другое не секрет, а прод всегда на боевом договоре — локально
             # остаётся edu-контур (дефолт в src/shared/lib/cdek.ts). BRK16 — офис СДЭК,

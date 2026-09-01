@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
-import { formatPrice, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
+import { formatPrice, formatDeliveryCost, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
 import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt, CheckIcon } from "@/shared/ui";
 import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
 import { PhoneConfirmDialog } from "./components/PhoneConfirmDialog";
@@ -245,7 +245,7 @@ export function CheckoutPage() {
                   {delivery ? (
                     <span className="min-w-0 truncate text-[15px]">
                       <span className="text-ink-600">Способ доставки: </span>
-                      {delivery.label} · {formatPrice(delivery.cost)}
+                      {delivery.label} · {formatDeliveryCost(delivery.cost)}
                     </span>
                   ) : (
                     <span className="text-ink-600">Способ доставки</span>
@@ -329,7 +329,7 @@ export function CheckoutPage() {
 
                 <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
                   <div className="text-[15px] text-ink-600">
-                    <p>Доставка: {delivery ? formatPrice(delivery.cost) : "не указана"}</p>
+                    <p>Доставка: {delivery ? formatDeliveryCost(delivery.cost) : "не указана"}</p>
                     <p className="font-display text-2xl font-semibold text-ink-900">
                       Итог: {formatPrice(total)}
                     </p>
