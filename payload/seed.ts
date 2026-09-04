@@ -370,16 +370,62 @@ const products: SeedProduct[] = [
   },
 ];
 
-/** Число нот в верхней деке — последний токен имени до "+" (нижние ноты не считаются). */
-function getUpperNotes(name: string): number {
-  const lastToken = name.trim().split(/\s+/).pop() ?? "";
-  return Number(lastToken.split("+")[0]);
+/**
+ * Число нот в верхней деке = динг + ноты вне скобок (в скобках — нижние).
+ * Считаем по scaleNotes, а не по имени: имя врёт. У части товаров в названии стоит
+ * общее число нот, а не верхних, — "E Amara 16" это 11+5, "C Ashakiran 16" это 9+7,
+ * "D Kurd 17" это 13+4. Раньше фото выбиралось по имени, и такие ханги получали
+ * снимок не своей деки.
+ */
+function getUpperNotes(scaleNotes: string): number {
+  return scaleNotes
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token !== "/" && !token.startsWith("(")).length;
 }
 
+/**
+ * Съёмка деки по числу верхних нот. Форм у мастерской больше двух, но снято пока
+ * четыре — 10, 11, 12 и 13 нот; для остального берётся ближайшая по числу нот
+ * (9 верхних → фото 10-нотной деки, 16 → 13-нотной).
+ */
 const PHOTOS = [
-  { filename: "handpan-12.webp", alt: "Ханг, 12-нотная дека", upperNotes: 12 },
   { filename: "handpan-10.webp", alt: "Ханг, 10-нотная дека", upperNotes: 10 },
+  { filename: "handpan-11.webp", alt: "Ханг, 11-нотная дека", upperNotes: 11 },
+  { filename: "handpan-12.webp", alt: "Ханг, 12-нотная дека", upperNotes: 12 },
+  { filename: "handpan-13.webp", alt: "Ханг, 13-нотная дека", upperNotes: 13 },
 ] as const;
+
+/** Ссылка на media в товаре: id либо уже подгруженный документ. */
+type MediaRef = number | { id: number };
+
+const mediaId = (ref: MediaRef) => (typeof ref === "number" ? ref : ref.id);
+
+/** Загружает всю съёмку дек и возвращает выбор фото по звукоряду товара. */
+async function loadPhotoPicker(payload: Payload) {
+  const photos = await Promise.all(
+    PHOTOS.map(async (p) => ({
+      upperNotes: p.upperNotes,
+      doc: await findOrUploadPhoto(payload, p.filename, p.alt),
+    })),
+  );
+
+  const seedIds = new Set(photos.map((p) => p.doc.id));
+
+  return {
+    /** Ближайшее по числу верхних нот фото. */
+    pick(scaleNotes: string) {
+      const upper = getUpperNotes(scaleNotes);
+      return photos.reduce((best, photo) =>
+        Math.abs(photo.upperNotes - upper) < Math.abs(best.upperNotes - upper) ? photo : best,
+      ).doc;
+    },
+    /** Это одна из наших сидовых съёмок (а не фото, выставленное руками в админке)? */
+    isSeedPhoto(ref: MediaRef) {
+      return seedIds.has(mediaId(ref));
+    },
+  };
+}
 
 /** Находит media по имени файла или загружает его из public/images/products. */
 async function findOrUploadPhoto(payload: Payload, filename: string, alt: string) {
@@ -390,11 +436,23 @@ async function findOrUploadPhoto(payload: Payload, filename: string, alt: string
   });
   if (found.docs[0]) return found.docs[0];
 
-  return payload.create({
+  const created = await payload.create({
     collection: "media",
     data: { alt },
     filePath: path.resolve(process.cwd(), "public/images/products", filename),
   });
+
+  // Если в папке загрузок уже лежит посторонний файл с таким именем, Payload молча
+  // переименует загруженный (handpan-11.webp -> handpan-14.webp). Дальше его не найдёт
+  // поиск по имени — и каждый следующий прогон грузил бы ещё одну копию. Лучше упасть.
+  if (created.filename !== filename) {
+    throw new Error(
+      `Файл ${filename} загрузился как ${created.filename}: в папке загрузок Payload уже ` +
+        `есть файл с таким именем, не заведённый в коллекции media. Уберите его и повторите.`,
+    );
+  }
+
+  return created;
 }
 
 /**
@@ -450,9 +508,7 @@ export async function syncProducts(payload: Payload) {
     console.log(`Переименован слаг: ${from} -> ${to}`);
   }
 
-  const [photo12, photo10] = await Promise.all(
-    PHOTOS.map((p) => findOrUploadPhoto(payload, p.filename, p.alt)),
-  );
+  const photos = await loadPhotoPicker(payload);
 
   let created = 0;
   let updated = 0;
@@ -461,7 +517,7 @@ export async function syncProducts(payload: Payload) {
     const doc = bySlug.get(product.slug);
 
     if (!doc) {
-      const photo = getUpperNotes(product.name) === 12 ? photo12 : photo10;
+      const photo = photos.pick(product.scaleNotes);
       await payload.create({ collection: "products", data: { ...product, media: [photo.id] } });
       created++;
       console.log(`Создан: ${product.slug}`);
@@ -526,28 +582,37 @@ export async function syncProducts(payload: Payload) {
  * на который ссылается оформленный заказ, Postgres всё равно не даст
  * (orders_items.product_id NOT NULL), да и терять связь заказа с инструментом нельзя.
  *
- * Идемпотентна: media ищутся по имени файла, товары с непустым media[] пропускаются —
- * значит фото, выставленные вручную через админку, не перетираются.
+ * Пустой media[] заполняется, а уже стоящее фото заменяется только если это одна из
+ * съёмок из PHOTOS: раскладка дек пересматривалась (сначала было два снимка, теперь
+ * четыре), и товар мог остаться с кадром не своей деки. Всё, что залито в админке
+ * руками, не трогаем — это и есть реальная съёмка товара.
+ *
+ * Идемпотентна: media ищутся по имени файла, повторный запуск ничего не меняет.
  */
 export async function attachProductPhotos(payload: Payload) {
-  const [photo12, photo10] = await Promise.all(
-    PHOTOS.map((p) => findOrUploadPhoto(payload, p.filename, p.alt)),
-  );
+  const photos = await loadPhotoPicker(payload);
 
   const all = await payload.find({ collection: "products", limit: 1000 });
   let updated = 0;
 
   for (const doc of all.docs) {
-    if (Array.isArray(doc.media) && doc.media.length > 0) continue;
+    const media = Array.isArray(doc.media) ? doc.media : [];
+    // Больше одного кадра — это уже собранная вручную галерея, её не разбираем.
+    if (media.length > 1) continue;
 
-    const photo = getUpperNotes(doc.name) === 12 ? photo12 : photo10;
+    const current = media[0] === undefined ? undefined : mediaId(media[0]);
+    if (current !== undefined && !photos.isSeedPhoto(current)) continue;
+
+    const photo = photos.pick(doc.scaleNotes);
+    if (current === photo.id) continue;
+
     await payload.update({
       collection: "products",
       id: doc.id,
       data: { media: [photo.id] },
     });
     updated++;
-    console.log(`Фото проставлено: ${doc.slug}`);
+    console.log(`Фото проставлено: ${doc.slug} -> ${photo.filename}`);
   }
 
   console.log(`Готово. Обновлено товаров: ${updated} из ${all.docs.length}.`);
@@ -575,22 +640,13 @@ export async function runSeed(payload: Payload) {
     await payload.delete({ collection: "media", id: doc.id });
   }
 
-  // У мастерской 2 формы верхней деки — 12-нотная и остальные (см. ProductCard).
-  // Пока по одному фото на форму; позже здесь появится реальная съёмка по каждому товару
-  // и поле video — тогда в media[] будет несколько кадров и подключится слайдер.
-  const photo12 = await payload.create({
-    collection: "media",
-    data: { alt: "Ханг, 12-нотная дека" },
-    filePath: path.resolve(process.cwd(), "public/images/products/handpan-12.webp"),
-  });
-  const photo10 = await payload.create({
-    collection: "media",
-    data: { alt: "Ханг, 10-нотная дека" },
-    filePath: path.resolve(process.cwd(), "public/images/products/handpan-10.webp"),
-  });
+  // Одно фото на форму верхней деки (см. PHOTOS). Позже здесь появится реальная съёмка
+  // по каждому товару и поле video — тогда в media[] будет несколько кадров и
+  // подключится слайдер.
+  const photos = await loadPhotoPicker(payload);
 
   for (const product of products) {
-    const photo = getUpperNotes(product.name) === 12 ? photo12 : photo10;
+    const photo = photos.pick(product.scaleNotes);
     await payload.create({ collection: "products", data: { ...product, media: [photo.id] } });
     console.log(`Создано: ${product.slug}`);
   }
