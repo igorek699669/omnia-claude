@@ -18,8 +18,11 @@ export function ProductCard({
 }) {
   const media = product.media;
 
+  // h-full — чтобы в сетке каталога карточка занимала всю растянутую ячейку: иначе
+  // соседи в ряду разной высоты, когда у одного название или звукоряд длиннее.
+  // Нижний блок уже flex-1 с mt-auto у кнопки, так что лишняя высота уходит туда.
   return (
-    <article className="flex flex-col overflow-hidden rounded-card bg-white transition-all hover:-translate-y-1 hover:shadow-[0_32px_64px_-32px_rgba(28,20,16,0.3)]">
+    <article className="flex h-full flex-col overflow-hidden rounded-card bg-white transition-all hover:-translate-y-1 hover:shadow-[0_32px_64px_-32px_rgba(28,20,16,0.3)]">
       <div className="bg-white pt-5">
         <div className="relative aspect-[4/3] overflow-hidden">
           {!product.inStock && (
