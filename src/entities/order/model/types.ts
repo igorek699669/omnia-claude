@@ -32,6 +32,8 @@ export function isAwaitingPayment(order: Order, now: number = Date.now()): boole
 export interface OrderItem {
   productName: string;
   productSlug?: string;
+  /** Первый кадр товара. Нет у заказа, чей инструмент удалён из каталога или заведён без фото. */
+  image?: { url: string; alt: string };
   scaleNotes?: string;
   notesCount?: number;
   tuningHz?: "440" | "432";

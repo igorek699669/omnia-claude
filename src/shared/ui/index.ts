@@ -21,6 +21,7 @@ export { Skeleton } from "./Skeleton";
 
 export { ErrorState } from "./ErrorState";
 export { HandpanArt } from "./assets/HandpanArt";
+export { ProductThumb } from "./ProductThumb";
 export {
   ArrowLeftIcon,
   ArrowRightIcon,

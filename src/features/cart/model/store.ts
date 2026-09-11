@@ -12,6 +12,12 @@ export interface CartItem {
   price: number;
   oldPrice?: number;
   qty: number;
+  /**
+   * Первый кадр товара, снятый в момент добавления. Опционально: у корзин, сложенных до
+   * появления поля, его нет — стор переживает перезагрузку, и такие позиции обязаны
+   * рисоваться дальше, просто с заглушкой вместо фото.
+   */
+  image?: { url: string; alt: string };
 }
 
 interface CartState {
@@ -68,6 +74,7 @@ export const useCart = create<CartState>()(
                 price: product.price,
                 oldPrice: product.oldPrice,
                 qty: 1,
+                image: product.media[0],
               },
             ],
           };

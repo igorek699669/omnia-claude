@@ -10,7 +10,7 @@ import { z } from "zod";
 import { useCart, cartTotal } from "@/features/cart";
 import { createOrderPayment, type CheckoutInput } from "@/features/checkout";
 import { formatPrice, formatDeliveryCost, useSession, formatPhone, isValidRuPhone } from "@/shared/lib";
-import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, HandpanArt, CheckIcon } from "@/shared/ui";
+import { SectionTitle, ArrowButton, Checkbox, Backdrop, LegalLinks, PhoneInput, ProductThumb, CheckIcon } from "@/shared/ui";
 import { DeliveryPicker, type Delivery } from "@/features/select-delivery";
 import { PhoneConfirmDialog } from "./components/PhoneConfirmDialog";
 
@@ -309,9 +309,7 @@ export function CheckoutPage() {
                   {orderItems.map((item) => (
                     <li key={item.productId} className="flex items-center gap-3">
                       <div className="relative shrink-0">
-                        <div className="grid size-12 place-items-center overflow-hidden rounded-xl bg-paper-200">
-                          <HandpanArt className="h-3/4 w-3/4" />
-                        </div>
+                        <ProductThumb image={item.image} size={48} className="rounded-xl" />
                         <span className="absolute -left-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-brand text-[11px] font-semibold text-white">
                           {item.qty}
                         </span>

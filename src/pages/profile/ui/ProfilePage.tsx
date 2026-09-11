@@ -6,7 +6,7 @@ import { getOrdersByCustomer, ORDER_STATUS_LABELS, isAwaitingPayment } from "@/e
 import type { Order, OrderItem } from "@/entities/order";
 import { reconcileCustomerOrders } from "@/features/checkout/server";
 import { formatPrice, formatDeliveryCost, formatDate, cdekTrackingUrl } from "@/shared/lib";
-import { Tag, SectionTitle, HandpanArt } from "@/shared/ui";
+import { Tag, SectionTitle, ProductThumb } from "@/shared/ui";
 import { OrdersLiveRefresh } from "./components/OrdersLiveRefresh";
 
 export async function ProfilePage() {
@@ -96,9 +96,7 @@ function OrderItemRow({ item }: { item: OrderItem }) {
 
   return (
     <li className="flex items-center gap-4">
-      <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-paper-200">
-        <HandpanArt className="h-3/4 w-3/4" />
-      </div>
+      <ProductThumb image={item.image} size={64} />
 
       <div className="min-w-0 flex-1">
         {item.productSlug ? (

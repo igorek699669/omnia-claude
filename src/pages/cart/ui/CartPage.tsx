@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCart, cartTotal } from "@/features/cart";
 import { formatPrice, reachGoal, GOALS } from "@/shared/lib";
-import { Tag, SectionTitle, ArrowLink, Checkbox, HandpanArt, TrashIcon } from "@/shared/ui";
+import { Tag, SectionTitle, ArrowLink, Checkbox, ProductThumb, TrashIcon } from "@/shared/ui";
 
 export function CartPage() {
   const { items, selectedIds, setQty, remove, select } = useCart();
@@ -81,9 +81,7 @@ export function CartPage() {
                       onCheckedChange={() => toggleOne(item.productId)}
                       aria-label={`Выбрать «${item.name}»`}
                     />
-                    <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-paper-200">
-                      <HandpanArt className="h-3/4 w-3/4" />
-                    </div>
+                    <ProductThumb image={item.image} size={64} />
                     <div className="min-w-0 flex-1 sm:min-w-45">
                       <Link href={`/product/${item.slug}`} className="font-display text-lg font-medium hover:text-brand-dark">
                         {item.name}

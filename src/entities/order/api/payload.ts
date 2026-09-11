@@ -7,6 +7,11 @@ import type { Order, OrderStatus } from "../model/types";
  * см. аналогичный комментарий в entities/product/api/payload.ts.
  * items[].product раскрывается до полного Product-документа при depth >= 1 (по умолчанию).
  */
+interface MediaRef {
+  url?: string | null;
+  alt?: string | null;
+}
+
 interface ProductRef {
   id: number | string;
   name: string;
@@ -14,6 +19,8 @@ interface ProductRef {
   scaleNotes?: string | null;
   notesCount?: number | null;
   tuningHz?: "440" | "432" | null;
+  /** Раскрыт только при depth >= 2: сам товар лежит на первом уровне, его кадры на втором. */
+  media?: (MediaRef | number | string)[] | null;
 }
 
 interface OrderDoc {
@@ -38,9 +45,13 @@ interface OrderDoc {
 function toOrderItem(item: OrderDoc["items"][number]) {
   // Связь раскрыта только при depth >= 1; если товар удалён из каталога, здесь придёт null.
   const product = typeof item.product === "object" && item.product ? item.product : null;
+  const cover = (product?.media ?? []).find(
+    (m): m is MediaRef => typeof m === "object" && m !== null && !!m.url,
+  );
   return {
     productName: product?.name ?? "Товар",
     productSlug: product?.slug ?? undefined,
+    image: cover ? { url: cover.url as string, alt: cover.alt ?? product?.name ?? "Ханг" } : undefined,
     scaleNotes: product?.scaleNotes ?? undefined,
     notesCount: product?.notesCount ?? undefined,
     tuningHz: product?.tuningHz ?? undefined,
@@ -76,6 +87,10 @@ export async function getOrdersByCustomer(customerId: string): Promise<Order[]> 
     where: { customerId: { equals: customerId } },
     sort: "-createdAt",
     limit: 50,
+    // Ровно столько, сколько нужно кадру товара: сам товар на первом уровне, его media на
+    // втором. Совпадает с умолчанием Payload, но записано явно — иначе смена умолчания
+    // молча оставила бы заказы в кабинете с заглушками вместо фото.
+    depth: 2,
   });
   return (result.docs as OrderDoc[]).map(toOrder);
 }
