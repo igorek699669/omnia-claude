@@ -36,9 +36,27 @@ const faq = [
   ],
 ] as const;
 
+/**
+ * Разметка FAQPage собирается из того же массива, что и аккордеон: разойтись с видимым
+ * текстом она не может, а поисковик требует именно совпадения — ответ, которого нет на
+ * странице, считается обманом и снимает расширенный сниппет со всего сайта.
+ */
+function faqJsonLd(): string {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map(([question, answer]) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
+    })),
+  }).replace(/</g, "\\u003c");
+}
+
 export function Faq() {
   return (
     <section id="faq" className="mx-auto max-w-[1440px] scroll-mt-24 px-5 py-24 md:px-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJsonLd() }} />
       <div className="grid items-start gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
         <div className="relative mx-auto aspect-square w-full max-w-[520px] overflow-hidden rounded-card bg-ink-900 lg:sticky lg:top-28">
           <Image
