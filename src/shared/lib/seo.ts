@@ -3,14 +3,18 @@ import { CONTACT_EMAIL, CONTACT_PHONE_HREF, CONTACT_TELEGRAM_URL, CONTACT_WHATSA
 import { SELLER_INN, SELLER_LEGAL_NAME } from "./legal";
 
 /**
- * Картинка превью по умолчанию — единственный кадр с пропорцией под соцсети (1918×1007).
+ * Картинка превью по умолчанию: тот же кадр стального ханга, сведённый под соцсети.
  * Лежит отдельно, потому что Next не сливает openGraph дочерней страницы с родительским, а
  * заменяет целиком: страница со своим openGraph без images осталась бы вовсе без превью.
+ *
+ * Отдельный файл, а не исходный кадр со страницы: превью качает мессенджер напрямую, мимо
+ * оптимизации next/image, — и прозрачный фон PNG темнеет там, где подложка чёрная.
+ * 1200×630 — размер, который ждут и Telegram, и VK, и поисковики.
  */
 export const DEFAULT_OG_IMAGE = {
-  url: "/images/steel/steel-handpan.png",
-  width: 1918,
-  height: 1007,
+  url: "/images/og-cover.jpg",
+  width: 1200,
+  height: 630,
 } as const;
 
 /**

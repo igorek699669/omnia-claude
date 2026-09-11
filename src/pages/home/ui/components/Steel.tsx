@@ -25,10 +25,13 @@ export function Steel() {
           ))}
         </div>
         <Image
-          src="/images/steel/steel-handpan.png"
+          src="/images/steel/steel-handpan.webp"
           alt="Ханг из нержавеющей стали, вид сбоку"
           width={1918}
           height={1007}
+          // Без sizes Next отдал бы исходные 1918px и 3840px для ретины, хотя кадр нигде
+          // не шире 420px: srcset считается от width, а не от того, как он показан.
+          sizes="(min-width: 1024px) 34vw, 70vw"
           className="h-auto w-[min(420px,70vw)] drop-shadow-[0_32px_48px_rgba(28,20,16,0.3)] lg:w-[min(420px,34vw)]"
         />
         <div className="flex flex-col gap-12">

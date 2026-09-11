@@ -11,19 +11,19 @@ const steps = [
     title: "Бережно собираем",
     text: "Убираем инструмент в защитный тканевый чехол.",
     caption: "Инструмент в защитном чехле",
-    image: "/images/delivery/cover.jpg",
+    image: "/images/delivery/cover.webp",
   },
   {
     title: "Надёжно упаковываем",
     text: "Дополнительный слой защиты: пенопластовый ложемент внутри плотного короба.",
     caption: "Уложен в короб с пенопластовым ложементом",
-    image: "/images/delivery/packed.jpg",
+    image: "/images/delivery/packed.webp",
   },
   {
     title: "Отправляем удобным для вас способом",
     text: "СДЭК до двери или пункта выдачи. Трек-номер и статус — в личном кабинете.",
     caption: "Короб готов к передаче в СДЭК",
-    image: "/images/delivery/box.jpg",
+    image: "/images/delivery/box.webp",
   },
 ];
 

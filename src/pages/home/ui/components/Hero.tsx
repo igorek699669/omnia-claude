@@ -26,7 +26,7 @@ export function Hero() {
 
         <div className="mx-auto w-full max-w-140 lg:max-w-none">
           <Image
-            src="/images/hero/hero-handpan.png"
+            src="/images/hero/hero-handpan.webp"
             alt="Ханг из нержавеющей стали"
             width={513}
             height={501}
