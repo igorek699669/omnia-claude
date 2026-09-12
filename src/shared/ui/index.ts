@@ -2,7 +2,6 @@ export { ArrowButton, ArrowLink } from "./ArrowButton";
 export { Tag } from "./Tag";
 export { SectionTitle } from "./SectionTitle";
 export { Breadcrumbs } from "./Breadcrumbs";
-export { GoalLink } from "./GoalLink";
 export type { Crumb } from "./Breadcrumbs";
 export { Checkbox } from "./Checkbox";
 export { RadioGroup, RadioChip } from "./RadioGroup";

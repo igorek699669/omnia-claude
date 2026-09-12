@@ -26,8 +26,6 @@ import {
   formatPhone,
   CONTACT_PHONE,
   CONTACT_PHONE_HREF,
-  reachGoal,
-  GOALS,
 } from "@/shared/lib";
 
 const nav = [
@@ -69,7 +67,6 @@ export function Header() {
           <div className="ml-auto flex items-center gap-2 sm:gap-4">
             <a
               href={CONTACT_PHONE_HREF}
-              onClick={() => reachGoal(GOALS.phoneClick, { place: "header" })}
               className="hidden text-[15px] font-medium sm:block"
             >
               {CONTACT_PHONE}
@@ -190,7 +187,6 @@ export function Header() {
             <li className="mt-1">
               <a
                 href={CONTACT_PHONE_HREF}
-                onClick={() => reachGoal(GOALS.phoneClick, { place: "menu" })}
                 className="block font-display text-[22px] font-medium sm:hidden"
               >
                 {CONTACT_PHONE}
@@ -198,7 +194,7 @@ export function Header() {
             </li>
             <li className="mt-1 flex gap-2.5">
               {MESSENGERS.map(({ id, label, href, Icon }) => (
-                <Messenger key={id} label={label} href={href} channel={id}>
+                <Messenger key={id} label={label} href={href}>
                   <Icon size={18} />
                 </Messenger>
               ))}
@@ -213,12 +209,10 @@ export function Header() {
 function Messenger({
   label,
   href,
-  channel,
   children,
 }: {
   label: string;
   href: string;
-  channel: string;
   children: React.ReactNode;
 }) {
   return (
@@ -227,7 +221,6 @@ function Messenger({
       aria-label={label}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => reachGoal(GOALS.messengerClick, { channel, place: "menu" })}
       className="grid size-10.5 place-items-center rounded-full border border-ink-900/15 transition-colors hover:border-brand hover:bg-paper-100 hover:text-brand"
     >
       {children}

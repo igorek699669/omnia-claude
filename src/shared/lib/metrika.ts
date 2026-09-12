@@ -24,12 +24,15 @@ export function ym(action: string, ...args: unknown[]): void {
   window.ym?.(METRIKA_ID, action, ...args);
 }
 
+/**
+ * Только те действия, о которых Метрика сама знать не может. Клики по телефону, почте и
+ * ссылкам в мессенджеры считаются автоцелями в самом кабинете — дублировать их вручную
+ * значит получить две цифры на одно событие.
+ */
 export const GOALS = {
   addToCart: "add-to-cart",
   checkoutStarted: "checkout-started",
   orderPaid: "order-paid",
-  messengerClick: "messenger-click",
-  phoneClick: "phone-click",
   restockSubscribed: "restock-subscribed",
   audioPlay: "audio-play",
 } as const;

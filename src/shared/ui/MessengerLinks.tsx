@@ -1,8 +1,3 @@
-"use client";
-
-// Клиентский не ради состояния, а ради счёта: клик по мессенджеру — это лид, и без него
-// в Метрике видно только «сколько зашло».
-import { reachGoal, GOALS } from "@/shared/lib";
 import { MESSENGERS } from "./messengers";
 
 const tone =
@@ -31,7 +26,6 @@ export function MessengerLinks({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Написать в ${label}`}
-          onClick={() => reachGoal(GOALS.messengerClick, { channel: id })}
           className={`group relative grid place-items-center rounded-full transition-colors ${tone} ${lg ? "size-[58px]" : "size-9"}`}
         >
           <Icon size={lg ? 24 : 17} />
