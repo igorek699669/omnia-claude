@@ -28,8 +28,8 @@ export function Hero() {
           <Image
             src="/images/hero/hero-handpan.webp"
             alt="Ханг из нержавеющей стали"
-            width={513}
-            height={501}
+            width={1000}
+            height={1000}
             priority
             className="aspect-square w-full rounded-full object-cover shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]"
           />

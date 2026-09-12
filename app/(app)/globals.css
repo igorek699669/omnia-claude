@@ -8,6 +8,9 @@
   --color-paper-200: #e7e1d8;
   --color-ink-900: #1c1410;
   --color-ink-600: #6f6259;
+  /* Ссылка внутри текста ответа: brand на светлой бумаге не добирает контраста для
+     мелкого шрифта, этот оттенок проходит по AA. */
+  --color-brand-link: #aa4300;
 
   --font-display: var(--font-jost), sans-serif;
   --font-body: var(--font-golos), sans-serif;

@@ -3,6 +3,7 @@ import { Quote } from "./components/Quote";
 import { PopularProducts } from "./components/PopularProducts";
 // import { SoundPicker } from "./components/SoundPicker"; // временно скрыт, вернуть позже
 import { Steel } from "./components/Steel";
+import { HandpanGuide } from "./components/HandpanGuide";
 import { Firsthand } from "./components/Firsthand";
 import { DeliverySteps } from "./components/DeliverySteps";
 import { CtaBand } from "./components/CtaBand";
@@ -16,6 +17,7 @@ export function HomePage() {
       <PopularProducts />
       {/* <SoundPicker /> временно скрыт, вернуть позже */}
       <Steel />
+      <HandpanGuide />
       <Firsthand />
       <DeliverySteps />
       <CtaBand />

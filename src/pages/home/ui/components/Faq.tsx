@@ -1,83 +1,39 @@
 import Image from "next/image";
-import { Tag, SectionTitle, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/shared/ui";
-
-const faq = [
-  [
-    "Какой ханг подойдёт новичку?",
-    "Начинать проще всего с 9–10 нот в строе D Kurd — это натуральный ре-минор, самый популярный и универсальный строй: он спокойно звучит сам по себе и легко ложится в игру с другими инструментами.",
-  ],
-  [
-    "Сколько нот должно быть у ханга?",
-    "Новичку хватает 9–10 нот: поля крупнее, расположение нот простое, ошибиться сложно. 13 нот и больше дают больше возможностей, но играть на них сложнее и стоят они дороже. Больше нот — не значит лучше, всё зависит от уровня и задач.",
-  ],
-  [
-    "Сколько стоит хороший ханг?",
-    "Качественный инструмент на 9–10 нот стоит примерно от 80 000 ₽, модели на 16–20 нот — 130 000–160 000 ₽. Сувенирные «ханги» за 15–20 тысяч брать не советуем: они глухо звучат и почти сразу уходят из строя.",
-  ],
-  [
-    "440 Гц или 432 Гц?",
-    "440 Гц — стандартный концертный строй: с таким хангом вы сыграете с гитарой, пианино и любым другим инструментом. 432 Гц звучит чуть ниже, его часто описывают как более «тёплый» и берут для медитаций и звукотерапии. Все наши инструменты настроены в 440 Гц.",
-  ],
-  [
-    "Можно ли послушать ханг до покупки?",
-    "Да. У каждого инструмента в каталоге есть запись его реального строя — это не общий семпл, а звук именно того ханга, который вы получите.",
-  ],
-  [
-    "Какой размер выбрать?",
-    "Все наши ханги одного размера — 53 см в диаметре плюс 3 см окантовки, вес около 3,8 кг. Такой корпус удобно держать на коленях и носить с собой, при этом ноты остаются достаточно крупными.",
-  ],
-  [
-    "Какой строй взять, если хочется играть с другими музыкантами?",
-    "Берите минорный строй в ре — D Kurd или Amara. Это классика, под которую играет большинство музыкантов, так что вы легко попадёте в общую джем-сессию.",
-  ],
-  [
-    "Из какого металла делают ханги?",
-    "Мы работаем с нержавеющей сталью Ember: она не ржавеет, дольше держит строй и даёт длинное послезвучие с богатыми обертонами. Встречается ещё нитрированная сталь: звучит суше, требует регулярной смазки, иначе появляется ржавчина.",
-  ],
-] as const;
+import { ORDER_FAQ, faqPageJsonLd } from "../../model/faq-content";
+import { FaqList } from "./FaqList";
 
 /**
- * Разметка FAQPage собирается из того же массива, что и аккордеон: разойтись с видимым
- * текстом она не может, а поисковик требует именно совпадения — ответ, которого нет на
- * странице, считается обманом и снимает расширенный сниппет со всего сайта.
+ * Вопросы о заказе, доставке и возврате — последний блок перед подвалом.
+ *
+ * Видимого заголовка и плашки нет сознательно: выше стоит «Остались вопросы?», и второй
+ * заголовок подряд только повторял бы его. Имя секции для скринридера задано aria-label.
+ *
+ * Разметка FAQPage выводится здесь одна на всю страницу и охватывает все 24 ответа — и
+ * восемь здешних, и шестнадцать из блока с видео. Собирается из тех же данных, что и
+ * видимый текст: ответ, которого нет на странице, поисковик считает обманом.
  */
-function faqJsonLd(): string {
-  return JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map(([question, answer]) => ({
-      "@type": "Question",
-      name: question,
-      acceptedAnswer: { "@type": "Answer", text: answer },
-    })),
-  }).replace(/</g, "\\u003c");
-}
-
 export function Faq() {
   return (
-    <section id="faq" className="mx-auto max-w-[1440px] scroll-mt-24 px-5 py-24 md:px-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJsonLd() }} />
-      <div className="grid items-start gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
-        <div className="relative mx-auto aspect-square w-full max-w-[520px] overflow-hidden rounded-card bg-ink-900 lg:sticky lg:top-28">
+    <section
+      id="faq"
+      aria-label="Вопросы о заказе и доставке"
+      className="mx-auto max-w-[1440px] scroll-mt-24 px-5 pb-16 pt-6 md:px-12 lg:pb-24 lg:pt-18"
+    >
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqPageJsonLd() }} />
+
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-16">
+        {/* На телефоне вопросы идут первыми, фотография уходит под них — отсюда порядок в
+            разметке и перестановка колонок на большом экране. */}
+        <FaqList items={ORDER_FAQ} idPrefix="order-" className="lg:col-start-2 lg:row-start-1" />
+
+        <div className="relative mx-auto aspect-[4/3] w-full max-w-[350px] overflow-hidden rounded-[25px] bg-ink-900 lg:col-start-1 lg:row-start-1 lg:aspect-square lg:max-w-[520px] lg:self-start lg:rounded-[36px] lg:sticky lg:top-27">
           <Image
             src="/images/faq/tuning.webp"
             alt="Настройка ханга в мастерской: мастер снимает спектр ноты по экрану тюнера"
             fill
-            sizes="(min-width: 1024px) 900px, 100vw"
+            sizes="(min-width: 1024px) 520px, 350px"
             className="object-cover object-[38%_50%]"
           />
-        </div>
-        <div>
-          <Tag>FAQ</Tag>
-          <SectionTitle className="mb-6 mt-5">Часто задаваемые вопросы</SectionTitle>
-          <Accordion type="multiple" defaultValue={[faq[0][0]]}>
-            {faq.map(([q, a]) => (
-              <AccordionItem key={q} value={q}>
-                <AccordionTrigger>{q}</AccordionTrigger>
-                <AccordionContent>{a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
         </div>
       </div>
     </section>
