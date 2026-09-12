@@ -3,7 +3,7 @@
  * нужна не для прода, а чтобы счётчик можно было выключить: в E2E она пустая, иначе каждый
  * прогон стучался бы на mc.yandex.ru и мешался с живыми визитами.
  */
-const RAW_ID = process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID ?? "111975075";
+const RAW_ID = process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID ?? "112522716";
 
 /** null — счётчик выключен, подключать нечего. */
 export const METRIKA_ID: number | null = RAW_ID.trim() === "" ? null : Number(RAW_ID);
