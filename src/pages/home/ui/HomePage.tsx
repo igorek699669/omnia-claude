@@ -1,6 +1,6 @@
 import { Hero } from "./components/Hero";
 import { Quote } from "./components/Quote";
-import { PopularProducts } from "./components/PopularProducts";
+import { OurProducts } from "./components/OurProducts";
 // import { SoundPicker } from "./components/SoundPicker"; // временно скрыт, вернуть позже
 import { Steel } from "./components/Steel";
 import { HandpanGuide } from "./components/HandpanGuide";
@@ -14,7 +14,7 @@ export function HomePage() {
     <>
       <Hero />
       <Quote />
-      <PopularProducts />
+      <OurProducts />
       {/* <SoundPicker /> временно скрыт, вернуть позже */}
       <Steel />
       <HandpanGuide />
