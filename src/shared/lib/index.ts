@@ -9,7 +9,7 @@ export {
   CONTACT_WHATSAPP_URL,
   CONTACT_MAX_URL,
 } from "./contacts";
-export { COOKIE_CONSENT_KEY } from "./storage-keys";
+export { COOKIE_NOTICE_KEY } from "./storage-keys";
 export {
   SELLER_LEGAL_NAME,
   SELLER_TAX_STATUS,
@@ -19,8 +19,7 @@ export {
   SELLER_RESPONSE_TIME,
   CONSENT_TEXT_VERSION,
 } from "./legal";
-export { hasAnalyticsConsent, useCookieConsent } from "./cookie-consent";
-export type { CookieConsent } from "./cookie-consent";
+export { useCookieNotice } from "./cookie-notice";
 export { authClient, useSession, signOut } from "./auth-client";
 export { errorMessage } from "./auth-errors";
 export { normalizePhone, isValidRuPhone, formatPhone } from "./phone";

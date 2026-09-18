@@ -1,2 +1,2 @@
-/** Ключ персиста Zustand для выбора по cookie (см. cookie-consent.ts). */
-export const COOKIE_CONSENT_KEY = "omnia-cookie-consent";
+/** Ключ персиста Zustand для уведомления о cookie (см. cookie-notice.ts). */
+export const COOKIE_NOTICE_KEY = "omnia-cookie-notice";

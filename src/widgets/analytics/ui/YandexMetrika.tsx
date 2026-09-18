@@ -3,17 +3,17 @@
 import { useEffect } from "react";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
-import { METRIKA_ID, ym, hasAnalyticsConsent, useCookieConsent } from "@/shared/lib";
+import { METRIKA_ID, ym } from "@/shared/lib";
 
 /**
- * Счётчик Яндекс.Метрики. Подключается только после согласия на аналитические cookie — до
- * этого на странице нет ни скрипта, ни запроса к mc.yandex.ru: ради этого баннер и заводился.
+ * Счётчик Яндекс.Метрики. Подключается на каждой странице без условий: аналитика и запись
+ * сеансов отнесены к необходимым файлам, и плашка внизу экрана только уведомляет об этом —
+ * отказаться можно настройками браузера или блокировщиком, см. /cookie-policy.
  *
  * Официальный сниппет вставлен как есть, а не заменён на <Script src>: он создаёт заглушку
  * window.ym до загрузки tag.js, и цели сразу после инициализации не теряются.
  */
 export function YandexMetrika() {
-  const allowed = useCookieConsent(hasAnalyticsConsent);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -21,11 +21,10 @@ export function YandexMetrika() {
     // считает init, а до него ym() ничего не делает, так что дубля не будет. Зависимость
     // только от pathname: фильтры каталога живут в query, и хит на каждое их изменение
     // раздул бы просмотры. Полный адрес берём из location — параметры сохранятся.
-    if (!allowed) return;
     ym("hit", window.location.href);
-  }, [pathname, allowed]);
+  }, [pathname]);
 
-  if (METRIKA_ID === null || !allowed) return null;
+  if (METRIKA_ID === null) return null;
 
   return (
     <Script id="yandex-metrika" strategy="afterInteractive">
