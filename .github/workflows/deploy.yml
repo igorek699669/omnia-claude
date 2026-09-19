@@ -82,12 +82,39 @@ jobs:
           envs: SEED,GITHUB_TOKEN,GITHUB_ACTOR,POSTGRES_PASSWORD,BETTER_AUTH_SECRET,BETTER_AUTH_URL,PAYLOAD_SECRET,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMS_RU_API_ID,YOOKASSA_SHOP_ID,YOOKASSA_SECRET_KEY,CDEK_ACCOUNT,CDEK_SECURE_PASSWORD,DADATA_API_KEY
           script: |
             set -e
+
+            # GitHub с российского сервера доступен через раз: ТСПУ периодически кладёт
+            # соединение в чёрную дыру — TCP не встаёт вовсе, запрос висит до таймаута.
+            # Замер с прода 19.09.2026: три запроса подряд по 0.5 с, следующие три —
+            # 8 с с connect=0.00, то есть ответа на SYN нет совсем. Без повторов деплой
+            # умирает на первой же команде: git fetch виснет ~2 минуты, set -e обрывает
+            # скрипт, и на сервер не доезжает ничего — ни коммит, ни .env, ни образы.
+            # Так он упал дважды подряд в тот день. То же самое касается ghcr.io ниже:
+            # это та же инфраструктура GitHub и та же дыра.
+            retry() {
+              n=1
+              while [ $n -le 5 ]; do
+                if "$@"; then return 0; fi
+                # Пауза только между попытками: спать после последней нечего,
+                # это впустую растянуло бы падение ещё на минуту с лишним.
+                if [ $n -lt 5 ]; then
+                  echo "::warning::попытка $n не удалась: $* — жду $((n * 15)) с"
+                  sleep $((n * 15))
+                fi
+                n=$((n + 1))
+              done
+              echo "::error::пять попыток подряд не удались: $*"
+              return 1
+            }
+
             mkdir -p /opt/omnia
             cd /opt/omnia
             if [ ! -d .git ]; then
-              git clone https://github.com/${{ github.repository }}.git .
+              retry git clone https://github.com/${{ github.repository }}.git .
             else
-              git fetch origin main
+              # timeout, а не голый fetch: заблокированное соединение висит минутами,
+              # и без него пять попыток растянулись бы дольше, чем длится сам сбой.
+              retry timeout 60 git fetch origin main
               git reset --hard origin/main
             fi
 
@@ -131,7 +158,11 @@ jobs:
             echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
             # --profile tools обязателен и здесь: без него pull пропускает сервис migrate
             # (у него profiles: ["tools"]), и запускается старый закешированный образ.
-            docker compose -f docker-compose.prod.yml --profile tools pull
+            # retry по той же причине, что и у git fetch выше: ghcr.io — инфраструктура
+            # GitHub, и с российского адреса отваливается ровно так же. Своего timeout
+            # тут нет: pull тянет 370 МБ, минутного потолка ему мало, а docker на
+            # оборванном соединении отваливается сам.
+            retry docker compose -f docker-compose.prod.yml --profile tools pull
             # SEED передаём только при ручном запуске с выбранным режимом: обычный push
             # в main каталог не трогает (SEED пустой -> deploy:migrate обновит только схему).
             docker compose -f docker-compose.prod.yml --profile tools run --rm -e SEED="$SEED" migrate
