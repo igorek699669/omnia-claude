@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getProducts, ProductCard, ProductCardSkeleton } from "@/entities/product";
+import { getProducts, ProductCard, ProductCardSkeleton, type Product } from "@/entities/product";
 import { AddToCartButton } from "@/features/cart";
 import { NotifyMeButton } from "@/features/notify-me";
 import { Tag, SectionTitle, ArrowLink, Slider } from "@/shared/ui";
@@ -8,6 +8,15 @@ import { Tag, SectionTitle, ArrowLink, Slider } from "@/shared/ui";
 /** Сколько карточек-скелетов показать, пока витрина грузится, — столько же влезает в ряд. */
 const SKELETON_COUNT = 3;
 const SLIDE_WIDTH = "basis-[86%] md:basis-1/2 xl:basis-1/3";
+/**
+ * Сколько карточек витрины приходит в HTML сразу: три видны на десктопе, четвёртая — запас
+ * под первое листание. Остальные слайдер досылает по мере прокрутки (loadSlides): весь
+ * каталог в разметке главной занимал две трети её веса и на мобильном задерживал первую
+ * отрисовку (PageSpeed, 21.09.2026).
+ */
+const INITIAL_SLIDES = 4;
+/** Больше за раз слайдер не просит — всё, что сверх, похоже не на прокрутку, а на перебор. */
+const MAX_BATCH = 12;
 
 /**
  * Заголовок секции — статика, поэтому рендерится сразу, а витрина из Payload
@@ -63,25 +72,51 @@ async function ProductsSlider() {
 
   return (
     <>
-      <Slider label="Наши инструменты" slideClassName={SLIDE_WIDTH}>
-        {products.map((p) => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            cartAction={
-              p.inStock ? (
-                <AddToCartButton key={p.id} product={p} />
-              ) : (
-                <NotifyMeButton key={p.id} product={p} variant="icon" />
-              )
-            }
-          />
-        ))}
+      <Slider
+        label="Наши инструменты"
+        slideClassName={SLIDE_WIDTH}
+        lazy={{
+          ids: products.slice(INITIAL_SLIDES).map((p) => p.id),
+          placeholder: <ProductCardSkeleton />,
+          load: loadSlides,
+        }}
+      >
+        {products.slice(0, INITIAL_SLIDES).map(renderCard)}
       </Slider>
       <div className="mt-12 flex justify-center">
         <ArrowLink href="/catalog">Перейти в каталог</ArrowLink>
       </div>
     </>
+  );
+}
+
+/**
+ * Досылает карточки, до которых покупатель долистал, — готовой разметкой, та же renderCard,
+ * что и для первых. Список берётся заново через getProducts, поэтому видимость (скрытые,
+ * черновики для админа) проверяется так же, как при рендере страницы, и чужой id ничего
+ * лишнего не откроет. Товар, который успели скрыть между рендером и прокруткой, не придёт.
+ */
+async function loadSlides(ids: string[]) {
+  "use server";
+  if (!Array.isArray(ids) || ids.length > MAX_BATCH) return {};
+  const wanted = new Set(ids.filter((id) => typeof id === "string"));
+  const products = (await getProducts()).filter((p) => wanted.has(p.id));
+  return Object.fromEntries(products.map((p) => [p.id, renderCard(p)]));
+}
+
+function renderCard(product: Product) {
+  return (
+    <ProductCard
+      key={product.id}
+      product={product}
+      cartAction={
+        product.inStock ? (
+          <AddToCartButton key={product.id} product={product} />
+        ) : (
+          <NotifyMeButton key={product.id} product={product} variant="icon" />
+        )
+      }
+    />
   );
 }
 

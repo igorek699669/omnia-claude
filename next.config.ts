@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
   // next dev рядом с рабочим: Next отказывается запускать второй dev-сервер на тот же
   // distDir («Another next dev server is already running»), а лок лежит внутри него.
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // AVIF на ~20–30% легче WebP при том же качестве; браузер без AVIF получит WebP.
+  // Первое сжатие в AVIF дольше, но результат кешируется оптимизатором.
+  images: { formats: ["image/avif", "image/webp"] },
+  // experimental.inlineCss пробовали (21.09.2026) и не включаем: стили попадают в HTML
+  // дважды — тегом <style> и ещё раз в RSC-данных, — это +~20 КБ сжатыми к каждой странице
+  // и без кеша между переходами. Отдельный CSS-файл обходится дешевле.
 };
 
 // Расположение конфига (payload/payload.config.ts, а не дефолтный корневой) резолвится

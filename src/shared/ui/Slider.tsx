@@ -2,7 +2,7 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import { ArrowRightIcon } from "./assets/icons";
-import { Children, useCallback, useEffect, useState, type ReactNode } from "react";
+import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 type EmblaOptions = NonNullable<Parameters<typeof useEmblaCarousel>[0]>;
 
@@ -14,6 +14,18 @@ type Props = {
   label?: string;
   className?: string;
   options?: EmblaOptions;
+  /**
+   * Слайды, которые досылаются по мере прокрутки, — идут после children. Пока слайд в пути,
+   * на его месте placeholder, но число слайдов полное с самого начала: точки и прокрутка
+   * не прыгают, когда содержимое доезжает. Следующую пачку просим, когда в кадр попадает
+   * последний загруженный слайд, — она успевает приехать, пока его рассматривают.
+   */
+  lazy?: {
+    ids: string[];
+    placeholder: ReactNode;
+    load: (ids: string[]) => Promise<Record<string, ReactNode>>;
+    batch?: number;
+  };
 };
 
 /**
@@ -42,8 +54,13 @@ export function Slider({
   label,
   className = "",
   options,
+  lazy,
 }: Props) {
-  const slides = Children.toArray(children);
+  const initial = Children.toArray(children);
+  const [loaded, setLoaded] = useState<Record<string, ReactNode>>({});
+  // Сколько слайдов уже запрошено (отрендерено или в пути) — чтобы не просить одно дважды.
+  const requested = useRef(initial.length);
+  const slides = [...initial, ...(lazy?.ids.map((id) => loaded[id] ?? lazy.placeholder) ?? [])];
   const [emblaRef, embla] = useEmblaCarousel({ align: "start", ...options });
   const [snaps, setSnaps] = useState<number[]>([]);
   const [selected, setSelected] = useState(0);
@@ -64,6 +81,32 @@ export function Slider({
       embla.off("select", sync).off("reInit", sync);
     };
   }, [embla]);
+
+  useEffect(() => {
+    if (!embla || !lazy) return;
+    const { ids, load, batch = 6 } = lazy;
+    const offset = initial.length;
+    const loadNext = () => {
+      const inView = embla.slidesInView();
+      if (inView.length === 0 || requested.current >= offset + ids.length) return;
+      if (Math.max(...inView) + 1 < requested.current) return;
+
+      const from = requested.current - offset;
+      const next = ids.slice(from, from + batch);
+      requested.current += next.length;
+      load(next)
+        .then((got) => setLoaded((prev) => ({ ...prev, ...got })))
+        .catch(() => {
+          // Сеть подвела — вернём пачку в очередь, следующая прокрутка попросит её снова.
+          requested.current = Math.min(requested.current, offset + from);
+        });
+    };
+    loadNext();
+    embla.on("slidesInView", loadNext);
+    return () => {
+      embla.off("slidesInView", loadNext);
+    };
+  }, [embla, lazy, initial.length]);
 
   const scrollTo = useCallback((index: number) => embla?.scrollTo(index), [embla]);
 

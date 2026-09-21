@@ -51,11 +51,28 @@ body {
 .animate-panel-slide-in { animation: panel-slide-in 0.25s ease-out; }
 
 /* Плавающий виджет связи — лёгкая пульсация главной кнопки, пока меню закрыто */
+/* Анимируются только transform и opacity — их считает композитор. Раньше пульсировал сам
+   box-shadow, и главный поток перерисовывал кнопку на каждом кадре, пока открыта страница.
+   Оранжевое свечение теперь — тень псевдоэлемента, которая проявляется через opacity. */
 @keyframes contact-widget-pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 12px 28px -8px rgba(28, 20, 16, 0.35); }
-  50% { transform: scale(1.06); box-shadow: 0 16px 34px -6px rgba(255, 89, 0, 0.45); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+@keyframes contact-widget-glow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 .animate-widget-pulse { animation: contact-widget-pulse 2.4s ease-in-out infinite; }
+.animate-widget-pulse::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 16px 34px -6px rgba(255, 89, 0, 0.45);
+  opacity: 0;
+  animation: contact-widget-glow 2.4s ease-in-out infinite;
+}
 
 /* Привлечение внимания к виджету по кнопке «Задать вопрос» — короткая серия ярких вспышек */
 @keyframes contact-widget-attention {
@@ -81,7 +98,8 @@ body {
   .animate-accordion-up,
   .animate-overlay-fade-in,
   .animate-panel-slide-in,
-  .animate-widget-pulse {
+  .animate-widget-pulse,
+  .animate-widget-pulse::before {
     animation: none;
   }
 
