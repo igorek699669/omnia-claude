@@ -10,8 +10,11 @@ import { METRIKA_ID, ym } from "@/shared/lib";
  * сеансов отнесены к необходимым файлам, и плашка внизу экрана только уведомляет об этом —
  * отказаться можно настройками браузера или блокировщиком, см. /cookie-policy.
  *
- * Официальный сниппет вставлен как есть, а не заменён на <Script src>: он создаёт заглушку
- * window.ym до загрузки tag.js, и цели сразу после инициализации не теряются.
+ * Официальный сниппет разрезан надвое. Заглушка window.ym и init остаются как были —
+ * сразу после гидратации: они копят вызовы, и цели до загрузки счётчика не теряются.
+ * А сам tag.js с Вебвизором грузится после load, когда браузер простаивает: на телефоне он
+ * занимал главный поток на 2+ секунды прямо во время первой отрисовки (PageSpeed, 21.09.2026).
+ * Загрузившись, он разбирает накопленную очередь, так что просмотр и цели доезжают.
  */
 export function YandexMetrika() {
   const pathname = usePathname();
@@ -27,15 +30,20 @@ export function YandexMetrika() {
   if (METRIKA_ID === null) return null;
 
   return (
-    <Script id="yandex-metrika" strategy="afterInteractive">
-      {`(function(m,e,t,r,i,k,a){
+    <>
+      <Script id="yandex-metrika" strategy="afterInteractive">
+        {`(function(m,i){
     m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
     m[i].l=1*new Date();
-    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${METRIKA_ID}', 'ym');
+})(window, 'ym');
 
 ym(${METRIKA_ID}, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});`}
-    </Script>
+      </Script>
+      <Script
+        id="yandex-metrika-tag"
+        src={`https://mc.yandex.ru/metrika/tag.js?id=${METRIKA_ID}`}
+        strategy="lazyOnload"
+      />
+    </>
   );
 }

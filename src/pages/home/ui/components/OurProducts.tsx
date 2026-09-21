@@ -64,11 +64,10 @@ async function ProductsSlider() {
   return (
     <>
       <Slider label="Наши инструменты" slideClassName={SLIDE_WIDTH}>
-        {products.map((p, i) => (
+        {products.map((p) => (
           <ProductCard
             key={p.id}
             product={p}
-            priority={i === 0}
             cartAction={
               p.inStock ? (
                 <AddToCartButton key={p.id} product={p} />

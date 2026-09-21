@@ -40,6 +40,7 @@ export function ProductCard({
                 fill
                 sizes={CARD_IMAGE_SIZES}
                 priority={priority}
+                fetchPriority={priority ? "high" : undefined}
                 className="object-cover"
               />
             ) : (

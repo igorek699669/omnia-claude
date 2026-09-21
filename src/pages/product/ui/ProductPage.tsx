@@ -44,7 +44,12 @@ export async function ProductPage({ slug }: { slug: string }) {
           <div className="relative aspect-square overflow-hidden rounded-card bg-white">
             <div className="absolute inset-6 md:inset-10">
               {media.length > 1 ? (
-                <ProductGallery media={media} sizes={PRODUCT_PAGE_IMAGE_SIZES} fit="contain" />
+                <ProductGallery
+                  media={media}
+                  sizes={PRODUCT_PAGE_IMAGE_SIZES}
+                  fit="contain"
+                  priority
+                />
               ) : media[0] ? (
                 <Image
                   src={media[0].url}
@@ -52,6 +57,7 @@ export async function ProductPage({ slug }: { slug: string }) {
                   fill
                   sizes={PRODUCT_PAGE_IMAGE_SIZES}
                   priority
+                  fetchPriority="high"
                   className="object-contain"
                 />
               ) : (

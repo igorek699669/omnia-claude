@@ -16,4 +16,17 @@ const nextConfig: NextConfig = {
 // Расположение конфига (payload/payload.config.ts, а не дефолтный корневой) резолвится
 // через алиас "@payload-config" в tsconfig.json paths — withPayload() в этой версии
 // не принимает configPath, только devBundleServerPackages.
-export default withPayload(nextConfig);
+const config = withPayload(nextConfig);
+
+// withPayload вешает на ВСЕ пути Accept-CH/Critical-CH: Sec-CH-Prefers-Color-Scheme — это
+// нужно только админке, чтобы сразу отрисоваться в теме ОС. Но Critical-CH заставляет Chrome
+// при первом заходе выбросить полученную страницу и запросить её заново уже с подсказкой:
+// на витрине это лишний круг до сервера до первой отрисовки (~1 с на мобильном в PageSpeed,
+// 21.09.2026). Сужаем правило до /admin, остальные заголовки не трогаем.
+const payloadHeaders = config.headers;
+config.headers = async () =>
+  ((await payloadHeaders?.()) ?? []).map((rule) =>
+    rule.headers.some((h) => h.key === "Critical-CH") ? { ...rule, source: "/admin/:path*" } : rule,
+  );
+
+export default config;

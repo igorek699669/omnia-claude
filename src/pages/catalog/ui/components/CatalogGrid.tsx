@@ -31,10 +31,13 @@ export async function CatalogGrid({
     <>
       <p className="text-sm text-ink-600">Найдено инструментов: {totalDocs}</p>
       <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {products.map((p) => (
+        {products.map((p, i) => (
           <div key={p.id}>
             <ProductCard
               product={p}
+              // Первая карточка видна сразу и на телефоне — LCP страницы: без priority
+              // она грузилась лениво и ждала гидратации (PageSpeed, 21.09.2026).
+              priority={i === 0}
               cartAction={
                 p.inStock ? (
                   <AddToCartButton key={p.id} product={p} />

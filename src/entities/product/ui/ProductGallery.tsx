@@ -36,6 +36,8 @@ export function ProductGallery({
           fill
           sizes={sizes}
           priority={priority && i === 0}
+          // В Next 16 priority только вешает preload, приоритет загрузки — отдельно.
+          fetchPriority={priority && i === 0 ? "high" : undefined}
           className={`${fit === "cover" ? "object-cover" : "object-contain"} transition-opacity duration-400 ${
             i === active ? "opacity-100" : "pointer-events-none opacity-0"
           }`}

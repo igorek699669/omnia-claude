@@ -31,6 +31,12 @@ export function Hero() {
             width={1000}
             height={1000}
             priority
+            // В Next 16 priority только вешает preload — высокий приоритет самой загрузки
+            // надо просить отдельно, иначе картинка ждёт в очереди за скриптами.
+            fetchPriority="high"
+            // Без sizes srcset строится по плотности (1x/2x), и телефон качал 2048px.
+            // Ниже lg ширина — экран минус поля, но не больше max-w-140; выше — пол-колонки.
+            sizes="(min-width: 1024px) min(50vw, 640px), min(calc(100vw - 40px), 560px)"
             className="aspect-square w-full rounded-full object-cover shadow-[0_40px_80px_-32px_rgba(28,20,16,0.45)]"
           />
         </div>
