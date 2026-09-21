@@ -2,7 +2,16 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import { ArrowRightIcon } from "./assets/icons";
-import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Children,
+  startTransition,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 type EmblaOptions = NonNullable<Parameters<typeof useEmblaCarousel>[0]>;
 
@@ -60,7 +69,23 @@ export function Slider({
   const [loaded, setLoaded] = useState<Record<string, ReactNode>>({});
   // Сколько слайдов уже запрошено (отрендерено или в пути) — чтобы не просить одно дважды.
   const requested = useRef(initial.length);
-  const slides = [...initial, ...(lazy?.ids.map((id) => loaded[id] ?? lazy.placeholder) ?? [])];
+  // Своя граница Suspense у каждого досланного слайда: пока React разрешает клиентские
+  // компоненты из ответа, подвисает только этот слайд. Без неё подвисание поднималось до
+  // Suspense вокруг всего слайдера, тот прятал его за заглушкой, Embla при этом
+  // уничтожалась и создавалась заново — и покупатель, долиставший до седьмого слайда,
+  // оказывался на первом.
+  const slides = [
+    ...initial,
+    ...(lazy?.ids.map((id) =>
+      loaded[id] ? (
+        <Suspense key={id} fallback={lazy.placeholder}>
+          {loaded[id]}
+        </Suspense>
+      ) : (
+        lazy.placeholder
+      ),
+    ) ?? []),
+  ];
   const [emblaRef, embla] = useEmblaCarousel({ align: "start", ...options });
   const [snaps, setSnaps] = useState<number[]>([]);
   const [selected, setSelected] = useState(0);
@@ -95,7 +120,8 @@ export function Slider({
       const next = ids.slice(from, from + batch);
       requested.current += next.length;
       load(next)
-        .then((got) => setLoaded((prev) => ({ ...prev, ...got })))
+        // В переходе React держит на экране старую разметку, а не показывает fallback.
+        .then((got) => startTransition(() => setLoaded((prev) => ({ ...prev, ...got }))))
         .catch(() => {
           // Сеть подвела — вернём пачку в очередь, следующая прокрутка попросит её снова.
           requested.current = Math.min(requested.current, offset + from);

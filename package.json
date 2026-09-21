@@ -1,6 +1,10 @@
 {
   "name": "omnia",
   "private": true,
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
   "scripts": {
     "dev": "cross-env PAYLOAD_CONFIG_PATH=payload/payload.config.ts next dev",
     "build": "next build",
