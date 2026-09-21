@@ -5,4 +5,4 @@ export const CONTACT_EMAIL_HREF = "mailto:omniaworkshop@yandex.ru";
 export const CONTACT_TELEGRAM_USERNAME = "omniaworkshop";
 export const CONTACT_TELEGRAM_URL = "https://t.me/omniaworkshop";
 export const CONTACT_WHATSAPP_URL = "https://wa.me/79038190416";
-export const CONTACT_MAX_URL = "https://max.ru/+79038190416";
+export const CONTACT_MAX_URL = "https://max.ru/u/f9LHodD0cOK4bcxWVUFNRiL7NcDV9SwdwX-6Z7waw_OFs-JUAoQncYCUxNM";
