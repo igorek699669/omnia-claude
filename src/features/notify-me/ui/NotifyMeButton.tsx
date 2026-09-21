@@ -5,7 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { z } from "zod";
+// zod/mini, а не zod: кнопка стоит на каждой карточке «под заказ» — на главной и в каталоге,
+// — и классическая Zod тянула в их бандл ~70 КБ вместе со всеми языковыми пакетами ради
+// одного поля. Схема та же, zodResolver понимает обе.
+import * as z from "zod/mini";
 import { reachGoal, GOALS } from "@/shared/lib";
 import { subscribeToRestock } from "../api/actions";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogClose, BellIcon } from "@/shared/ui";
