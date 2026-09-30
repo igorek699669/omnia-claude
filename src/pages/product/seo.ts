@@ -13,12 +13,12 @@ import { formatPrice, siteUrl, DEFAULT_OG_IMAGE } from "@/shared/lib";
 /** Замер по 34 сайтам: длиннее 64 знаков выдача режет всегда, рабочий запас — 55–62. */
 const TITLE_LIMIT = 62;
 
-/** «Ханг D Kurd 11 — 11 нот, ре минор, 87 990 ₽» — модель, размер, строй и цена. */
+/** «Ханг D Kurd 11 — хэндпан, 11 нот, ре минор, 87 990 ₽» — модель, размер, строй и цена. */
 function title(product: Product): string {
   const { model, scaleRu } = parseProductName(product.name);
   const notes = `${product.notesCount} ${notesWord(product.notesCount)}`;
-  const short = `Ханг ${model} — ${notes}, ${formatPrice(product.price)}`;
-  const full = scaleRu ? `Ханг ${model} — ${notes}, ${scaleRu}, ${formatPrice(product.price)}` : short;
+  const short = `Ханг ${model} — хэндпан, ${notes}, ${formatPrice(product.price)}`;
+  const full = scaleRu ? `Ханг ${model} — хэндпан, ${notes}, ${scaleRu}, ${formatPrice(product.price)}` : short;
 
   // «фа-диез румынский хиджаз» в лимит не влезает. Жертвуем переводом строя, а не ценой:
   // цену прямо в выдаче показывают единицы, и она отличает нас сильнее.
@@ -36,7 +36,7 @@ function describe(product: Product): string {
   const weightKg = (HANDPAN_WEIGHT_GRAMS / 1000).toLocaleString("ru-RU");
 
   return [
-    `Ханг ${model}: ${notes}, ${scale}${product.tuningHz} Гц, цена ${formatPrice(product.price)}.`,
+    `Ханг (Handpan) ${model}: ${notes}, ${scale}${product.tuningHz} Гц, цена ${formatPrice(product.price)}.`,
     `${HANDPAN_MATERIAL}, диаметр ${HANDPAN_DIAMETER_CM} см, вес ${weightKg} кг, ручная настройка каждой ноты.`,
     product.inStock ? "Есть в наличии," : "Делаем под заказ,",
     "защитный чехол в комплекте, доставка СДЭК по России.",
